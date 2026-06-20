@@ -7,9 +7,19 @@ const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
 
-const peerServer = ExpressPeerServer(server, { debug: false });
+// Trust Railway's reverse proxy so Socket.io sees the correct protocol/IP
+app.set('trust proxy', 1);
+
+const io = new Server(server, {
+  cors: { origin: '*' },
+  transports: ['websocket', 'polling'],
+});
+
+const peerServer = ExpressPeerServer(server, {
+  debug: false,
+  proxied: true,  // honour X-Forwarded-* headers from Railway
+});
 app.use('/peerjs', peerServer);
 app.use(express.static(path.join(__dirname, 'public')));
 

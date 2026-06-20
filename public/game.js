@@ -103,11 +103,20 @@
   // ── WebRTC via PeerJS ─────────────────────────────────────────────────────────
   let localStream = null;
 
+  const isSecure = window.location.protocol === 'https:';
   const peer = new Peer(myPeerId, {
-    host:  window.location.hostname,
-    port:  Number(window.location.port) || (window.location.protocol === 'https:' ? 443 : 80),
-    path:  '/peerjs',
-    debug: 1,
+    host:   window.location.hostname,
+    port:   Number(window.location.port) || (isSecure ? 443 : 80),
+    path:   '/peerjs',
+    secure: isSecure,   // use wss:// on HTTPS — browsers block ws:// on secure pages
+    debug:  1,
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+      ],
+    },
   });
 
   function attachStream(slotIdx, stream) {
