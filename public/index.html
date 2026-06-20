@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Imposter</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <div class="logo-icon">?</div>
+      <h1>Imposter</h1>
+    </div>
+    <p class="subtitle">Find the one who doesn't know the word</p>
+
+    <div id="home-screen">
+      <input
+        type="text"
+        id="name-input"
+        placeholder="Enter your name"
+        maxlength="20"
+        autocomplete="off"
+      >
+      <button id="queue-btn" class="btn btn-primary">Join Queue</button>
+    </div>
+
+    <div id="queue-screen" style="display:none">
+      <div class="queue-status">
+        <div class="spinner"></div>
+        <p class="waiting-text">Waiting for players…</p>
+        <div class="queue-pips" id="queue-pips">
+          <span class="pip" id="pip-0"></span>
+          <span class="pip" id="pip-1"></span>
+          <span class="pip" id="pip-2"></span>
+        </div>
+        <p class="queue-fraction"><span id="queue-count">0</span> / 3</p>
+      </div>
+      <button id="cancel-btn" class="btn btn-secondary">Cancel</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    // Generate a stable peer ID for this browser tab
+    let peerId = sessionStorage.getItem('peerId');
+    if (!peerId) {
+      peerId = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+      sessionStorage.setItem('peerId', peerId);
+    }
+
+    const nameInput   = document.getElementById('name-input');
+    const queueBtn    = document.getElementById('queue-btn');
+    const cancelBtn   = document.getElementById('cancel-btn');
+    const homeScreen  = document.getElementById('home-screen');
+    const queueScreen = document.getElementById('queue-screen');
+    const queueCount  = document.getElementById('queue-count');
+    const pips        = [document.getElementById('pip-0'), document.getElementById('pip-1'), document.getElementById('pip-2')];
+
+    queueBtn.addEventListener('click', () => {
+      const name = nameInput.value.trim();
+      if (!name) {
+        nameInput.classList.add('error');
+        nameInput.focus();
+        return;
+      }
+      nameInput.classList.remove('error');
+
+      sessionStorage.setItem('playerName', name);
+      homeScreen.style.display = 'none';
+      queueScreen.style.display = 'flex';
+
+      socket.emit('joinQueue', { name, peerId });
+    });
+
+    nameInput.addEventListener('input', () => nameInput.classList.remove('error'));
+
+    nameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') queueBtn.click();
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      socket.emit('leaveQueue');
+      queueScreen.style.display = 'none';
+      homeScreen.style.display  = 'flex';
+    });
+
+    socket.on('queueUpdate', ({ count }) => {
+      queueCount.textContent = count;
+      pips.forEach((pip, i) => {
+        pip.classList.toggle('active', i < count);
+      });
+    });
+
+    socket.on('gameStart', (data) => {
+      sessionStorage.setItem('gameData', JSON.stringify(data));
+      window.location.href = '/game.html';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Imposter — Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="game-body">
+
+  <!-- Role banner at the top -->
+  <div id="role-banner" class="role-banner">
+    <div id="role-content"></div>
+    <button id="toggle-role-btn" class="toggle-role-btn" title="Hide/show role">👁 Hide</button>
+  </div>
+
+  <!-- 3-up video grid -->
+  <div class="video-grid" id="video-grid">
+    <div class="video-tile" id="tile-local">
+      <video id="local-video" autoplay muted playsinline></video>
+      <div class="no-cam" id="no-cam-local">
+        <span id="no-cam-local-initial"></span>
+      </div>
+      <span class="tile-label" id="local-label">You</span>
+    </div>
+    <div class="video-tile" id="tile-remote0">
+      <video id="remote0-video" autoplay playsinline></video>
+      <div class="no-cam connecting" id="no-cam-remote0">
+        <div class="mini-spinner"></div>
+      </div>
+      <span class="tile-label" id="remote0-label">Connecting…</span>
+    </div>
+    <div class="video-tile" id="tile-remote1">
+      <video id="remote1-video" autoplay playsinline></video>
+      <div class="no-cam connecting" id="no-cam-remote1">
+        <div class="mini-spinner"></div>
+      </div>
+      <span class="tile-label" id="remote1-label">Connecting…</span>
+    </div>
+  </div>
+
+  <!-- Full-screen overlay while WebRTC peers connect -->
+  <div id="waiting-overlay" class="waiting-overlay">
+    <div class="spinner"></div>
+    <p>Connecting to players…</p>
+  </div>
+
+  <!-- Back to lobby link -->
+  <a href="/" class="back-link">← Back to lobby</a>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
