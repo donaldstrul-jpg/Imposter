@@ -3,48 +3,632 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Imposter</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Imposter — Sports Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ── Reset ─────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple:   #8b5cf6;
+      --purple-d: #7c3aed;
+      --pink:     #e879f9;
+      --blue:     #3b82f6;
+      --cyan:     #22d3ee;
+      --bg:       #06060f;
+      --surface:  rgba(255,255,255,0.03);
+      --border:   rgba(139,92,246,0.18);
+      --text:     #f0f0ff;
+      --muted:    rgba(180,180,220,0.55);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Animated background ───────────────────────────────────────────── */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Floating glow orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(130px);
+    }
+    .orb-1 {
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(124,58,237,0.38) 0%, transparent 70%);
+      top: -220px; left: -150px;
+      animation: orb1 14s ease-in-out infinite;
+    }
+    .orb-2 {
+      width: 550px; height: 550px;
+      background: radial-gradient(circle, rgba(37,99,235,0.28) 0%, transparent 70%);
+      bottom: 0; right: -120px;
+      animation: orb2 17s ease-in-out infinite;
+    }
+    .orb-3 {
+      width: 380px; height: 380px;
+      background: radial-gradient(circle, rgba(232,121,249,0.22) 0%, transparent 70%);
+      top: 38%; left: 48%;
+      transform: translate(-50%,-50%);
+      animation: orb3 11s ease-in-out infinite;
+    }
+    .orb-4 {
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(34,211,238,0.14) 0%, transparent 70%);
+      top: 8%; right: 12%;
+      animation: orb4 9s ease-in-out infinite;
+    }
+
+    @keyframes orb1 {
+      0%,100% { transform: translate(0,0); }
+      33%      { transform: translate(50px, 40px); }
+      66%      { transform: translate(-25px, 60px); }
+    }
+    @keyframes orb2 {
+      0%,100% { transform: translate(0,0); }
+      50%      { transform: translate(-50px,-40px); }
+    }
+    @keyframes orb3 {
+      0%,100% { transform: translate(-50%,-50%) scale(1);   opacity: 0.8; }
+      50%      { transform: translate(-50%,-50%) scale(1.3); opacity: 0.5; }
+    }
+    @keyframes orb4 {
+      0%,100% { transform: translate(0,0) scale(1); }
+      50%      { transform: translate(-18px,22px) scale(0.8); }
+    }
+
+    /* Dot-grid overlay */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(circle, rgba(139,92,246,0.18) 1px, transparent 1px);
+      background-size: 44px 44px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Page layout ───────────────────────────────────────────────────── */
+    .page {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Hero ──────────────────────────────────────────────────────────── */
+    .hero {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 90px 1.5rem 70px;
+      text-align: center;
+    }
+
+    /* Logo */
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+      margin-bottom: 1.1rem;
+      animation: fadeDown .9s ease both;
+    }
+    .logo-badge {
+      width: 68px; height: 68px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--purple-d), var(--pink));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.9rem;
+      font-weight: 900;
+      color: #fff;
+      flex-shrink: 0;
+      animation: badgePulse 3.5s ease-in-out infinite;
+    }
+    @keyframes badgePulse {
+      0%,100% { box-shadow: 0 0 28px rgba(124,58,237,.65), 0 0 60px rgba(124,58,237,.25); }
+      50%      { box-shadow: 0 0 40px rgba(232,121,249,.9), 0 0 90px rgba(232,121,249,.35); }
+    }
+
+    .logo-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(2.6rem, 9vw, 5.2rem);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      background: linear-gradient(135deg, #c4b5fd 0%, #fff 45%, #e879f9 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: logoGlow 4s ease-in-out infinite;
+    }
+    @keyframes logoGlow {
+      0%,100% { filter: drop-shadow(0 0 18px rgba(196,181,253,.55)); }
+      50%      { filter: drop-shadow(0 0 34px rgba(232,121,249,.85)) drop-shadow(0 0 70px rgba(124,58,237,.4)); }
+    }
+
+    .hero-tagline {
+      font-size: 1.05rem;
+      color: var(--muted);
+      margin-bottom: 2.8rem;
+      letter-spacing: 0.01em;
+      animation: fadeUp .9s ease .2s both;
+    }
+    .hero-tagline em {
+      font-style: normal;
+      color: rgba(196,181,253,.75);
+    }
+
+    /* ── Entry card ────────────────────────────────────────────────────── */
+    .entry-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 2.2rem 2rem;
+      width: 100%;
+      max-width: 470px;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 0 50px rgba(124,58,237,.1), inset 0 1px 0 rgba(255,255,255,.06);
+      animation: fadeUp .9s ease .4s both;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.1rem;
+    }
+
+    .card-eyebrow {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(139,92,246,.8);
+    }
+
+    .input-row {
+      display: flex;
+      gap: .6rem;
+      width: 100%;
+    }
+
+    .name-input {
+      flex: 1;
+      padding: .82rem 1rem;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(139,92,246,.22);
+      border-radius: 11px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .name-input::placeholder { color: rgba(150,150,195,.45); }
+    .name-input:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px rgba(139,92,246,.18);
+    }
+    .name-input.error {
+      border-color: #f87171;
+      box-shadow: 0 0 0 3px rgba(248,113,113,.15);
+      animation: shake .35s ease;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-7px); }
+      75%      { transform: translateX(7px); }
+    }
+
+    .btn-join {
+      padding: .82rem 1.5rem;
+      background: linear-gradient(135deg, var(--purple-d), #9333ea);
+      border: 1px solid rgba(196,181,253,.22);
+      border-radius: 11px;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .2s;
+      box-shadow: 0 0 22px rgba(124,58,237,.45);
+    }
+    .btn-join:hover {
+      background: linear-gradient(135deg, #8b4cf9, #a855f7);
+      box-shadow: 0 0 35px rgba(124,58,237,.75), 0 0 70px rgba(124,58,237,.3);
+      transform: translateY(-1px);
+    }
+    .btn-join:active { transform: scale(.97); }
+
+    .online-row {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .78rem;
+      color: rgba(150,150,195,.65);
+    }
+    .online-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 8px #22c55e;
+      animation: dotPulse 2s ease-in-out infinite;
+    }
+    @keyframes dotPulse {
+      0%,100% { opacity:1; box-shadow: 0 0 8px #22c55e; }
+      50%      { opacity:.6; box-shadow: 0 0 16px #22c55e; }
+    }
+
+    /* ── Queue card ────────────────────────────────────────────────────── */
+    .queue-card {
+      flex-direction: column;
+      gap: 1.3rem;
+    }
+
+    .q-pips {
+      display: flex;
+      gap: 14px;
+    }
+    .q-pip {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: rgba(139,92,246,.12);
+      border: 2px solid rgba(139,92,246,.3);
+      transition: all .4s ease;
+    }
+    .q-pip.active {
+      background: var(--purple);
+      border-color: var(--purple);
+      box-shadow: 0 0 14px rgba(139,92,246,.9), 0 0 28px rgba(139,92,246,.4);
+    }
+
+    .q-label {
+      font-size: .82rem;
+      color: var(--muted);
+    }
+
+    .q-count {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: #c4b5fd;
+      line-height: 1;
+    }
+    .q-count span { font-size: 1.6rem; color: rgba(196,181,253,.4); }
+
+    .btn-cancel {
+      background: transparent;
+      border: 1px solid rgba(248,113,113,.3);
+      border-radius: 9px;
+      color: rgba(248,113,113,.7);
+      font-family: 'Inter', sans-serif;
+      font-size: .85rem;
+      padding: .5rem 1.6rem;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-cancel:hover {
+      border-color: #f87171;
+      color: #f87171;
+      background: rgba(248,113,113,.05);
+    }
+
+    /* ── Category cards section ────────────────────────────────────────── */
+    .cats-section {
+      width: 100%;
+      max-width: 920px;
+      padding: 0 1.5rem 6rem;
+    }
+
+    /* Pulsing heading */
+    .cats-heading {
+      display: flex;
+      align-items: center;
+      gap: 1.4rem;
+      margin-bottom: 2.5rem;
+    }
+    .cats-heading-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(139,92,246,.4), transparent);
+    }
+    .cats-heading-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      color: rgba(196,181,253,.55);
+      animation: headingPulse 3.2s ease-in-out infinite;
+    }
+    @keyframes headingPulse {
+      0%,100% { color: rgba(196,181,253,.55); text-shadow: none; }
+      50%      { color: rgba(232,121,249,.9);  text-shadow: 0 0 22px rgba(232,121,249,.45); }
+    }
+
+    /* Grid */
+    .cats-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    /* Cards */
+    .sport-card {
+      flex: 0 0 calc(25% - .76rem);
+      min-width: 150px;
+      max-width: 210px;
+      position: relative;
+      background: rgba(255,255,255,.025);
+      border: 1px solid rgba(139,92,246,.13);
+      border-radius: 18px;
+      padding: 2rem 1rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .55rem;
+      overflow: hidden;
+      cursor: default;
+
+      /* Staggered entrance animation */
+      opacity: 0;
+      animation: cardIn .65s ease calc(.65s + var(--i) * .09s) both;
+
+      transition: border-color .3s, box-shadow .35s, transform .3s, background .3s;
+    }
+
+    .sport-card:hover {
+      border-color: rgba(139,92,246,.65);
+      background: rgba(139,92,246,.07);
+      box-shadow:
+        0 0 22px rgba(139,92,246,.35),
+        0 0 50px rgba(139,92,246,.12),
+        inset 0 0 22px rgba(139,92,246,.06);
+      transform: translateY(-7px) scale(1.04);
+    }
+
+    /* Radial glow that fades in on hover */
+    .card-glow {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(139,92,246,.2) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity .35s;
+      pointer-events: none;
+    }
+    .sport-card:hover .card-glow { opacity: 1; }
+
+    /* Animated top border shimmer */
+    .sport-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(196,181,253,.7), transparent);
+      transition: left .4s ease;
+    }
+    .sport-card:hover::after { left: 100%; }
+
+    .card-emoji {
+      font-size: 3rem;
+      line-height: 1;
+      position: relative;
+      z-index: 1;
+      transition: transform .3s, filter .3s;
+    }
+    .sport-card:hover .card-emoji {
+      transform: scale(1.22) translateY(-3px);
+      filter: drop-shadow(0 0 12px rgba(139,92,246,.85));
+    }
+
+    .card-name {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #e2e2f0;
+      letter-spacing: .06em;
+      position: relative;
+      z-index: 1;
+      transition: color .3s;
+    }
+    .sport-card:hover .card-name { color: #c4b5fd; }
+
+    .card-sub {
+      font-size: .68rem;
+      color: rgba(150,150,195,.45);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      position: relative;
+      z-index: 1;
+      transition: color .3s;
+    }
+    .sport-card:hover .card-sub { color: rgba(196,181,253,.6); }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(32px) scale(.95); }
+      to   { opacity: 1; transform: translateY(0)   scale(1);    }
+    }
+
+    /* Responsive */
+    @media (max-width: 680px) {
+      .sport-card {
+        flex: 0 0 calc(50% - .5rem);
+        max-width: none;
+      }
+      .logo-text { font-size: 2.4rem; }
+    }
+    @media (max-width: 360px) {
+      .sport-card { flex: 0 0 100%; }
+    }
+
+    /* ── Shared animations ─────────────────────────────────────────────── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translateY(-10px); }
+    }
+
+    .anim-fade-out { animation: fadeOut .2s ease forwards !important; }
+    .anim-fade-in  { animation: fadeIn  .3s ease both   !important; }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo">
-      <div class="logo-icon">?</div>
-      <h1>Imposter</h1>
-    </div>
-    <p class="subtitle">Find the one who doesn't know the word</p>
 
-    <div id="home-screen">
-      <input
-        type="text"
-        id="name-input"
-        placeholder="Enter your name"
-        maxlength="20"
-        autocomplete="off"
-      >
-      <button id="queue-btn" class="btn btn-primary">Join Queue</button>
-    </div>
-
-    <div id="queue-screen" style="display:none">
-      <div class="queue-status">
-        <div class="spinner"></div>
-        <p class="waiting-text">Waiting for players…</p>
-        <div class="queue-pips" id="queue-pips">
-          <span class="pip" id="pip-0"></span>
-          <span class="pip" id="pip-1"></span>
-          <span class="pip" id="pip-2"></span>
-        </div>
-        <p class="queue-fraction"><span id="queue-count">0</span> / 3</p>
-      </div>
-      <button id="cancel-btn" class="btn btn-secondary">Cancel</button>
-    </div>
+  <!-- Animated background -->
+  <div class="bg-layer" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
   </div>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <div class="page">
+
+    <!-- ── Hero ──────────────────────────────────────────────────────── -->
+    <section class="hero">
+
+      <div class="logo-wrap">
+        <div class="logo-badge">?</div>
+        <h1 class="logo-text">IMPOSTER</h1>
+      </div>
+
+      <p class="hero-tagline">
+        Can you spot the one who's <em>faking it?</em>
+      </p>
+
+      <!-- Entry form -->
+      <div class="entry-card" id="home-screen">
+        <p class="card-eyebrow">Ready to play?</p>
+        <div class="input-row">
+          <input
+            type="text"
+            id="name-input"
+            class="name-input"
+            placeholder="Your name…"
+            maxlength="20"
+            autocomplete="off"
+          >
+          <button id="queue-btn" class="btn-join">Join Queue</button>
+        </div>
+        <p class="online-row">
+          <span class="online-dot"></span>
+          <span id="queue-count">0</span>&nbsp;players in queue
+        </p>
+      </div>
+
+      <!-- Queue waiting -->
+      <div class="entry-card queue-card" id="queue-screen" style="display:none">
+        <p class="card-eyebrow">Finding your match</p>
+        <div class="q-pips">
+          <span class="q-pip" id="pip-0"></span>
+          <span class="q-pip" id="pip-1"></span>
+          <span class="q-pip" id="pip-2"></span>
+        </div>
+        <p class="q-label">Waiting for players…</p>
+        <p class="q-count"><span id="queue-live">0</span><span>&nbsp;/ 3</span></p>
+        <button id="cancel-btn" class="btn-cancel">Cancel</button>
+      </div>
+
+    </section>
+
+    <!-- ── Categories ────────────────────────────────────────────────── -->
+    <section class="cats-section">
+
+      <div class="cats-heading">
+        <span class="cats-heading-line"></span>
+        <span class="cats-heading-text">Select a Sport</span>
+        <span class="cats-heading-line"></span>
+      </div>
+
+      <div class="cats-grid">
+
+        <div class="sport-card" style="--i:0">
+          <div class="card-glow"></div>
+          <span class="card-emoji">🏀</span>
+          <span class="card-name">NBA</span>
+          <span class="card-sub">Basketball</span>
+        </div>
+
+        <div class="sport-card" style="--i:1">
+          <div class="card-glow"></div>
+          <span class="card-emoji">🏈</span>
+          <span class="card-name">NFL</span>
+          <span class="card-sub">Football</span>
+        </div>
+
+        <div class="sport-card" style="--i:2">
+          <div class="card-glow"></div>
+          <span class="card-emoji">⚾</span>
+          <span class="card-name">MLB</span>
+          <span class="card-sub">Baseball</span>
+        </div>
+
+        <div class="sport-card" style="--i:3">
+          <div class="card-glow"></div>
+          <span class="card-emoji">⚽</span>
+          <span class="card-name">Soccer</span>
+          <span class="card-sub">Football</span>
+        </div>
+
+        <div class="sport-card" style="--i:4">
+          <div class="card-glow"></div>
+          <span class="card-emoji">🥊</span>
+          <span class="card-name">MMA</span>
+          <span class="card-sub">Fighting</span>
+        </div>
+
+        <div class="sport-card" style="--i:5">
+          <div class="card-glow"></div>
+          <span class="card-emoji">🏒</span>
+          <span class="card-name">NHL</span>
+          <span class="card-sub">Hockey</span>
+        </div>
+
+        <div class="sport-card" style="--i:6">
+          <div class="card-glow"></div>
+          <span class="card-emoji">🎾</span>
+          <span class="card-name">Tennis</span>
+          <span class="card-sub">Tennis</span>
+        </div>
+
+      </div>
+    </section>
+
+  </div><!-- /.page -->
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
 
-    // Generate a stable peer ID for this browser tab
+    // Stable peer ID for this tab session
     let peerId = sessionStorage.getItem('peerId');
     if (!peerId) {
       peerId = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
@@ -57,41 +641,41 @@
     const homeScreen  = document.getElementById('home-screen');
     const queueScreen = document.getElementById('queue-screen');
     const queueCount  = document.getElementById('queue-count');
-    const pips        = [document.getElementById('pip-0'), document.getElementById('pip-1'), document.getElementById('pip-2')];
+    const queueLive   = document.getElementById('queue-live');
+    const pips        = ['pip-0','pip-1','pip-2'].map(id => document.getElementById(id));
+
+    function switchCard(hideEl, showEl) {
+      hideEl.classList.add('anim-fade-out');
+      setTimeout(() => {
+        hideEl.style.display = 'none';
+        hideEl.classList.remove('anim-fade-out');
+        showEl.style.display = 'flex';
+        showEl.classList.add('anim-fade-in');
+        setTimeout(() => showEl.classList.remove('anim-fade-in'), 400);
+      }, 200);
+    }
 
     queueBtn.addEventListener('click', () => {
       const name = nameInput.value.trim();
-      if (!name) {
-        nameInput.classList.add('error');
-        nameInput.focus();
-        return;
-      }
+      if (!name) { nameInput.classList.add('error'); nameInput.focus(); return; }
       nameInput.classList.remove('error');
-
       sessionStorage.setItem('playerName', name);
-      homeScreen.style.display = 'none';
-      queueScreen.style.display = 'flex';
-
       socket.emit('joinQueue', { name, peerId });
+      switchCard(homeScreen, queueScreen);
     });
 
-    nameInput.addEventListener('input', () => nameInput.classList.remove('error'));
-
-    nameInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') queueBtn.click();
-    });
+    nameInput.addEventListener('input',   () => nameInput.classList.remove('error'));
+    nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') queueBtn.click(); });
 
     cancelBtn.addEventListener('click', () => {
       socket.emit('leaveQueue');
-      queueScreen.style.display = 'none';
-      homeScreen.style.display  = 'flex';
+      switchCard(queueScreen, homeScreen);
     });
 
     socket.on('queueUpdate', ({ count }) => {
       queueCount.textContent = count;
-      pips.forEach((pip, i) => {
-        pip.classList.toggle('active', i < count);
-      });
+      queueLive.textContent  = count;
+      pips.forEach((pip, i) => pip.classList.toggle('active', i < count));
     });
 
     socket.on('gameStart', (data) => {
