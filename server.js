@@ -1,30 +1,86 @@
-const express = require('express');
-const http = require('http');
+const express    = require('express');
+const http       = require('http');
 const { Server } = require('socket.io');
 const { ExpressPeerServer } = require('peer');
 const { randomUUID } = require('crypto');
-const path = require('path');
+const path       = require('path');
+const fs         = require('fs');
+const { DatabaseSync } = require('node:sqlite');
+const bcrypt     = require('bcryptjs');
+const jwt        = require('jsonwebtoken');
 
-const app = express();
+const app    = express();
 const server = http.createServer(app);
 
-// Trust Railway's reverse proxy so Socket.io sees the correct protocol/IP
 app.set('trust proxy', 1);
+app.use(express.json());
 
 const io = new Server(server, {
   cors: { origin: '*' },
   transports: ['websocket', 'polling'],
 });
 
-const peerServer = ExpressPeerServer(server, {
-  debug: false,
-  proxied: true,  // honour X-Forwarded-* headers from Railway
-});
+const peerServer = ExpressPeerServer(server, { debug: false, proxied: true });
 app.use('/peerjs', peerServer);
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Each entry: { name, hint }
-// hint is a single vague word shown only to the imposter
+// ── Database ──────────────────────────────────────────────────────────────────
+const JWT_SECRET = process.env.JWT_SECRET || 'imposter-dev-secret-change-in-prod';
+const DB_DIR     = process.env.DB_DIR || __dirname;
+if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
+
+const db = new DatabaseSync(path.join(DB_DIR, 'imposter.db'));
+db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    username      TEXT    UNIQUE NOT NULL COLLATE NOCASE,
+    password_hash TEXT    NOT NULL,
+    imposter_wins INTEGER DEFAULT 0,
+    games_played  INTEGER DEFAULT 0,
+    created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+const stmts = {
+  register:      db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)'),
+  findByName:    db.prepare('SELECT * FROM users WHERE username = ?'),
+  leaderboard:   db.prepare('SELECT username, imposter_wins, games_played FROM users ORDER BY imposter_wins DESC, games_played ASC LIMIT 10'),
+  addGame:       db.prepare('UPDATE users SET games_played = games_played + 1 WHERE id = ?'),
+  addWin:        db.prepare('UPDATE users SET imposter_wins = imposter_wins + 1, games_played = games_played + 1 WHERE id = ?'),
+};
+
+function getLeaderboard() { return stmts.leaderboard.all(); }
+function broadcastLeaderboard() { io.emit('leaderboardUpdate', getLeaderboard()); }
+
+// ── Auth routes ───────────────────────────────────────────────────────────────
+app.post('/api/register', (req, res) => {
+  const { username, password } = req.body || {};
+  const name = String(username || '').trim();
+  if (name.length < 2 || name.length > 20) return res.json({ error: 'Username must be 2–20 characters' });
+  if (!password || password.length < 4)    return res.json({ error: 'Password must be at least 4 characters' });
+
+  const hash = bcrypt.hashSync(password, 10);
+  try {
+    const { lastInsertRowid } = stmts.register.run(name, hash);
+    const token = jwt.sign({ userId: lastInsertRowid, username: name }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, username: name });
+  } catch (e) {
+    res.json({ error: e.message.includes('UNIQUE') ? 'Username already taken' : 'Server error' });
+  }
+});
+
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body || {};
+  const user = stmts.findByName.get(String(username || '').trim());
+  if (!user || !bcrypt.compareSync(password || '', user.password_hash))
+    return res.json({ error: 'Wrong username or password' });
+  const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
+  res.json({ token, username: user.username });
+});
+
+app.get('/api/leaderboard', (_req, res) => res.json(getLeaderboard()));
+
+// ── Game data ─────────────────────────────────────────────────────────────────
 const CATEGORIES = {
   'NBA Players': [
     { name: 'LeBron James',            hint: 'Versatile'    },
@@ -146,36 +202,45 @@ const CATEGORIES = {
   ],
 };
 
-// queue: [{socketId, name, peerId}]
+// ── Matchmaking ───────────────────────────────────────────────────────────────
+// queue: [{ socketId, name, peerId, userId }]
 let queue = [];
 
-// rooms: { roomId -> { players, readyCount } }
+// rooms: { roomId -> { players, readyCount, imposterIndex, word, votes } }
 const rooms = {};
 
-function broadcastQueueCount() {
-  io.emit('queueUpdate', { count: queue.length });
-}
+function broadcastQueueCount() { io.emit('queueUpdate', { count: queue.length }); }
 
 io.on('connection', (socket) => {
-  socket.on('joinQueue', ({ name, peerId }) => {
-    // Prevent duplicate entries for the same socket
+
+  socket.on('joinQueue', ({ name, peerId, token }) => {
+    let userId = null;
+    let displayName = String(name || '').trim().slice(0, 20) || 'Player';
+
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        userId      = decoded.userId;
+        displayName = decoded.username;
+      } catch { /* invalid token — play as guest */ }
+    }
+
     queue = queue.filter((p) => p.socketId !== socket.id);
-    queue.push({ socketId: socket.id, name: String(name).slice(0, 20), peerId });
+    queue.push({ socketId: socket.id, name: displayName, peerId, userId });
     broadcastQueueCount();
 
     if (queue.length >= 3) {
       const players = queue.splice(0, 3);
       broadcastQueueCount();
 
-      const roomId = randomUUID();
-
-      const categoryNames = Object.keys(CATEGORIES);
-      const category  = categoryNames[Math.floor(Math.random() * categoryNames.length)];
-      const wordList  = CATEGORIES[category];
-      const picked    = wordList[Math.floor(Math.random() * wordList.length)];
+      const roomId        = randomUUID();
+      const catNames      = Object.keys(CATEGORIES);
+      const category      = catNames[Math.floor(Math.random() * catNames.length)];
+      const wordList      = CATEGORIES[category];
+      const picked        = wordList[Math.floor(Math.random() * wordList.length)];
       const imposterIndex = Math.floor(Math.random() * 3);
 
-      rooms[roomId] = { players, readyCount: 0 };
+      rooms[roomId] = { players, readyCount: 0, imposterIndex, word: picked.name, votes: {} };
 
       const playerSummary = players.map((p) => ({ name: p.name, peerId: p.peerId }));
 
@@ -183,12 +248,12 @@ io.on('connection', (socket) => {
         const isImposter = index === imposterIndex;
         io.to(player.socketId).emit('gameStart', {
           roomId,
-          role:     isImposter ? 'imposter' : 'knower',
-          category,                             // everyone sees the category
-          word:     isImposter ? null : picked.name,  // knowers see the name
-          hint:     isImposter ? picked.hint : null,  // imposter gets a vague hint
+          role:        isImposter ? 'imposter' : 'knower',
+          category,
+          word:        isImposter ? null        : picked.name,
+          hint:        isImposter ? picked.hint : null,
           playerIndex: index,
-          players:  playerSummary,
+          players:     playerSummary,
         });
       });
     }
@@ -199,15 +264,55 @@ io.on('connection', (socket) => {
     broadcastQueueCount();
   });
 
-  // Fired by each client once their PeerJS peer is open and ready to receive calls
   socket.on('peerReady', ({ roomId }) => {
     const room = rooms[roomId];
     if (!room) return;
     room.readyCount++;
-    if (room.readyCount >= 3) {
-      room.players.forEach((p) => {
-        io.to(p.socketId).emit('allPeersReady');
+    if (room.readyCount >= 3)
+      room.players.forEach((p) => io.to(p.socketId).emit('allPeersReady'));
+  });
+
+  socket.on('submitVote', ({ roomId, votedForIndex }) => {
+    const room = rooms[roomId];
+    if (!room) return;
+
+    const voterIndex = room.players.findIndex((p) => p.socketId === socket.id);
+    if (voterIndex === -1 || voterIndex in room.votes) return; // not in room or already voted
+
+    room.votes[voterIndex] = votedForIndex;
+    const votesIn = Object.keys(room.votes).length;
+
+    room.players.forEach((p) => io.to(p.socketId).emit('voteProgress', { votesIn }));
+
+    if (votesIn === 3) {
+      // Tally votes
+      const tally = {};
+      Object.values(room.votes).forEach((v) => { tally[v] = (tally[v] || 0) + 1; });
+      const topVote      = parseInt(Object.entries(tally).sort((a, b) => b[1] - a[1])[0][0]);
+      const imposterCaught = topVote === room.imposterIndex;
+
+      // Update stats for any logged-in players
+      room.players.forEach((player, index) => {
+        if (!player.userId) return;
+        if (index === room.imposterIndex && !imposterCaught) {
+          stmts.addWin.run(player.userId);   // imposter escaped — counts as win + game
+        } else {
+          stmts.addGame.run(player.userId);  // everyone else just gets games_played++
+        }
       });
+
+      const result = {
+        imposterCaught,
+        imposterIndex: room.imposterIndex,
+        imposterName:  room.players[room.imposterIndex].name,
+        word:          room.word,
+        topVote,
+        votes:         room.votes,
+      };
+
+      room.players.forEach((p) => io.to(p.socketId).emit('gameResult', result));
+      broadcastLeaderboard();
+      delete rooms[roomId];
     }
   });
 
@@ -218,6 +323,4 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Imposter running → http://localhost:${PORT}`);
-});
+server.listen(PORT, () => console.log(`Imposter running → http://localhost:${PORT}`));
