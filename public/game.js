@@ -114,13 +114,25 @@
       }
     );
 
-    callFrame.on('joined-meeting', () => {
+    let peerReadySent = false;
+    function sendPeerReady() {
+      if (peerReadySent) return;
+      peerReadySent = true;
       socket.emit('peerReady', { roomId });
+    }
+
+    // Fallback: if joined-meeting never fires within 20s, proceed anyway
+    const peerReadyTimeout = setTimeout(sendPeerReady, 20000);
+
+    callFrame.on('joined-meeting', () => {
+      clearTimeout(peerReadyTimeout);
+      sendPeerReady();
     });
 
     callFrame.on('error', (e) => {
       console.warn('Daily.co error:', e);
-      socket.emit('peerReady', { roomId });
+      clearTimeout(peerReadyTimeout);
+      sendPeerReady();
     });
 
     callFrame.join({ url: dailyRoomUrl, userName: players[playerIndex].name });

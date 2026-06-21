@@ -245,6 +245,7 @@ async function createDailyRoom(name) {
           enable_chat:        false,
           start_video_off:    false,
           start_audio_off:    false,
+          enable_prejoin_ui:  false, // skip haircheck screen so joined-meeting fires automatically
         },
       }),
     });
