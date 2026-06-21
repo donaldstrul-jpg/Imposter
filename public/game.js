@@ -4,7 +4,7 @@
 
   if (!gameData) { window.location.href = '/'; return; }
 
-  const { roomId, role, category, word, hint, playerIndex, players, dailyRoomUrl } = gameData;
+  const { roomId, role, category, word, hint, playerIndex, players, jitsiRoom } = gameData;
   const authUser = localStorage.getItem('imposter_user');
 
   // ── Role banner ───────────────────────────────────────────────────────────────
@@ -92,28 +92,12 @@
     document.getElementById('result-overlay').style.display = 'flex';
   });
 
-  // ── Daily.co video call ───────────────────────────────────────────────────────
+  // ── Jitsi Meet video call ─────────────────────────────────────────────────────
   socket.on('allPeersReady', () => {
     showVoteBar();
   });
 
   function init() {
-    if (!dailyRoomUrl) {
-      // No Daily.co room — still mark ready and skip video
-      console.warn('No Daily.co room URL; proceeding without video.');
-      socket.emit('peerReady', { roomId });
-      return;
-    }
-
-    const callFrame = DailyIframe.createFrame(
-      document.getElementById('daily-container'),
-      {
-        iframeStyle: { width: '100%', height: '100%', border: '0' },
-        showLeaveButton: false,
-        showFullscreenButton: true,
-      }
-    );
-
     let peerReadySent = false;
     function sendPeerReady() {
       if (peerReadySent) return;
@@ -121,21 +105,41 @@
       socket.emit('peerReady', { roomId });
     }
 
-    // Fallback: if joined-meeting never fires within 20s, proceed anyway
+    // Fallback: if videoConferenceJoined never fires within 20s, proceed anyway
     const peerReadyTimeout = setTimeout(sendPeerReady, 20000);
 
-    callFrame.on('joined-meeting', () => {
+    const api = new JitsiMeetExternalAPI('meet.jit.si', {
+      roomName:   jitsiRoom,
+      width:      '100%',
+      height:     '100%',
+      parentNode: document.getElementById('video-container'),
+      userInfo:   { displayName: players[playerIndex].name },
+      configOverwrite: {
+        prejoinPageEnabled:   false,  // skip haircheck — join immediately
+        startWithAudioMuted:  false,
+        startWithVideoMuted:  false,
+        disableDeepLinking:   true,
+        enableWelcomePage:    false,
+      },
+      interfaceConfigOverwrite: {
+        SHOW_JITSI_WATERMARK:      false,
+        SHOW_WATERMARK_FOR_GUESTS: false,
+        SHOW_BRAND_WATERMARK:      false,
+        SHOW_POWERED_BY:           false,
+        TOOLBAR_BUTTONS: ['microphone', 'camera', 'tileview', 'fullscreen'],
+      },
+    });
+
+    api.addEventListener('videoConferenceJoined', () => {
       clearTimeout(peerReadyTimeout);
       sendPeerReady();
     });
 
-    callFrame.on('error', (e) => {
-      console.warn('Daily.co error:', e);
+    api.addEventListener('errorOccurred', (e) => {
+      console.warn('Jitsi error:', e);
       clearTimeout(peerReadyTimeout);
       sendPeerReady();
     });
-
-    callFrame.join({ url: dailyRoomUrl, userName: players[playerIndex].name });
   }
 
   init();

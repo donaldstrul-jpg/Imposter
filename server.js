@@ -223,41 +223,6 @@ const CATEGORIES = {
   ],
 };
 
-// ── Daily.co ──────────────────────────────────────────────────────────────────
-const DAILY_API_KEY = process.env.DAILY_API_KEY || '';
-
-async function createDailyRoom(name) {
-  if (!DAILY_API_KEY) {
-    console.warn('[Daily.co] DAILY_API_KEY not set — video calls will be skipped');
-    return null;
-  }
-  try {
-    const res = await fetch('https://api.daily.co/v1/rooms', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DAILY_API_KEY}` },
-      body: JSON.stringify({
-        name,
-        privacy: 'public',
-        properties: {
-          exp:                Math.floor(Date.now() / 1000) + 3600, // 1 h TTL
-          max_participants:   4,
-          enable_screenshare: false,
-          enable_chat:        false,
-          start_video_off:    false,
-          start_audio_off:    false,
-          enable_prejoin_ui:  false, // skip haircheck screen so joined-meeting fires automatically
-        },
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok) { console.error('[Daily.co] API error:', data); return null; }
-    console.log(`[Daily.co] room ready: ${data.url}`);
-    return data.url;
-  } catch (e) {
-    console.error('[Daily.co] room creation failed:', e.message);
-    return null;
-  }
-}
 
 // ── Matchmaking ───────────────────────────────────────────────────────────────
 // Per-category queues: { 'NBA Players': [...], ... }
@@ -274,7 +239,7 @@ function broadcastQueueCount() {
 
 io.on('connection', (socket) => {
 
-  socket.on('joinQueue', async ({ name, peerId, token, category }) => {
+  socket.on('joinQueue', ({ name, peerId, token, category }) => {
     const validCat = CATEGORIES[category] ? category : null;
     if (!validCat) return;
 
@@ -307,7 +272,8 @@ io.on('connection', (socket) => {
 
       rooms[roomId] = { players, readyCount: 0, imposterIndex, word: picked.name, votes: {} };
 
-      const dailyRoomUrl  = await createDailyRoom(roomId);
+      // Jitsi room name derived from the game's UUID — unguessable, no API call needed
+      const jitsiRoom     = roomId.replace(/-/g, '');
       const playerSummary = players.map((p) => ({ name: p.name, peerId: p.peerId }));
 
       players.forEach((player, index) => {
@@ -320,7 +286,7 @@ io.on('connection', (socket) => {
           hint:         isImposter ? picked.hint : null,
           playerIndex:  index,
           players:      playerSummary,
-          dailyRoomUrl,
+          jitsiRoom,
         });
       });
     }

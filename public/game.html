@@ -8,16 +8,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Daily.co container — fills flex space between role banner and vote bar */
-    .daily-container {
+    /* Jitsi container — fills flex space between role banner and vote bar */
+    .video-container {
       flex: 1;
       min-height: 0;
       overflow: hidden;
       background: #090910;
       position: relative;
     }
-    /* Daily.co injects an iframe; make it fill the container */
-    .daily-container iframe {
+    /* Jitsi External API injects an iframe; make it fill the container */
+    .video-container iframe {
       position: absolute;
       inset: 0;
       width: 100%;
@@ -144,10 +144,10 @@
     <button id="toggle-role-btn" class="toggle-role-btn" title="Hide/show role">👁 Hide</button>
   </div>
 
-  <!-- Daily.co video call (fills remaining height) -->
-  <div id="daily-container" class="daily-container"></div>
+  <!-- Jitsi video call (fills remaining height) -->
+  <div id="video-container" class="video-container"></div>
 
-  <!-- Vote bar — revealed when all 3 players have joined the Daily.co call -->
+  <!-- Vote bar — revealed when all 3 players have joined the Jitsi call -->
   <div id="vote-bar" class="vote-bar" style="display:none">
     <span class="vote-bar-label">Who's the imposter?</span>
     <div class="vote-options" id="vote-options"></div>
@@ -173,7 +173,7 @@
     </div>
   </div>
 
-  <!-- Connecting overlay — hidden once all 3 join Daily.co -->
+  <!-- Connecting overlay — hidden once all 3 join Jitsi -->
   <div id="waiting-overlay" class="waiting-overlay">
     <div class="spinner"></div>
     <p>Joining call…</p>
@@ -182,7 +182,7 @@
   <a href="/" class="back-link">← Back to lobby</a>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="https://unpkg.com/@daily-co/daily-js"></script>
+  <script src="https://meet.jit.si/external_api.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
