@@ -134,6 +134,44 @@
       transition: all .2s; box-shadow: 0 0 20px rgba(124,58,237,.4);
     }
     .btn-play-again:hover { box-shadow: 0 0 35px rgba(124,58,237,.7); transform: translateY(-1px); }
+
+    /* ── Debug overlay ───────────────────────────────────────────────────── */
+    #debug-overlay {
+      position: fixed;
+      top: .65rem;
+      right: .65rem;
+      z-index: 9999;
+      background: rgba(0,0,0,.88);
+      border: 1px solid rgba(0,255,100,.35);
+      border-radius: 8px;
+      padding: .55rem .8rem;
+      font-family: monospace;
+      font-size: .7rem;
+      color: #aaffaa;
+      min-width: 230px;
+      max-width: 310px;
+      backdrop-filter: blur(6px);
+      line-height: 2;
+    }
+    #debug-overlay .dbg-title {
+      font-weight: bold;
+      color: #66ff88;
+      border-bottom: 1px solid rgba(0,255,100,.2);
+      margin-bottom: .3rem;
+      display: flex;
+      justify-content: space-between;
+    }
+    #debug-overlay .dbg-close {
+      cursor: pointer;
+      opacity: .6;
+      font-style: normal;
+    }
+    #debug-overlay .dbg-close:hover { opacity: 1; }
+    #debug-overlay .dl { color: rgba(150,255,150,.55); display: inline-block; width: 108px; }
+    #debug-overlay .dv { color: #fff; word-break: break-all; }
+    #debug-overlay .ok  { color: #4ade80; }
+    #debug-overlay .bad { color: #f87171; }
+    #debug-overlay .mid { color: #fbbf24; }
   </style>
 </head>
 <body class="game-body">

@@ -300,10 +300,20 @@ io.on('connection', (socket) => {
     broadcastQueueCount();
   });
 
-  socket.on('peerReady', ({ roomId }) => {
+  socket.on('peerReady', ({ roomId, playerIndex }) => {
     const room = rooms[roomId];
     if (!room) return;
+
+    // Player navigated to game.html — their socket ID changed. Update it so
+    // allPeersReady / voteProgress / gameResult reach the right connection.
+    if (typeof playerIndex === 'number' && room.players[playerIndex]) {
+      room.players[playerIndex].socketId = socket.id;
+    }
+
     room.readyCount++;
+    // Ack back to this socket so the debug overlay can show progress
+    socket.emit('peerReadyAck', { count: room.readyCount });
+
     if (room.readyCount >= 3)
       room.players.forEach((p) => io.to(p.socketId).emit('allPeersReady'));
   });
