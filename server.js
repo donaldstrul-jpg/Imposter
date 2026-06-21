@@ -1,7 +1,6 @@
 const express    = require('express');
 const http       = require('http');
 const { Server } = require('socket.io');
-const { ExpressPeerServer } = require('peer');
 const { randomUUID } = require('crypto');
 const path       = require('path');
 const fs         = require('fs');
@@ -20,8 +19,6 @@ const io = new Server(server, {
   transports: ['websocket', 'polling'],
 });
 
-const peerServer = ExpressPeerServer(server, { debug: false, proxied: true });
-app.use('/peerjs', peerServer);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ── Database ──────────────────────────────────────────────────────────────────
@@ -347,6 +344,16 @@ io.on('connection', (socket) => {
       broadcastLeaderboard();
       delete rooms[roomId];
     }
+  });
+
+  socket.on('rtc-signal', ({ roomId, targetIndex, signal }) => {
+    const room = rooms[roomId];
+    if (!room) return;
+    const senderIdx = room.players.findIndex(p => p.socketId === socket.id);
+    if (senderIdx === -1) return;
+    const target = room.players[targetIndex];
+    if (!target) return;
+    io.to(target.socketId).emit('rtc-signal', { fromIndex: senderIdx, signal });
   });
 
   socket.on('disconnect', () => {

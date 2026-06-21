@@ -1,19 +1,17 @@
 (() => {
   const socket   = io();
   const gameData = JSON.parse(sessionStorage.getItem('gameData') || 'null');
-  const myPeerId = sessionStorage.getItem('peerId');
 
-  if (!gameData || !myPeerId) { window.location.href = '/'; return; }
+  if (!gameData) { window.location.href = '/'; return; }
 
   const { roomId, role, category, word, hint, playerIndex, players } = gameData;
-  const authToken  = localStorage.getItem('imposter_token');
-  const authUser   = localStorage.getItem('imposter_user');
+  const authUser = localStorage.getItem('imposter_user');
 
   // ── Role banner ───────────────────────────────────────────────────────────────
   const roleBanner  = document.getElementById('role-banner');
   const roleContent = document.getElementById('role-content');
   const toggleBtn   = document.getElementById('toggle-role-btn');
-  let roleVisible   = true;
+  let roleVisible = true;
 
   if (role === 'imposter') {
     roleBanner.classList.add('imposter');
@@ -45,7 +43,7 @@
   document.getElementById('local-label').textContent = `${players[playerIndex].name} (You)`;
   document.getElementById('no-cam-local-initial').textContent = players[playerIndex].name.charAt(0).toUpperCase();
 
-  const remotePlayers = players.map((p, i) => ({ ...p, index: i })).filter((p) => p.index !== playerIndex);
+  const remotePlayers = players.map((p, i) => ({ ...p, index: i })).filter(p => p.index !== playerIndex);
 
   const remoteSlots = [
     { video: document.getElementById('remote0-video'), label: document.getElementById('remote0-label'), noCam: document.getElementById('no-cam-remote0') },
@@ -58,18 +56,15 @@
     remoteSlots[slotIdx].noCam.innerHTML = `<span>${p.name.charAt(0).toUpperCase()}</span>`;
   });
 
-  const peerToSlot = {};
-  remotePlayers.forEach((p, slotIdx) => { peerToSlot[p.peerId] = slotIdx; });
-
   // ── Voting ────────────────────────────────────────────────────────────────────
   const voteBar     = document.getElementById('vote-bar');
   const voteOptions = document.getElementById('vote-options');
   const voteStatus  = document.getElementById('vote-status');
-  let   hasVoted    = false;
+  let hasVoted = false;
 
   function showVoteBar() {
     voteBar.style.display = 'flex';
-    remotePlayers.forEach((p) => {
+    remotePlayers.forEach(p => {
       const btn = document.createElement('button');
       btn.className   = 'btn-vote-player';
       btn.textContent = p.name;
@@ -77,7 +72,7 @@
         if (hasVoted) return;
         hasVoted = true;
         btn.classList.add('voted');
-        voteOptions.querySelectorAll('.btn-vote-player').forEach((b) => { b.disabled = true; });
+        voteOptions.querySelectorAll('.btn-vote-player').forEach(b => { b.disabled = true; });
         socket.emit('submitVote', { roomId, votedForIndex: p.index });
       });
       voteOptions.appendChild(btn);
@@ -90,10 +85,10 @@
 
   // ── Result overlay ────────────────────────────────────────────────────────────
   socket.on('gameResult', ({ imposterCaught, imposterIndex: impIdx, imposterName, word: secretWord, topVote, votes }) => {
-    const isImposter  = playerIndex === impIdx;
-    const iWon        = isImposter && !imposterCaught;
+    const isImposter = playerIndex === impIdx;
+    const iWon       = isImposter && !imposterCaught;
 
-    document.getElementById('result-emoji').textContent     = imposterCaught ? '🚨' : '🎭';
+    document.getElementById('result-emoji').textContent = imposterCaught ? '🚨' : '🎭';
     const verdictEl = document.getElementById('result-verdict');
     verdictEl.textContent = imposterCaught ? 'IMPOSTER CAUGHT!' : 'IMPOSTER ESCAPES!';
     verdictEl.className   = `result-verdict ${imposterCaught ? 'caught' : 'escaped'}`;
@@ -101,47 +96,155 @@
     document.getElementById('result-imposter-name').textContent = imposterName;
     document.getElementById('result-word').textContent          = secretWord;
 
-    if (iWon && authUser) {
-      document.getElementById('result-win-badge').style.display = 'inline-block';
-    }
+    if (iWon && authUser) document.getElementById('result-win-badge').style.display = 'inline-block';
 
-    // Vote breakdown
-    const voteLines = Object.entries(votes).map(([voter, target]) => {
-      const voterName  = players[voter].name;
-      const targetName = players[target].name;
-      return `${voterName} → ${targetName}`;
-    });
+    const voteLines = Object.entries(votes).map(([voter, target]) =>
+      `${players[voter].name} → ${players[target].name}`
+    );
     document.getElementById('result-votes').textContent = `Votes: ${voteLines.join('  ·  ')}`;
 
     document.getElementById('result-overlay').style.display = 'flex';
   });
 
-  // ── WebRTC via PeerJS ─────────────────────────────────────────────────────────
-  let localStream = null;
+  // ── WebRTC via native RTCPeerConnection + Socket.io signaling ────────────────
+  //
+  // Why not PeerJS: PeerJS needs a *second* WebSocket to /peerjs. Railway's proxy
+  // reliably drops that second WS while the Socket.io WS (used for everything else)
+  // keeps working. By running all signaling over the already-working Socket.io
+  // connection we avoid the proxy issue entirely.
+  //
+  // TURN servers: STUN alone fails through symmetric NAT (common on mobile and
+  // corporate networks). Free Open Relay TURN servers cover those cases.
 
-  const isSecure = window.location.protocol === 'https:';
-  const peer = new Peer(myPeerId, {
-    host:   window.location.hostname,
-    port:   Number(window.location.port) || (isSecure ? 443 : 80),
-    path:   '/peerjs',
-    secure: isSecure,
-    debug:  1,
-    config: {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
+  const ICE_SERVERS = [
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+    {
+      urls: [
+        'turn:openrelay.metered.ca:80',
+        'turn:openrelay.metered.ca:443',
+        'turn:openrelay.metered.ca:80?transport=tcp',
+        'turn:openrelay.metered.ca:443?transport=tcp',
       ],
+      username:   'openrelayproject',
+      credential: 'openrelayproject',
     },
-  });
+  ];
+
+  let localStream = null;
+  const pcs       = {};   // remotePlayerIndex → RTCPeerConnection
+  const pending   = {};   // remotePlayerIndex → queued ICE candidates (before remote desc set)
+  let overlayTimer;
+  let streamsIn = 0;
+
+  function revealGame() {
+    clearTimeout(overlayTimer);
+    document.getElementById('waiting-overlay').style.display = 'none';
+    showVoteBar();
+  }
 
   function attachStream(slotIdx, stream) {
     const { video, noCam } = remoteSlots[slotIdx];
-    video.srcObject    = stream;
+    video.srcObject = stream;
     video.play().catch(() => {});
-    noCam.style.display  = 'none';
-    video.style.display  = 'block';
+    noCam.style.display = 'none';
+    video.style.display = 'block';
+    streamsIn++;
+    if (streamsIn >= remotePlayers.length) revealGame();
   }
+
+  function makePc(remoteIdx) {
+    if (pcs[remoteIdx]) return pcs[remoteIdx];
+
+    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    pcs[remoteIdx]     = pc;
+    pending[remoteIdx] = [];
+
+    if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+    pc.onicecandidate = ({ candidate }) => {
+      if (candidate) {
+        socket.emit('rtc-signal', {
+          roomId,
+          targetIndex: remoteIdx,
+          signal: { type: 'candidate', candidate: candidate.toJSON() },
+        });
+      }
+    };
+
+    pc.ontrack = ({ streams }) => {
+      if (!streams[0]) return;
+      const slot = remotePlayers.findIndex(p => p.index === remoteIdx);
+      if (slot !== -1) attachStream(slot, streams[0]);
+    };
+
+    return pc;
+  }
+
+  async function flushPending(remoteIdx) {
+    const pc = pcs[remoteIdx];
+    if (!pc?.remoteDescription) return;
+    for (const c of (pending[remoteIdx] || [])) {
+      try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch {}
+    }
+    pending[remoteIdx] = [];
+  }
+
+  socket.on('allPeersReady', async () => {
+    // Pre-create all PCs so receivers are ready before offers arrive
+    for (const p of remotePlayers) makePc(p.index);
+
+    // Lower-indexed player is the initiator for each pair
+    for (const p of remotePlayers) {
+      if (playerIndex < p.index) {
+        const pc = pcs[p.index];
+        try {
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          socket.emit('rtc-signal', {
+            roomId,
+            targetIndex: p.index,
+            signal: { type: 'offer', sdp: pc.localDescription },
+          });
+        } catch (e) { console.error('offer error:', e); }
+      }
+    }
+
+    // Fallback: reveal even if video never arrives
+    overlayTimer = setTimeout(revealGame, 12000);
+  });
+
+  socket.on('rtc-signal', async ({ fromIndex, signal }) => {
+    const pc = makePc(fromIndex);
+
+    try {
+      if (signal.type === 'offer') {
+        // Ensure local tracks are added before answering
+        if (localStream && pc.getSenders().length === 0) {
+          localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+        }
+        await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+        await flushPending(fromIndex);
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        socket.emit('rtc-signal', {
+          roomId,
+          targetIndex: fromIndex,
+          signal: { type: 'answer', sdp: pc.localDescription },
+        });
+      } else if (signal.type === 'answer') {
+        if (pc.signalingState === 'have-local-offer') {
+          await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+          await flushPending(fromIndex);
+        }
+      } else if (signal.type === 'candidate' && signal.candidate) {
+        if (pc.remoteDescription) {
+          await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+        } else {
+          pending[fromIndex].push(signal.candidate);
+        }
+      }
+    } catch (e) { console.warn('rtc-signal error:', e); }
+  });
 
   async function init() {
     try {
@@ -150,42 +253,14 @@
       lv.srcObject = localStream;
       document.getElementById('no-cam-local').style.display = 'none';
       lv.style.display = 'block';
-    } catch (err) {
-      console.warn('Could not access camera/mic:', err.message);
+    } catch (e) {
+      console.warn('camera/mic unavailable:', e.message);
       localStream = new MediaStream();
     }
 
-    peer.on('open', () => { socket.emit('peerReady', { roomId }); });
-
-    peer.on('call', (call) => {
-      call.answer(localStream);
-      call.on('stream', (remoteStream) => {
-        const slot = peerToSlot[call.peer];
-        if (slot !== undefined) attachStream(slot, remoteStream);
-      });
-      call.on('error', (err) => console.error('Incoming call error:', err));
-    });
-
-    peer.on('error', (err) => console.error('Peer error:', err));
-
-    socket.on('allPeersReady', () => {
-      remotePlayers.forEach((p) => {
-        if (playerIndex < p.index) {
-          const call = peer.call(p.peerId, localStream);
-          if (!call) return;
-          call.on('stream', (remoteStream) => {
-            const slot = peerToSlot[p.peerId];
-            if (slot !== undefined) attachStream(slot, remoteStream);
-          });
-          call.on('error', (err) => console.error('Outgoing call error:', err));
-        }
-      });
-
-      setTimeout(() => {
-        document.getElementById('waiting-overlay').style.display = 'none';
-        showVoteBar();
-      }, 3500);
-    });
+    // Tell server this player is ready — uses the existing Socket.io connection,
+    // no secondary WebSocket needed
+    socket.emit('peerReady', { roomId });
   }
 
   init();
