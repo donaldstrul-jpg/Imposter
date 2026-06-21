@@ -4,7 +4,7 @@
 
   if (!gameData) { window.location.href = '/'; return; }
 
-  const { roomId, role, category, word, hint, playerIndex, players } = gameData;
+  const { roomId, role, category, word, hint, playerIndex, players, dailyRoomUrl } = gameData;
   const authUser = localStorage.getItem('imposter_user');
 
   // ── Role banner ───────────────────────────────────────────────────────────────
@@ -39,30 +39,16 @@
     toggleBtn.textContent    = roleVisible ? '👁 Hide' : '👁 Show';
   });
 
-  // ── Player labels ─────────────────────────────────────────────────────────────
-  document.getElementById('local-label').textContent = `${players[playerIndex].name} (You)`;
-  document.getElementById('no-cam-local-initial').textContent = players[playerIndex].name.charAt(0).toUpperCase();
-
-  const remotePlayers = players.map((p, i) => ({ ...p, index: i })).filter(p => p.index !== playerIndex);
-
-  const remoteSlots = [
-    { video: document.getElementById('remote0-video'), label: document.getElementById('remote0-label'), noCam: document.getElementById('no-cam-remote0') },
-    { video: document.getElementById('remote1-video'), label: document.getElementById('remote1-label'), noCam: document.getElementById('no-cam-remote1') },
-  ];
-
-  remotePlayers.forEach((p, slotIdx) => {
-    remoteSlots[slotIdx].label.textContent = p.name;
-    remoteSlots[slotIdx].noCam.classList.remove('connecting');
-    remoteSlots[slotIdx].noCam.innerHTML = `<span>${p.name.charAt(0).toUpperCase()}</span>`;
-  });
-
   // ── Voting ────────────────────────────────────────────────────────────────────
   const voteBar     = document.getElementById('vote-bar');
   const voteOptions = document.getElementById('vote-options');
   const voteStatus  = document.getElementById('vote-status');
   let hasVoted = false;
 
+  const remotePlayers = players.map((p, i) => ({ ...p, index: i })).filter(p => p.index !== playerIndex);
+
   function showVoteBar() {
+    document.getElementById('waiting-overlay').style.display = 'none';
     voteBar.style.display = 'flex';
     remotePlayers.forEach(p => {
       const btn = document.createElement('button');
@@ -106,161 +92,38 @@
     document.getElementById('result-overlay').style.display = 'flex';
   });
 
-  // ── WebRTC via native RTCPeerConnection + Socket.io signaling ────────────────
-  //
-  // Why not PeerJS: PeerJS needs a *second* WebSocket to /peerjs. Railway's proxy
-  // reliably drops that second WS while the Socket.io WS (used for everything else)
-  // keeps working. By running all signaling over the already-working Socket.io
-  // connection we avoid the proxy issue entirely.
-  //
-  // TURN servers: STUN alone fails through symmetric NAT (common on mobile and
-  // corporate networks). Free Open Relay TURN servers cover those cases.
-
-  const ICE_SERVERS = [
-    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
-    {
-      urls: [
-        'turn:openrelay.metered.ca:80',
-        'turn:openrelay.metered.ca:443',
-        'turn:openrelay.metered.ca:80?transport=tcp',
-        'turn:openrelay.metered.ca:443?transport=tcp',
-      ],
-      username:   'openrelayproject',
-      credential: 'openrelayproject',
-    },
-  ];
-
-  let localStream = null;
-  const pcs       = {};   // remotePlayerIndex → RTCPeerConnection
-  const pending   = {};   // remotePlayerIndex → queued ICE candidates (before remote desc set)
-  let overlayTimer;
-  let streamsIn = 0;
-
-  function revealGame() {
-    clearTimeout(overlayTimer);
-    document.getElementById('waiting-overlay').style.display = 'none';
+  // ── Daily.co video call ───────────────────────────────────────────────────────
+  socket.on('allPeersReady', () => {
     showVoteBar();
-  }
-
-  function attachStream(slotIdx, stream) {
-    const { video, noCam } = remoteSlots[slotIdx];
-    video.srcObject = stream;
-    video.play().catch(() => {});
-    noCam.style.display = 'none';
-    video.style.display = 'block';
-    streamsIn++;
-    if (streamsIn >= remotePlayers.length) revealGame();
-  }
-
-  function makePc(remoteIdx) {
-    if (pcs[remoteIdx]) return pcs[remoteIdx];
-
-    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
-    pcs[remoteIdx]     = pc;
-    pending[remoteIdx] = [];
-
-    if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-
-    pc.onicecandidate = ({ candidate }) => {
-      if (candidate) {
-        socket.emit('rtc-signal', {
-          roomId,
-          targetIndex: remoteIdx,
-          signal: { type: 'candidate', candidate: candidate.toJSON() },
-        });
-      }
-    };
-
-    pc.ontrack = ({ streams }) => {
-      if (!streams[0]) return;
-      const slot = remotePlayers.findIndex(p => p.index === remoteIdx);
-      if (slot !== -1) attachStream(slot, streams[0]);
-    };
-
-    return pc;
-  }
-
-  async function flushPending(remoteIdx) {
-    const pc = pcs[remoteIdx];
-    if (!pc?.remoteDescription) return;
-    for (const c of (pending[remoteIdx] || [])) {
-      try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch {}
-    }
-    pending[remoteIdx] = [];
-  }
-
-  socket.on('allPeersReady', async () => {
-    // Pre-create all PCs so receivers are ready before offers arrive
-    for (const p of remotePlayers) makePc(p.index);
-
-    // Lower-indexed player is the initiator for each pair
-    for (const p of remotePlayers) {
-      if (playerIndex < p.index) {
-        const pc = pcs[p.index];
-        try {
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          socket.emit('rtc-signal', {
-            roomId,
-            targetIndex: p.index,
-            signal: { type: 'offer', sdp: pc.localDescription },
-          });
-        } catch (e) { console.error('offer error:', e); }
-      }
-    }
-
-    // Fallback: reveal even if video never arrives
-    overlayTimer = setTimeout(revealGame, 12000);
   });
 
-  socket.on('rtc-signal', async ({ fromIndex, signal }) => {
-    const pc = makePc(fromIndex);
-
-    try {
-      if (signal.type === 'offer') {
-        // Ensure local tracks are added before answering
-        if (localStream && pc.getSenders().length === 0) {
-          localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-        }
-        await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-        await flushPending(fromIndex);
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        socket.emit('rtc-signal', {
-          roomId,
-          targetIndex: fromIndex,
-          signal: { type: 'answer', sdp: pc.localDescription },
-        });
-      } else if (signal.type === 'answer') {
-        if (pc.signalingState === 'have-local-offer') {
-          await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-          await flushPending(fromIndex);
-        }
-      } else if (signal.type === 'candidate' && signal.candidate) {
-        if (pc.remoteDescription) {
-          await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
-        } else {
-          pending[fromIndex].push(signal.candidate);
-        }
-      }
-    } catch (e) { console.warn('rtc-signal error:', e); }
-  });
-
-  async function init() {
-    try {
-      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      const lv = document.getElementById('local-video');
-      lv.srcObject = localStream;
-      document.getElementById('no-cam-local').style.display = 'none';
-      lv.style.display = 'block';
-    } catch (e) {
-      console.warn('camera/mic unavailable:', e.message);
-      localStream = new MediaStream();
+  function init() {
+    if (!dailyRoomUrl) {
+      // No Daily.co room — still mark ready and skip video
+      console.warn('No Daily.co room URL; proceeding without video.');
+      socket.emit('peerReady', { roomId });
+      return;
     }
 
-    // Tell server this player is ready — uses the existing Socket.io connection,
-    // no secondary WebSocket needed
-    socket.emit('peerReady', { roomId });
+    const callFrame = DailyIframe.createFrame(
+      document.getElementById('daily-container'),
+      {
+        iframeStyle: { width: '100%', height: '100%', border: '0' },
+        showLeaveButton: false,
+        showFullscreenButton: true,
+      }
+    );
+
+    callFrame.on('joined-meeting', () => {
+      socket.emit('peerReady', { roomId });
+    });
+
+    callFrame.on('error', (e) => {
+      console.warn('Daily.co error:', e);
+      socket.emit('peerReady', { roomId });
+    });
+
+    callFrame.join({ url: dailyRoomUrl, userName: players[playerIndex].name });
   }
 
   init();

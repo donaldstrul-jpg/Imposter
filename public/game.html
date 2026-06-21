@@ -8,6 +8,23 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
+    /* Daily.co container — fills flex space between role banner and vote bar */
+    .daily-container {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      background: #090910;
+      position: relative;
+    }
+    /* Daily.co injects an iframe; make it fill the container */
+    .daily-container iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
     /* ── Vote bar ────────────────────────────────────────────────────── */
     .vote-bar {
       flex-shrink: 0;
@@ -28,11 +45,7 @@
       color: rgba(196,181,253,.6);
       white-space: nowrap;
     }
-    .vote-options {
-      display: flex;
-      gap: .6rem;
-      flex-wrap: wrap;
-    }
+    .vote-options { display: flex; gap: .6rem; flex-wrap: wrap; }
     .btn-vote-player {
       padding: .45rem 1.1rem;
       background: rgba(139,92,246,.12);
@@ -51,15 +64,8 @@
       box-shadow: 0 0 14px rgba(139,92,246,.4);
       transform: translateY(-1px);
     }
-    .btn-vote-player:disabled {
-      opacity: .45;
-      cursor: default;
-    }
-    .btn-vote-player.voted {
-      background: rgba(139,92,246,.35);
-      border-color: #8b5cf6;
-      color: #fff;
-    }
+    .btn-vote-player:disabled { opacity: .45; cursor: default; }
+    .btn-vote-player.voted { background: rgba(139,92,246,.35); border-color: #8b5cf6; color: #fff; }
     .vote-status {
       font-size: .78rem;
       color: rgba(196,181,253,.55);
@@ -69,102 +75,65 @@
 
     /* ── Result overlay ──────────────────────────────────────────────── */
     .result-overlay {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: rgba(5,5,15,.92);
       backdrop-filter: blur(12px);
       z-index: 200;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       padding: 1.5rem;
       animation: fadeIn .4s ease;
     }
-    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-
+    @keyframes fadeIn { from{opacity:0}to{opacity:1} }
     .result-card {
       background: #0e0e1c;
       border: 1px solid rgba(139,92,246,.3);
       border-radius: 24px;
       padding: 2.5rem 2rem;
-      max-width: 420px;
-      width: 100%;
+      max-width: 420px; width: 100%;
       text-align: center;
       box-shadow: 0 0 80px rgba(124,58,237,.25), 0 30px 60px rgba(0,0,0,.5);
       animation: slideUp .4s ease;
     }
-    @keyframes slideUp { from { transform: translateY(30px); opacity:0; } to { transform: translateY(0); opacity:1; } }
-
+    @keyframes slideUp { from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1} }
     .result-verdict {
       font-family: 'Orbitron', sans-serif;
-      font-size: 1.5rem;
-      font-weight: 900;
-      letter-spacing: .04em;
+      font-size: 1.5rem; font-weight: 900; letter-spacing: .04em;
       margin-bottom: .75rem;
     }
     .result-verdict.caught  { color: #f87171; text-shadow: 0 0 30px rgba(248,113,113,.5); }
     .result-verdict.escaped { color: #a78bfa; text-shadow: 0 0 30px rgba(167,139,250,.5); }
-
     .result-emoji { font-size: 3.5rem; margin-bottom: .75rem; }
-
     .result-section {
       background: rgba(255,255,255,.04);
       border: 1px solid rgba(139,92,246,.15);
       border-radius: 12px;
-      padding: .85rem 1rem;
-      margin: .6rem 0;
-      font-size: .9rem;
+      padding: .85rem 1rem; margin: .6rem 0; font-size: .9rem;
     }
     .result-section-label {
-      font-size: .65rem;
-      text-transform: uppercase;
-      letter-spacing: .12em;
-      color: rgba(196,181,253,.5);
-      margin-bottom: .25rem;
+      font-size: .65rem; text-transform: uppercase; letter-spacing: .12em;
+      color: rgba(196,181,253,.5); margin-bottom: .25rem;
     }
-    .result-section-value {
-      font-weight: 700;
-      font-size: 1.05rem;
-      color: #e2e2f0;
-    }
+    .result-section-value { font-weight: 700; font-size: 1.05rem; color: #e2e2f0; }
     .result-section-value.highlight { color: #c4b5fd; }
-
     .result-votes {
-      font-size: .78rem;
-      color: rgba(180,180,220,.55);
-      margin: .5rem 0 1.25rem;
+      font-size: .78rem; color: rgba(180,180,220,.55); margin: .5rem 0 1.25rem;
     }
-
     .result-win-badge {
-      display: inline-block;
-      padding: .3rem .9rem;
+      display: inline-block; padding: .3rem .9rem;
       background: linear-gradient(135deg,#7c3aed,#9333ea);
-      border-radius: 20px;
-      font-size: .75rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 1rem;
+      border-radius: 20px; font-size: .75rem; font-weight: 700;
+      color: #fff; margin-bottom: 1rem;
       box-shadow: 0 0 16px rgba(124,58,237,.5);
     }
-
     .btn-play-again {
-      display: inline-block;
-      margin-top: .5rem;
-      padding: .8rem 2rem;
+      display: inline-block; margin-top: .5rem; padding: .8rem 2rem;
       background: linear-gradient(135deg,#7c3aed,#9333ea);
-      border-radius: 11px;
-      color: #fff;
-      font-family: 'Inter', sans-serif;
-      font-weight: 700;
-      text-decoration: none;
-      font-size: .95rem;
-      transition: all .2s;
-      box-shadow: 0 0 20px rgba(124,58,237,.4);
+      border-radius: 11px; color: #fff;
+      font-family: 'Inter', sans-serif; font-weight: 700;
+      text-decoration: none; font-size: .95rem;
+      transition: all .2s; box-shadow: 0 0 20px rgba(124,58,237,.4);
     }
-    .btn-play-again:hover {
-      box-shadow: 0 0 35px rgba(124,58,237,.7);
-      transform: translateY(-1px);
-    }
+    .btn-play-again:hover { box-shadow: 0 0 35px rgba(124,58,237,.7); transform: translateY(-1px); }
   </style>
 </head>
 <body class="game-body">
@@ -175,26 +144,10 @@
     <button id="toggle-role-btn" class="toggle-role-btn" title="Hide/show role">👁 Hide</button>
   </div>
 
-  <!-- 3-up video grid -->
-  <div class="video-grid" id="video-grid">
-    <div class="video-tile" id="tile-local">
-      <video id="local-video" autoplay muted playsinline></video>
-      <div class="no-cam" id="no-cam-local"><span id="no-cam-local-initial"></span></div>
-      <span class="tile-label" id="local-label">You</span>
-    </div>
-    <div class="video-tile" id="tile-remote0">
-      <video id="remote0-video" autoplay playsinline></video>
-      <div class="no-cam connecting" id="no-cam-remote0"><div class="mini-spinner"></div></div>
-      <span class="tile-label" id="remote0-label">Connecting…</span>
-    </div>
-    <div class="video-tile" id="tile-remote1">
-      <video id="remote1-video" autoplay playsinline></video>
-      <div class="no-cam connecting" id="no-cam-remote1"><div class="mini-spinner"></div></div>
-      <span class="tile-label" id="remote1-label">Connecting…</span>
-    </div>
-  </div>
+  <!-- Daily.co video call (fills remaining height) -->
+  <div id="daily-container" class="daily-container"></div>
 
-  <!-- Vote bar — revealed after all peers connect -->
+  <!-- Vote bar — revealed when all 3 players have joined the Daily.co call -->
   <div id="vote-bar" class="vote-bar" style="display:none">
     <span class="vote-bar-label">Who's the imposter?</span>
     <div class="vote-options" id="vote-options"></div>
@@ -220,15 +173,16 @@
     </div>
   </div>
 
-  <!-- Connecting overlay -->
+  <!-- Connecting overlay — hidden once all 3 join Daily.co -->
   <div id="waiting-overlay" class="waiting-overlay">
     <div class="spinner"></div>
-    <p>Connecting to players…</p>
+    <p>Joining call…</p>
   </div>
 
   <a href="/" class="back-link">← Back to lobby</a>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script src="https://unpkg.com/@daily-co/daily-js"></script>
   <script src="game.js"></script>
 </body>
 </html>
