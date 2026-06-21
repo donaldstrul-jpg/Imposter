@@ -4,7 +4,7 @@
 
   if (!gameData) { window.location.href = '/'; return; }
 
-  const { roomId, role, category, word, hint, playerIndex, players, jitsiRoom } = gameData;
+  const { roomId, role, category, word, hint, playerIndex, players } = gameData;
   const authUser = localStorage.getItem('imposter_user');
 
   // ── Role banner ───────────────────────────────────────────────────────────────
@@ -39,13 +39,36 @@
     toggleBtn.textContent    = roleVisible ? '👁 Hide' : '👁 Show';
   });
 
+  // ── Player labels ─────────────────────────────────────────────────────────────
+  document.getElementById('local-label').textContent = `${players[playerIndex].name} (You)`;
+  document.getElementById('no-cam-local-initial').textContent = players[playerIndex].name.charAt(0).toUpperCase();
+
+  const remotePlayers = players
+    .map((p, i) => ({ ...p, index: i }))
+    .filter(p => p.index !== playerIndex);
+
+  const remoteSlots = [
+    {
+      video: document.getElementById('remote0-video'),
+      label: document.getElementById('remote0-label'),
+      noCam: document.getElementById('no-cam-remote0'),
+    },
+    {
+      video: document.getElementById('remote1-video'),
+      label: document.getElementById('remote1-label'),
+      noCam: document.getElementById('no-cam-remote1'),
+    },
+  ];
+
+  remotePlayers.forEach((p, slotIdx) => {
+    remoteSlots[slotIdx].label.textContent = p.name;
+  });
+
   // ── Voting ────────────────────────────────────────────────────────────────────
   const voteBar     = document.getElementById('vote-bar');
   const voteOptions = document.getElementById('vote-options');
   const voteStatus  = document.getElementById('vote-status');
   let hasVoted = false;
-
-  const remotePlayers = players.map((p, i) => ({ ...p, index: i })).filter(p => p.index !== playerIndex);
 
   function showVoteBar() {
     document.getElementById('waiting-overlay').style.display = 'none';
@@ -70,7 +93,7 @@
   });
 
   // ── Result overlay ────────────────────────────────────────────────────────────
-  socket.on('gameResult', ({ imposterCaught, imposterIndex: impIdx, imposterName, word: secretWord, topVote, votes }) => {
+  socket.on('gameResult', ({ imposterCaught, imposterIndex: impIdx, imposterName, word: secretWord, votes }) => {
     const isImposter = playerIndex === impIdx;
     const iWon       = isImposter && !imposterCaught;
 
@@ -92,52 +115,136 @@
     document.getElementById('result-overlay').style.display = 'flex';
   });
 
-  // ── Video call (framatalk.org — no moderator/JWT requirement) ─────────────────
-  socket.on('allPeersReady', () => {
+  // ── WebRTC ────────────────────────────────────────────────────────────────────
+  const ICE_SERVERS = [
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+    {
+      urls: [
+        'turn:openrelay.metered.ca:80',
+        'turn:openrelay.metered.ca:443',
+        'turn:openrelay.metered.ca:80?transport=tcp',
+        'turn:openrelay.metered.ca:443?transport=tcp',
+      ],
+      username:   'openrelayproject',
+      credential: 'openrelayproject',
+    },
+  ];
+
+  let localStream = null;
+  const pcs     = {};  // remotePlayerIndex → RTCPeerConnection
+  const pending = {};  // remotePlayerIndex → ICE candidates queued before remote desc is set
+
+  function makePc(remoteIdx) {
+    if (pcs[remoteIdx]) return pcs[remoteIdx];
+
+    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    pcs[remoteIdx]     = pc;
+    pending[remoteIdx] = [];
+
+    if (localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+    pc.onicecandidate = ({ candidate }) => {
+      if (candidate) {
+        socket.emit('rtc-signal', {
+          roomId,
+          targetIndex: remoteIdx,
+          signal: { type: 'candidate', candidate: candidate.toJSON() },
+        });
+      }
+    };
+
+    pc.ontrack = ({ streams }) => {
+      if (!streams[0]) return;
+      const slot = remotePlayers.findIndex(p => p.index === remoteIdx);
+      if (slot === -1) return;
+      const { video, noCam } = remoteSlots[slot];
+      video.srcObject = streams[0];
+      video.play().catch(() => {});
+      noCam.style.display = 'none';
+      video.style.display = 'block';
+    };
+
+    return pc;
+  }
+
+  async function flushPending(remoteIdx) {
+    const pc = pcs[remoteIdx];
+    if (!pc?.remoteDescription) return;
+    for (const c of (pending[remoteIdx] || [])) {
+      try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch {}
+    }
+    pending[remoteIdx] = [];
+  }
+
+  // allPeersReady: show vote bar immediately, then kick off WebRTC handshake.
+  // Vote bar appears right away so players aren't blocked waiting for video streams.
+  socket.on('allPeersReady', async () => {
     showVoteBar();
+
+    for (const p of remotePlayers) makePc(p.index);
+
+    for (const p of remotePlayers) {
+      if (playerIndex < p.index) {
+        const pc = pcs[p.index];
+        try {
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          socket.emit('rtc-signal', {
+            roomId,
+            targetIndex: p.index,
+            signal: { type: 'offer', sdp: pc.localDescription },
+          });
+        } catch (e) { console.error('offer error:', e); }
+      }
+    }
   });
 
-  function init() {
-    let peerReadySent = false;
-    function sendPeerReady() {
-      if (peerReadySent) return;
-      peerReadySent = true;
-      socket.emit('peerReady', { roomId, playerIndex });
+  socket.on('rtc-signal', async ({ fromIndex, signal }) => {
+    const pc = makePc(fromIndex);
+
+    try {
+      if (signal.type === 'offer') {
+        if (localStream && pc.getSenders().length === 0) {
+          localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+        }
+        await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+        await flushPending(fromIndex);
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        socket.emit('rtc-signal', {
+          roomId,
+          targetIndex: fromIndex,
+          signal: { type: 'answer', sdp: pc.localDescription },
+        });
+      } else if (signal.type === 'answer') {
+        if (pc.signalingState === 'have-local-offer') {
+          await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
+          await flushPending(fromIndex);
+        }
+      } else if (signal.type === 'candidate' && signal.candidate) {
+        if (pc.remoteDescription) {
+          await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
+        } else {
+          pending[fromIndex].push(signal.candidate);
+        }
+      }
+    } catch (e) { console.warn('rtc-signal error:', e); }
+  });
+
+  async function init() {
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const lv = document.getElementById('local-video');
+      lv.srcObject = localStream;
+      document.getElementById('no-cam-local').style.display = 'none';
+      lv.style.display = 'block';
+    } catch (e) {
+      console.warn('camera/mic unavailable:', e.message);
+      localStream = new MediaStream();
     }
 
-    const peerReadyTimeout = setTimeout(sendPeerReady, 20000);
-
-    const api = new JitsiMeetExternalAPI('framatalk.org', {
-      roomName:   jitsiRoom,
-      width:      '100%',
-      height:     '100%',
-      parentNode: document.getElementById('video-container'),
-      userInfo:   { displayName: players[playerIndex].name },
-      configOverwrite: {
-        prejoinPageEnabled:  false,
-        startWithAudioMuted: false,
-        startWithVideoMuted: false,
-        disableDeepLinking:  true,
-        enableWelcomePage:   false,
-      },
-      interfaceConfigOverwrite: {
-        SHOW_JITSI_WATERMARK:      false,
-        SHOW_WATERMARK_FOR_GUESTS: false,
-        SHOW_BRAND_WATERMARK:      false,
-        SHOW_POWERED_BY:           false,
-        TOOLBAR_BUTTONS: ['microphone', 'camera', 'tileview', 'fullscreen'],
-      },
-    });
-
-    api.addEventListener('videoConferenceJoined', () => {
-      clearTimeout(peerReadyTimeout);
-      sendPeerReady();
-    });
-
-    api.addEventListener('errorOccurred', () => {
-      clearTimeout(peerReadyTimeout);
-      sendPeerReady();
-    });
+    // playerIndex lets the server update the stale lobby socket ID to this page's socket ID
+    socket.emit('peerReady', { roomId, playerIndex });
   }
 
   init();

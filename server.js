@@ -272,8 +272,6 @@ io.on('connection', (socket) => {
 
       rooms[roomId] = { players, readyCount: 0, imposterIndex, word: picked.name, votes: {} };
 
-      // Jitsi room name derived from the game's UUID — unguessable, no API call needed
-      const jitsiRoom     = roomId.replace(/-/g, '');
       const playerSummary = players.map((p) => ({ name: p.name, peerId: p.peerId }));
 
       players.forEach((player, index) => {
@@ -286,7 +284,6 @@ io.on('connection', (socket) => {
           hint:         isImposter ? picked.hint : null,
           playerIndex:  index,
           players:      playerSummary,
-          jitsiRoom,
         });
       });
     }

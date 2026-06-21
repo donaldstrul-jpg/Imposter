@@ -8,23 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Jitsi container — fills flex space between role banner and vote bar */
-    .video-container {
-      flex: 1;
-      min-height: 0;
-      overflow: hidden;
-      background: #090910;
-      position: relative;
-    }
-    /* Jitsi External API injects an iframe; make it fill the container */
-    .video-container iframe {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border: 0;
-    }
-
     /* ── Vote bar ────────────────────────────────────────────────────── */
     .vote-bar {
       flex-shrink: 0;
@@ -144,10 +127,32 @@
     <button id="toggle-role-btn" class="toggle-role-btn" title="Hide/show role">👁 Hide</button>
   </div>
 
-  <!-- Jitsi video call (fills remaining height) -->
-  <div id="video-container" class="video-container"></div>
+  <!-- 3-tile native video grid -->
+  <div class="video-grid" id="video-grid">
+    <div class="video-tile" id="tile-local">
+      <video id="local-video" autoplay muted playsinline></video>
+      <div class="no-cam" id="no-cam-local">
+        <span id="no-cam-local-initial">?</span>
+      </div>
+      <div class="tile-label" id="local-label">You</div>
+    </div>
+    <div class="video-tile" id="tile-remote0">
+      <video id="remote0-video" autoplay playsinline></video>
+      <div class="no-cam connecting" id="no-cam-remote0">
+        <div class="mini-spinner"></div>
+      </div>
+      <div class="tile-label" id="remote0-label">Connecting…</div>
+    </div>
+    <div class="video-tile" id="tile-remote1">
+      <video id="remote1-video" autoplay playsinline></video>
+      <div class="no-cam connecting" id="no-cam-remote1">
+        <div class="mini-spinner"></div>
+      </div>
+      <div class="tile-label" id="remote1-label">Connecting…</div>
+    </div>
+  </div>
 
-  <!-- Vote bar — revealed when all 3 players have joined the Jitsi call -->
+  <!-- Vote bar — revealed when all 3 players are ready -->
   <div id="vote-bar" class="vote-bar" style="display:none">
     <span class="vote-bar-label">Who's the imposter?</span>
     <div class="vote-options" id="vote-options"></div>
@@ -173,16 +178,15 @@
     </div>
   </div>
 
-  <!-- Connecting overlay — hidden once all 3 join Jitsi -->
+  <!-- Connecting overlay — hidden as soon as all 3 are ready -->
   <div id="waiting-overlay" class="waiting-overlay">
     <div class="spinner"></div>
-    <p>Joining call…</p>
+    <p>Connecting…</p>
   </div>
 
   <a href="/" class="back-link">← Back to lobby</a>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="https://framatalk.org/external_api.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
