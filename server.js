@@ -200,20 +200,49 @@ const CATEGORIES = {
     { name: 'Steve Yzerman',           hint: 'Captain'      },
     { name: 'Eric Lindros',            hint: 'Physical'     },
   ],
+  'MMA Fighters': [
+    { name: 'Conor McGregor',          hint: 'Notorious'    },
+    { name: 'Jon Jones',               hint: 'Dominant'     },
+    { name: 'Khabib Nurmagomedov',     hint: 'Eagle'        },
+    { name: 'Israel Adesanya',         hint: 'Stylebender'  },
+    { name: 'Francis Ngannou',         hint: 'Predator'     },
+    { name: 'Amanda Nunes',            hint: 'Lioness'      },
+    { name: 'Stipe Miocic',            hint: 'Firefighter'  },
+    { name: 'Max Holloway',            hint: 'Blessed'      },
+    { name: 'Daniel Cormier',          hint: 'Champion'     },
+    { name: 'Georges St-Pierre',       hint: 'Legacy'       },
+    { name: 'Anderson Silva',          hint: 'Spider'       },
+    { name: 'Dustin Poirier',          hint: 'Diamond'      },
+    { name: 'Charles Oliveira',        hint: 'Finish'       },
+    { name: 'Alexander Volkanovski',   hint: 'Calculated'   },
+    { name: 'Islam Makhachev',         hint: 'Technical'    },
+    { name: 'Leon Edwards',            hint: 'Rocky'        },
+    { name: 'Kamaru Usman',            hint: 'Nigerian'     },
+    { name: 'Sean O\'Malley',          hint: 'Suga'         },
+    { name: 'Valentina Shevchenko',    hint: 'Bullet'       },
+    { name: 'Rose Namajunas',          hint: 'Thug'         },
+  ],
 };
 
 // ── Matchmaking ───────────────────────────────────────────────────────────────
-// queue: [{ socketId, name, peerId, userId }]
-let queue = [];
+// Per-category queues: { 'NBA Players': [...], ... }
+const queues = {};
+Object.keys(CATEGORIES).forEach(cat => { queues[cat] = []; });
 
-// rooms: { roomId -> { players, readyCount, imposterIndex, word, votes } }
 const rooms = {};
 
-function broadcastQueueCount() { io.emit('queueUpdate', { count: queue.length }); }
+function broadcastQueueCount() {
+  const counts = {};
+  Object.keys(CATEGORIES).forEach(cat => { counts[cat] = queues[cat].length; });
+  io.emit('queueUpdate', { counts });
+}
 
 io.on('connection', (socket) => {
 
-  socket.on('joinQueue', ({ name, peerId, token }) => {
+  socket.on('joinQueue', ({ name, peerId, token, category }) => {
+    const validCat = CATEGORIES[category] ? category : null;
+    if (!validCat) return;
+
     let userId = null;
     let displayName = String(name || '').trim().slice(0, 20) || 'Player';
 
@@ -225,18 +254,19 @@ io.on('connection', (socket) => {
       } catch { /* invalid token — play as guest */ }
     }
 
-    queue = queue.filter((p) => p.socketId !== socket.id);
-    queue.push({ socketId: socket.id, name: displayName, peerId, userId });
+    Object.values(queues).forEach(q => {
+      const i = q.findIndex(p => p.socketId === socket.id);
+      if (i !== -1) q.splice(i, 1);
+    });
+    queues[validCat].push({ socketId: socket.id, name: displayName, peerId, userId });
     broadcastQueueCount();
 
-    if (queue.length >= 3) {
-      const players = queue.splice(0, 3);
+    if (queues[validCat].length >= 3) {
+      const players = queues[validCat].splice(0, 3);
       broadcastQueueCount();
 
       const roomId        = randomUUID();
-      const catNames      = Object.keys(CATEGORIES);
-      const category      = catNames[Math.floor(Math.random() * catNames.length)];
-      const wordList      = CATEGORIES[category];
+      const wordList      = CATEGORIES[validCat];
       const picked        = wordList[Math.floor(Math.random() * wordList.length)];
       const imposterIndex = Math.floor(Math.random() * 3);
 
@@ -249,7 +279,7 @@ io.on('connection', (socket) => {
         io.to(player.socketId).emit('gameStart', {
           roomId,
           role:        isImposter ? 'imposter' : 'knower',
-          category,
+          category:    validCat,
           word:        isImposter ? null        : picked.name,
           hint:        isImposter ? picked.hint : null,
           playerIndex: index,
@@ -260,7 +290,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on('leaveQueue', () => {
-    queue = queue.filter((p) => p.socketId !== socket.id);
+    Object.values(queues).forEach(q => {
+      const i = q.findIndex(p => p.socketId === socket.id);
+      if (i !== -1) q.splice(i, 1);
+    });
     broadcastQueueCount();
   });
 
@@ -317,7 +350,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    queue = queue.filter((p) => p.socketId !== socket.id);
+    Object.values(queues).forEach(q => {
+      const i = q.findIndex(p => p.socketId === socket.id);
+      if (i !== -1) q.splice(i, 1);
+    });
     broadcastQueueCount();
   });
 });

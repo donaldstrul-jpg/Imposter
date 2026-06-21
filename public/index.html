@@ -11,279 +11,438 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --purple:   #8b5cf6;
-      --purple-d: #7c3aed;
-      --pink:     #e879f9;
-      --bg:       #06060f;
-      --surface:  rgba(255,255,255,0.03);
-      --border:   rgba(139,92,246,0.18);
-      --text:     #f0f0ff;
-      --muted:    rgba(180,180,220,0.55);
+      --red:      #c8181e;
+      --red-d:    #a01015;
+      --red-h:    #b01820;
+      --red-pale: rgba(200,24,30,0.07);
+      --cream:    #faf7f2;
+      --beige:    #f2e8d8;
+      --beige-d:  #e8d8c0;
+      --white:    #ffffff;
+      --text:     #180808;
+      --body:     #3d2020;
+      --muted:    #9a7070;
+      --border:   rgba(180,20,26,0.13);
+      --sh-sm:    0 2px 10px rgba(60,10,10,0.07);
+      --sh-md:    0 4px 24px rgba(60,10,10,0.1);
+      --sh-lg:    0 10px 44px rgba(60,10,10,0.13);
     }
 
-    body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
 
-    /* ── Background ─────────────────────────────────────────────────── */
-    .bg-layer { position:fixed; inset:0; pointer-events:none; z-index:0; }
-    .orb { position:absolute; border-radius:50%; filter:blur(130px); }
-    .orb-1 { width:700px;height:700px;background:radial-gradient(circle,rgba(124,58,237,.38) 0%,transparent 70%);top:-220px;left:-150px;animation:orb1 14s ease-in-out infinite; }
-    .orb-2 { width:550px;height:550px;background:radial-gradient(circle,rgba(37,99,235,.28) 0%,transparent 70%);bottom:0;right:-120px;animation:orb2 17s ease-in-out infinite; }
-    .orb-3 { width:380px;height:380px;background:radial-gradient(circle,rgba(232,121,249,.22) 0%,transparent 70%);top:38%;left:48%;transform:translate(-50%,-50%);animation:orb3 11s ease-in-out infinite; }
-    .orb-4 { width:280px;height:280px;background:radial-gradient(circle,rgba(34,211,238,.14) 0%,transparent 70%);top:8%;right:12%;animation:orb4 9s ease-in-out infinite; }
-    @keyframes orb1 { 0%,100%{transform:translate(0,0)}33%{transform:translate(50px,40px)}66%{transform:translate(-25px,60px)} }
-    @keyframes orb2 { 0%,100%{transform:translate(0,0)}50%{transform:translate(-50px,-40px)} }
-    @keyframes orb3 { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.8}50%{transform:translate(-50%,-50%) scale(1.3);opacity:.5} }
-    @keyframes orb4 { 0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-18px,22px) scale(.8)} }
-    .bg-grid { position:fixed;inset:0;background-image:radial-gradient(circle,rgba(139,92,246,.18) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0; }
+    /* ── Subtle background blobs ─────────────────────────────────────── */
+    .bg-blob { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+    .bg-blob-1 { width: 700px; height: 700px; top: -250px; left: -200px; background: radial-gradient(circle, rgba(200,24,30,0.07) 0%, transparent 65%); }
+    .bg-blob-2 { width: 600px; height: 600px; bottom: -200px; right: -200px; background: radial-gradient(circle, rgba(220,120,30,0.06) 0%, transparent 65%); }
 
-    /* ── Layout ─────────────────────────────────────────────────────── */
-    .page { position:relative;z-index:1;display:flex;flex-direction:column;align-items:center; }
+    /* ── Header ──────────────────────────────────────────────────────── */
+    .site-header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(250,247,242,0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      height: 62px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+    }
+    .header-logo { display: flex; align-items: center; gap: 0.65rem; }
+    .logo-badge {
+      width: 38px; height: 38px; border-radius: 9px;
+      background: var(--red); color: white;
+      font-weight: 900; font-size: 1.35rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-text {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.25rem; font-weight: 900;
+      color: var(--red); letter-spacing: 0.06em;
+    }
+    .header-right { display: flex; align-items: center; gap: 0.75rem; }
 
-    /* ── Hero ───────────────────────────────────────────────────────── */
-    .hero { width:100%;display:flex;flex-direction:column;align-items:center;padding:90px 1.5rem 70px;text-align:center; }
+    .btn-signin {
+      padding: 0.45rem 1.1rem;
+      background: white; border: 1.5px solid var(--border);
+      border-radius: 8px; color: var(--body);
+      font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .btn-signin:hover { border-color: var(--red); color: var(--red); background: var(--red-pale); }
 
-    .logo-wrap { display:flex;align-items:center;gap:1.1rem;margin-bottom:1.1rem;animation:fadeDown .9s ease both; }
-    .logo-badge { width:68px;height:68px;border-radius:20px;background:linear-gradient(135deg,var(--purple-d),var(--pink));display:flex;align-items:center;justify-content:center;font-size:1.9rem;font-weight:900;color:#fff;flex-shrink:0;animation:badgePulse 3.5s ease-in-out infinite; }
-    @keyframes badgePulse { 0%,100%{box-shadow:0 0 28px rgba(124,58,237,.65),0 0 60px rgba(124,58,237,.25)}50%{box-shadow:0 0 40px rgba(232,121,249,.9),0 0 90px rgba(232,121,249,.35)} }
-    .logo-text { font-family:'Orbitron',sans-serif;font-size:clamp(2.6rem,9vw,5.2rem);font-weight:900;letter-spacing:.08em;background:linear-gradient(135deg,#c4b5fd 0%,#fff 45%,#e879f9 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:logoGlow 4s ease-in-out infinite; }
-    @keyframes logoGlow { 0%,100%{filter:drop-shadow(0 0 18px rgba(196,181,253,.55))}50%{filter:drop-shadow(0 0 34px rgba(232,121,249,.85)) drop-shadow(0 0 70px rgba(124,58,237,.4))} }
+    .user-chip {
+      display: flex; align-items: center; gap: 0.55rem;
+      background: white; border: 1.5px solid var(--border);
+      border-radius: 20px; padding: 0.3rem 0.85rem 0.3rem 0.35rem;
+      box-shadow: var(--sh-sm);
+    }
+    .user-chip-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--red); color: white;
+      font-weight: 800; font-size: 0.78rem;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .user-chip-name { font-size: 0.82rem; font-weight: 700; }
+    .btn-signout-chip {
+      background: none; border: none; color: var(--muted);
+      font-size: 0.75rem; cursor: pointer; padding: 0.1rem 0.2rem; border-radius: 4px;
+      transition: color 0.2s;
+    }
+    .btn-signout-chip:hover { color: var(--red); }
 
-    .hero-tagline { font-size:1.05rem;color:var(--muted);margin-bottom:2.8rem;animation:fadeUp .9s ease .2s both; }
-    .hero-tagline em { font-style:normal;color:rgba(196,181,253,.75); }
+    /* ── Page wrapper ────────────────────────────────────────────────── */
+    .page { position: relative; z-index: 1; }
 
-    /* ── Entry card ─────────────────────────────────────────────────── */
-    .entry-card { background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:2.2rem 2rem;width:100%;max-width:470px;backdrop-filter:blur(24px);box-shadow:0 0 50px rgba(124,58,237,.1),inset 0 1px 0 rgba(255,255,255,.06);animation:fadeUp .9s ease .4s both;display:flex;flex-direction:column;align-items:center;gap:1.1rem; }
-    .card-eyebrow { font-size:.7rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:rgba(139,92,246,.8); }
+    /* ── Hero ────────────────────────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 5.5rem 1.5rem 4rem;
+      max-width: 660px; margin: 0 auto;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--red);
+      background: var(--red-pale); border: 1px solid rgba(200,24,30,0.18);
+      border-radius: 20px; padding: 0.3rem 0.85rem;
+      margin-bottom: 1.5rem;
+    }
+    .hero-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); animation: hDot 2s ease-in-out infinite; }
+    @keyframes hDot { 0%,100%{opacity:1}50%{opacity:.4} }
+    .hero-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(2.4rem, 7vw, 4.2rem);
+      font-weight: 900; color: var(--text);
+      line-height: 1.08; margin-bottom: 1rem;
+      letter-spacing: -0.01em;
+    }
+    .hero-title .accent { color: var(--red); }
+    .hero-sub { color: var(--muted); font-size: 1rem; line-height: 1.65; margin-bottom: 2.5rem; }
 
-    /* Logged-in state */
-    .logged-in-row { display:flex;align-items:center;gap:.6rem;width:100%;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:11px;padding:.7rem 1rem; }
-    .logged-in-avatar { width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--purple-d),var(--pink));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;flex-shrink:0; }
-    .logged-in-name { font-weight:700;font-size:.95rem;flex:1; }
-    .btn-signout { background:none;border:none;color:rgba(248,113,113,.7);font-size:.75rem;cursor:pointer;padding:.2rem .4rem;border-radius:5px;transition:color .2s; }
-    .btn-signout:hover { color:#f87171; }
-
-    /* Guest state */
-    .input-row { display:flex;gap:.6rem;width:100%; }
-    .name-input { flex:1;padding:.82rem 1rem;background:rgba(255,255,255,.05);border:1px solid rgba(139,92,246,.22);border-radius:11px;color:var(--text);font-family:'Inter',sans-serif;font-size:1rem;outline:none;transition:border-color .2s,box-shadow .2s; }
-    .name-input::placeholder { color:rgba(150,150,195,.45); }
-    .name-input:focus { border-color:var(--purple);box-shadow:0 0 0 3px rgba(139,92,246,.18); }
-    .name-input.error { border-color:#f87171;box-shadow:0 0 0 3px rgba(248,113,113,.15);animation:shake .35s ease; }
+    /* Name bar */
+    .name-bar-wrap { max-width: 400px; margin: 0 auto; }
+    .name-bar {
+      display: flex; align-items: center;
+      background: white; border: 2px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      box-shadow: var(--sh-sm);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .name-bar:focus-within { border-color: var(--red); box-shadow: 0 0 0 3px rgba(200,24,30,0.1); }
+    .name-bar.shake { animation: shake 0.35s ease; }
     @keyframes shake { 0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)} }
+    .name-bar-icon { padding: 0 0 0 1rem; color: var(--muted); font-size: 1rem; flex-shrink: 0; }
+    #name-input {
+      flex: 1; padding: 0.82rem 0.75rem;
+      background: none; border: none; outline: none;
+      font-family: 'Inter', sans-serif; font-size: 0.95rem; color: var(--text);
+    }
+    #name-input::placeholder { color: var(--muted); }
+    .name-bar-hint {
+      padding: 0.5rem 0; font-size: 0.72rem; color: var(--muted);
+      text-align: center; margin-top: 0.5rem;
+    }
+    .name-bar-hint button { background: none; border: none; color: var(--red); font-size: 0.72rem; cursor: pointer; text-decoration: underline; }
 
-    .btn-join { padding:.82rem 1.5rem;background:linear-gradient(135deg,var(--purple-d),#9333ea);border:1px solid rgba(196,181,253,.22);border-radius:11px;color:#fff;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;box-shadow:0 0 22px rgba(124,58,237,.45); }
-    .btn-join:hover { background:linear-gradient(135deg,#8b4cf9,#a855f7);box-shadow:0 0 35px rgba(124,58,237,.75),0 0 70px rgba(124,58,237,.3);transform:translateY(-1px); }
-    .btn-join:active { transform:scale(.97); }
+    /* Logged-in playing-as */
+    .playing-as {
+      display: flex; align-items: center; gap: 0.75rem;
+      max-width: 400px; margin: 0 auto;
+      background: white; border: 2px solid var(--border);
+      border-radius: 12px; padding: 0.7rem 1rem;
+      box-shadow: var(--sh-sm);
+    }
+    .pa-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--red); color: white;
+      font-weight: 800; font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .pa-text { flex: 1; }
+    .pa-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .pa-name { font-size: 0.95rem; font-weight: 700; }
+    .btn-pa-signout { background: none; border: none; color: var(--muted); font-size: 0.78rem; cursor: pointer; padding: 0.2rem; transition: color 0.2s; }
+    .btn-pa-signout:hover { color: var(--red); }
 
-    .auth-link { font-size:.78rem;color:rgba(196,181,253,.6);cursor:pointer;background:none;border:none;text-decoration:underline;text-decoration-color:rgba(196,181,253,.3);transition:color .2s; }
-    .auth-link:hover { color:#c4b5fd; }
+    /* ── Section layout ──────────────────────────────────────────────── */
+    .section-wrap { max-width: 900px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+    .section-header { text-align: center; margin-bottom: 2rem; }
+    .section-eyebrow {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--red);
+      display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+    }
+    .section-eyebrow::before, .section-eyebrow::after {
+      content: ''; flex: 1; max-width: 100px; height: 1px; background: var(--border);
+    }
+    .section-title { font-size: 1.5rem; font-weight: 800; color: var(--text); margin-top: 0.4rem; }
 
-    /* Online row */
-    .online-row { display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:rgba(150,150,195,.65); }
-    .online-dot { width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;animation:dotPulse 2s ease-in-out infinite; }
-    @keyframes dotPulse { 0%,100%{opacity:1;box-shadow:0 0 8px #22c55e}50%{opacity:.6;box-shadow:0 0 16px #22c55e} }
+    /* ── Sport cards ─────────────────────────────────────────────────── */
+    .sports-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+    }
+    .sport-card {
+      background: white; border: 2px solid var(--border);
+      border-radius: 18px; padding: 2rem 1.25rem 1.6rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.45rem;
+      cursor: pointer; transition: all 0.22s ease;
+      box-shadow: var(--sh-sm);
+      position: relative; overflow: hidden;
+      opacity: 0; animation: cardIn 0.5s ease calc(var(--i) * 0.07s) forwards;
+    }
+    .sport-card:hover {
+      background: var(--red); border-color: var(--red);
+      box-shadow: 0 8px 32px rgba(200,24,30,0.28);
+      transform: translateY(-5px) scale(1.02);
+    }
+    .sport-card:active { transform: translateY(-2px) scale(0.99); }
+    @keyframes cardIn { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
 
-    /* ── Queue card ─────────────────────────────────────────────────── */
-    .queue-card { flex-direction:column;gap:1.3rem; }
-    .q-pips { display:flex;gap:14px; }
-    .q-pip { width:20px;height:20px;border-radius:50%;background:rgba(139,92,246,.12);border:2px solid rgba(139,92,246,.3);transition:all .4s ease; }
-    .q-pip.active { background:var(--purple);border-color:var(--purple);box-shadow:0 0 14px rgba(139,92,246,.9),0 0 28px rgba(139,92,246,.4); }
-    .q-label { font-size:.82rem;color:var(--muted); }
-    .q-count { font-family:'Orbitron',sans-serif;font-size:2.8rem;font-weight:700;color:#c4b5fd;line-height:1; }
-    .q-count span { font-size:1.6rem;color:rgba(196,181,253,.4); }
-    .btn-cancel { background:transparent;border:1px solid rgba(248,113,113,.3);border-radius:9px;color:rgba(248,113,113,.7);font-family:'Inter',sans-serif;font-size:.85rem;padding:.5rem 1.6rem;cursor:pointer;transition:all .2s; }
-    .btn-cancel:hover { border-color:#f87171;color:#f87171;background:rgba(248,113,113,.05); }
+    .card-emoji {
+      font-size: 2.6rem; line-height: 1;
+      transition: transform 0.22s;
+    }
+    .sport-card:hover .card-emoji { transform: scale(1.2); }
+    .card-name {
+      font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700;
+      color: var(--text); transition: color 0.22s;
+    }
+    .sport-card:hover .card-name { color: white; }
+    .card-sub {
+      font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--muted); transition: color 0.22s;
+    }
+    .sport-card:hover .card-sub { color: rgba(255,255,255,0.7); }
+    .card-waiting {
+      margin-top: 0.4rem; font-size: 0.7rem; font-weight: 700;
+      color: var(--red); transition: color 0.22s;
+      min-height: 1rem;
+    }
+    .sport-card:hover .card-waiting { color: rgba(255,255,255,0.85); }
 
-    /* ── Section heading ────────────────────────────────────────────── */
-    .section-wrap { width:100%;max-width:920px;padding:0 1.5rem 5rem; }
-    .section-heading { display:flex;align-items:center;gap:1.4rem;margin-bottom:2.5rem; }
-    .section-line { flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,.4),transparent); }
-    .section-text { font-family:'Orbitron',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;white-space:nowrap;color:rgba(196,181,253,.55);animation:headingPulse 3.2s ease-in-out infinite; }
-    @keyframes headingPulse { 0%,100%{color:rgba(196,181,253,.55);text-shadow:none}50%{color:rgba(232,121,249,.9);text-shadow:0 0 22px rgba(232,121,249,.45)} }
-
-    /* ── Sport cards ────────────────────────────────────────────────── */
-    .cats-grid { display:flex;flex-wrap:wrap;gap:1rem;justify-content:center; }
-    .sport-card { flex:0 0 calc(25% - .76rem);min-width:150px;max-width:210px;position:relative;background:rgba(255,255,255,.025);border:1px solid rgba(139,92,246,.13);border-radius:18px;padding:2rem 1rem 1.6rem;display:flex;flex-direction:column;align-items:center;gap:.55rem;overflow:hidden;cursor:default;opacity:0;animation:cardIn .65s ease calc(.65s + var(--i) * .09s) both;transition:border-color .3s,box-shadow .35s,transform .3s,background .3s; }
-    .sport-card:hover { border-color:rgba(139,92,246,.65);background:rgba(139,92,246,.07);box-shadow:0 0 22px rgba(139,92,246,.35),0 0 50px rgba(139,92,246,.12),inset 0 0 22px rgba(139,92,246,.06);transform:translateY(-7px) scale(1.04); }
-    .card-glow { position:absolute;inset:0;border-radius:inherit;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(139,92,246,.2) 0%,transparent 70%);opacity:0;transition:opacity .35s;pointer-events:none; }
-    .sport-card:hover .card-glow { opacity:1; }
-    .sport-card::after { content:'';position:absolute;top:0;left:-100%;width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(196,181,253,.7),transparent);transition:left .4s ease; }
-    .sport-card:hover::after { left:100%; }
-    .card-emoji { font-size:3rem;line-height:1;position:relative;z-index:1;transition:transform .3s,filter .3s; }
-    .sport-card:hover .card-emoji { transform:scale(1.22) translateY(-3px);filter:drop-shadow(0 0 12px rgba(139,92,246,.85)); }
-    .card-name { font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:700;color:#e2e2f0;letter-spacing:.06em;position:relative;z-index:1;transition:color .3s; }
-    .sport-card:hover .card-name { color:#c4b5fd; }
-    .card-sub { font-size:.68rem;color:rgba(150,150,195,.45);text-transform:uppercase;letter-spacing:.1em;position:relative;z-index:1;transition:color .3s; }
-    .sport-card:hover .card-sub { color:rgba(196,181,253,.6); }
-    @keyframes cardIn { from{opacity:0;transform:translateY(32px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)} }
-
-    /* ── Leaderboard ────────────────────────────────────────────────── */
-    .lb-box { background:rgba(255,255,255,.025);border:1px solid rgba(139,92,246,.2);border-radius:20px;overflow:hidden;backdrop-filter:blur(20px);box-shadow:0 0 50px rgba(124,58,237,.08); }
-    .lb-header { display:flex;align-items:center;justify-content:space-between;padding:.9rem 1.5rem;border-bottom:1px solid rgba(139,92,246,.15);background:rgba(139,92,246,.06); }
-    .lb-title { font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:.12em;color:rgba(196,181,253,.8); }
-    .lb-live { display:flex;align-items:center;gap:.4rem;font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#22c55e; }
-    .lb-live-dot { width:6px;height:6px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;animation:dotPulse 2s ease-in-out infinite; }
-    .lb-cols { display:grid;grid-template-columns:2.5rem 1fr 5rem 4.5rem 4.5rem;gap:.5rem 1rem;padding:.55rem 1.5rem;border-bottom:1px solid rgba(139,92,246,.12);font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(150,150,195,.45); }
-    .lb-row { display:grid;grid-template-columns:2.5rem 1fr 5rem 4.5rem 4.5rem;gap:.5rem 1rem;align-items:center;padding:.85rem 1.5rem;border-bottom:1px solid rgba(139,92,246,.07);transition:background .2s; }
-    .lb-row:last-child { border-bottom:none; }
-    .lb-row:hover { background:rgba(139,92,246,.06); }
-    .lb-row.flash { animation:rowFlash 1.2s ease; }
-    @keyframes rowFlash { 0%,100%{background:transparent}30%,70%{background:rgba(139,92,246,.18)} }
-    .lb-rank { font-family:'Orbitron',sans-serif;font-size:.85rem;font-weight:700;text-align:center; }
-    .lb-rank.r1 { color:#fbbf24;text-shadow:0 0 12px rgba(251,191,36,.7); }
-    .lb-rank.r2 { color:#94a3b8; }
-    .lb-rank.r3 { color:#c2803a; }
-    .lb-rank.rn { color:rgba(150,150,195,.5); }
-    .lb-name { font-weight:700;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
-    .lb-name.is-me { color:#c4b5fd; }
-    .lb-wins { font-family:'Orbitron',sans-serif;font-size:.85rem;font-weight:700;color:#c4b5fd;text-align:right; }
-    .lb-games { font-size:.78rem;color:var(--muted);text-align:right; }
-    .lb-rate { font-size:.75rem;font-weight:700;text-align:right; }
-    .lb-rate.good { color:#4ade80; }
-    .lb-rate.mid  { color:#fbbf24; }
-    .lb-rate.low  { color:rgba(150,150,195,.5); }
-    .lb-empty { text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:.9rem; }
-    .lb-empty p { margin-top:.4rem;font-size:.8rem;color:rgba(150,150,195,.35); }
-
-    /* ── Auth modal ─────────────────────────────────────────────────── */
-    .auth-backdrop { position:fixed;inset:0;background:rgba(5,5,15,.88);backdrop-filter:blur(10px);z-index:100;display:flex;align-items:center;justify-content:center;padding:1.5rem;animation:fadeIn .2s ease; }
+    /* ── Queue overlay ───────────────────────────────────────────────── */
+    .queue-overlay {
+      position: fixed; inset: 0; z-index: 80;
+      background: rgba(250,244,236,0.93);
+      backdrop-filter: blur(14px);
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeIn 0.18s ease;
+    }
     @keyframes fadeIn { from{opacity:0}to{opacity:1} }
-    .auth-modal { background:#0d0d1a;border:1px solid rgba(139,92,246,.35);border-radius:24px;padding:2rem;width:100%;max-width:380px;box-shadow:0 0 70px rgba(124,58,237,.25),0 25px 50px rgba(0,0,0,.6);animation:slideUp .3s ease; }
+    .queue-card {
+      background: white; border: 2px solid var(--border);
+      border-radius: 24px; padding: 3rem 2.5rem;
+      text-align: center; max-width: 340px; width: 100%;
+      box-shadow: var(--sh-lg);
+      animation: slideUp 0.22s ease;
+    }
     @keyframes slideUp { from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1} }
-    .auth-modal-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem; }
-    .auth-modal-title { font-family:'Orbitron',sans-serif;font-size:.9rem;font-weight:700;color:rgba(196,181,253,.8);letter-spacing:.08em; }
-    .auth-close { background:none;border:none;color:rgba(150,150,195,.5);font-size:1.3rem;cursor:pointer;line-height:1;transition:color .2s; }
-    .auth-close:hover { color:var(--text); }
-    .auth-tabs { display:flex;background:rgba(255,255,255,.04);border-radius:10px;padding:3px;margin-bottom:1.5rem;gap:3px; }
-    .auth-tab { flex:1;padding:.6rem;border:none;background:transparent;border-radius:8px;color:var(--muted);font-family:'Inter',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s; }
-    .auth-tab.active { background:rgba(139,92,246,.25);color:#c4b5fd; }
-    .auth-field { display:flex;flex-direction:column;gap:.35rem;margin-bottom:1rem; }
-    .auth-field label { font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(196,181,253,.6); }
-    .auth-input { padding:.78rem 1rem;background:rgba(255,255,255,.05);border:1px solid rgba(139,92,246,.22);border-radius:10px;color:var(--text);font-family:'Inter',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s,box-shadow .2s;width:100%; }
-    .auth-input:focus { border-color:var(--purple);box-shadow:0 0 0 3px rgba(139,92,246,.18); }
-    .auth-error { font-size:.8rem;color:#f87171;min-height:1.1rem;text-align:center; }
-    .btn-auth { width:100%;padding:.82rem;background:linear-gradient(135deg,var(--purple-d),#9333ea);border:1px solid rgba(196,181,253,.2);border-radius:11px;color:#fff;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 0 20px rgba(124,58,237,.4);margin-top:.5rem; }
-    .btn-auth:hover:not(:disabled) { box-shadow:0 0 35px rgba(124,58,237,.7);transform:translateY(-1px); }
-    .btn-auth:disabled { opacity:.5;cursor:default; }
+    .q-emoji { font-size: 4rem; line-height: 1; margin-bottom: 0.75rem; }
+    .q-sport { font-family: 'Orbitron', sans-serif; font-size: 1.15rem; font-weight: 700; color: var(--red); margin-bottom: 0.35rem; }
+    .q-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.75rem; }
+    .q-pips { display: flex; gap: 10px; justify-content: center; margin-bottom: 1rem; }
+    .q-pip {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--red-pale); border: 2px solid rgba(200,24,30,0.2);
+      transition: all 0.3s ease;
+    }
+    .q-pip.active {
+      background: var(--red); border-color: var(--red);
+      box-shadow: 0 0 10px rgba(200,24,30,0.45);
+    }
+    .q-count-text { font-size: 0.82rem; color: var(--muted); margin-bottom: 2rem; }
+    .q-count-text strong { color: var(--text); }
+    .btn-cancel {
+      background: white; border: 2px solid var(--border);
+      border-radius: 10px; color: var(--muted);
+      font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 600;
+      padding: 0.65rem 2rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-cancel:hover { border-color: var(--red); color: var(--red); }
 
-    /* ── Shared animations ──────────────────────────────────────────── */
-    @keyframes fadeDown { from{opacity:0;transform:translateY(-22px)}to{opacity:1;transform:translateY(0)} }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)} }
-    @keyframes fadeOut { to{opacity:0;transform:translateY(-10px)} }
-    .anim-fade-out { animation:fadeOut .2s ease forwards !important; }
-    .anim-fade-in  { animation:fadeIn  .3s ease both   !important; }
+    /* ── Leaderboard ─────────────────────────────────────────────────── */
+    .lb-box { background: white; border: 2px solid var(--border); border-radius: 20px; overflow: hidden; box-shadow: var(--sh-md); }
+    .lb-head {
+      background: var(--red); color: white;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.9rem 1.5rem;
+    }
+    .lb-head-title { font-family: 'Orbitron', sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; }
+    .lb-live { display: flex; align-items: center; gap: 0.4rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.9; }
+    .lb-live-dot { width: 6px; height: 6px; border-radius: 50%; background: white; animation: dotP 2s ease-in-out infinite; }
+    @keyframes dotP { 0%,100%{opacity:1}50%{opacity:.5} }
+    .lb-cols {
+      display: grid; grid-template-columns: 2.5rem 1fr 5rem 4.5rem 4.5rem;
+      gap: 0.5rem 1rem; padding: 0.55rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.63rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .lb-row {
+      display: grid; grid-template-columns: 2.5rem 1fr 5rem 4.5rem 4.5rem;
+      gap: 0.5rem 1rem; align-items: center;
+      padding: 0.85rem 1.5rem; border-bottom: 1px solid rgba(180,20,26,0.06);
+      transition: background 0.15s;
+    }
+    .lb-row:last-child { border-bottom: none; }
+    .lb-row:hover { background: var(--red-pale); }
+    .lb-row.flash { animation: rowFlash 1.1s ease; }
+    @keyframes rowFlash { 0%,100%{background:transparent}40%,60%{background:rgba(200,24,30,0.1)} }
+    .lb-rank { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700; text-align: center; }
+    .lb-rank.r1 { color: #c8911a; } .lb-rank.r2 { color: #888; } .lb-rank.r3 { color: #b07040; } .lb-rank.rn { color: var(--muted); }
+    .lb-name { font-weight: 700; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lb-name.is-me { color: var(--red); }
+    .lb-wins { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--red); text-align: right; }
+    .lb-games { font-size: 0.78rem; color: var(--muted); text-align: right; }
+    .lb-rate { font-size: 0.75rem; font-weight: 700; text-align: right; }
+    .lb-rate.good { color: #16a34a; } .lb-rate.mid { color: #c8911a; } .lb-rate.low { color: var(--muted); }
+    .lb-empty { text-align: center; padding: 2.5rem 1rem; color: var(--muted); }
+    .lb-empty strong { display: block; margin-bottom: 0.3rem; font-size: 0.95rem; color: var(--body); }
 
-    @media (max-width:680px) {
-      .sport-card { flex:0 0 calc(50% - .5rem);max-width:none; }
-      .logo-text  { font-size:2.4rem; }
-      .lb-cols, .lb-row { grid-template-columns:2rem 1fr 4rem 3.5rem; }
-      .lb-cols > :last-child, .lb-row > :last-child { display:none; }
+    /* ── Auth modal ──────────────────────────────────────────────────── */
+    .auth-backdrop {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(245,236,224,0.88);
+      backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem; animation: fadeIn 0.18s ease;
+    }
+    .auth-modal {
+      background: white; border: 2px solid var(--border);
+      border-radius: 22px; padding: 2rem;
+      max-width: 370px; width: 100%;
+      box-shadow: var(--sh-lg); animation: slideUp 0.22s ease;
+    }
+    .auth-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .auth-modal-title { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--red); letter-spacing: 0.08em; }
+    .auth-close { background: none; border: none; color: var(--muted); font-size: 1.2rem; cursor: pointer; line-height: 1; transition: color 0.2s; }
+    .auth-close:hover { color: var(--text); }
+    .auth-tabs { display: flex; background: var(--red-pale); border-radius: 10px; padding: 3px; margin-bottom: 1.5rem; gap: 3px; }
+    .auth-tab { flex: 1; padding: 0.55rem; border: none; background: transparent; border-radius: 8px; color: var(--muted); font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .auth-tab.active { background: white; color: var(--red); box-shadow: var(--sh-sm); }
+    .auth-field { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.9rem; }
+    .auth-field label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .auth-input {
+      padding: 0.75rem 0.9rem; background: var(--cream);
+      border: 1.5px solid var(--border); border-radius: 10px;
+      color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.92rem;
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s; width: 100%;
+    }
+    .auth-input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(200,24,30,0.1); background: white; }
+    .auth-error { font-size: 0.78rem; color: var(--red); min-height: 1.1rem; text-align: center; }
+    .btn-auth {
+      width: 100%; padding: 0.82rem;
+      background: var(--red); border: none; border-radius: 11px;
+      color: white; font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; margin-top: 0.4rem;
+      box-shadow: 0 4px 14px rgba(200,24,30,0.35);
+    }
+    .btn-auth:hover:not(:disabled) { background: var(--red-h); box-shadow: 0 6px 20px rgba(200,24,30,0.45); transform: translateY(-1px); }
+    .btn-auth:disabled { opacity: 0.5; cursor: default; }
+
+    @media (max-width: 640px) {
+      .sports-grid { grid-template-columns: repeat(2, 1fr); }
+      .hero-title { font-size: 2.2rem; }
+      .lb-cols, .lb-row { grid-template-columns: 2rem 1fr 4rem 3.5rem; }
+      .lb-cols > :last-child, .lb-row > :last-child { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <div class="bg-layer" aria-hidden="true">
-    <div class="orb orb-1"></div><div class="orb orb-2"></div>
-    <div class="orb orb-3"></div><div class="orb orb-4"></div>
-  </div>
-  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-blob bg-blob-1" aria-hidden="true"></div>
+  <div class="bg-blob bg-blob-2" aria-hidden="true"></div>
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="header-logo">
+      <div class="logo-badge">?</div>
+      <span class="logo-text">IMPOSTER</span>
+    </div>
+    <div class="header-right" id="header-right">
+      <button class="btn-signin" id="btn-open-auth">Sign In</button>
+    </div>
+  </header>
 
   <div class="page">
 
-    <!-- ── Hero ──────────────────────────────────────────────────────── -->
+    <!-- ── Hero ───────────────────────────────────────────────────────────── -->
     <section class="hero">
-      <div class="logo-wrap">
-        <div class="logo-badge">?</div>
-        <h1 class="logo-text">IMPOSTER</h1>
-      </div>
-      <p class="hero-tagline">Can you spot the one who's <em>faking it?</em></p>
+      <div class="hero-eyebrow"><span class="hero-dot"></span>Social Deduction · Sports Edition</div>
+      <h1 class="hero-title">Find the<br><span class="accent">Imposter</span></h1>
+      <p class="hero-sub">Three players. One secret sports star. One faker.<br>Pick a sport below to jump into the action.</p>
 
-      <!-- Entry form (guest or logged-in) -->
-      <div class="entry-card" id="home-screen">
-        <p class="card-eyebrow">Ready to play?</p>
-
-        <!-- Logged-in state (hidden until auth) -->
-        <div class="logged-in-row" id="logged-in-row" style="display:none">
-          <div class="logged-in-avatar" id="logged-in-avatar">?</div>
-          <span class="logged-in-name" id="logged-in-name"></span>
-          <button class="btn-signout" id="btn-signout">Sign out</button>
+      <!-- Guest: name input -->
+      <div class="name-bar-wrap" id="guest-section">
+        <div class="name-bar" id="name-bar">
+          <span class="name-bar-icon">👤</span>
+          <input type="text" id="name-input" placeholder="Enter your display name…" maxlength="20" autocomplete="off">
         </div>
-
-        <!-- Guest name input (hidden when logged in) -->
-        <div class="input-row" id="guest-input-row">
-          <input type="text" id="name-input" class="name-input" placeholder="Your name…" maxlength="20" autocomplete="off">
-          <button id="queue-btn" class="btn-join">Join Queue</button>
-        </div>
-
-        <!-- Logged-in join button -->
-        <button id="queue-btn-auth" class="btn-join" style="display:none;width:100%">Join Queue</button>
-
-        <p class="online-row">
-          <span class="online-dot"></span>
-          <span id="queue-count">0</span>&nbsp;players in queue
-        </p>
-        <button class="auth-link" id="open-auth-btn">Sign in to track your wins →</button>
+        <p class="name-bar-hint">No account needed · <button id="open-auth-hint">Sign in to track wins →</button></p>
       </div>
 
-      <!-- Queue waiting -->
-      <div class="entry-card queue-card" id="queue-screen" style="display:none">
-        <p class="card-eyebrow">Finding your match</p>
-        <div class="q-pips">
-          <span class="q-pip" id="pip-0"></span>
-          <span class="q-pip" id="pip-1"></span>
-          <span class="q-pip" id="pip-2"></span>
+      <!-- Logged in: playing-as -->
+      <div class="playing-as" id="logged-in-section" style="display:none">
+        <div class="pa-avatar" id="pa-avatar">?</div>
+        <div class="pa-text">
+          <div class="pa-label">Playing as</div>
+          <div class="pa-name" id="pa-name"></div>
         </div>
-        <p class="q-label">Waiting for players…</p>
-        <p class="q-count"><span id="queue-live">0</span><span>&nbsp;/ 3</span></p>
-        <button id="cancel-btn" class="btn-cancel">Cancel</button>
+        <button class="btn-pa-signout" id="btn-signout">Sign out</button>
       </div>
     </section>
 
-    <!-- ── Sport category cards ──────────────────────────────────────── -->
+    <!-- ── Sport cards ─────────────────────────────────────────────────────── -->
     <section class="section-wrap">
-      <div class="section-heading">
-        <span class="section-line"></span>
-        <span class="section-text">Select a Sport</span>
-        <span class="section-line"></span>
+      <div class="section-header">
+        <div class="section-eyebrow">Pick Your Sport</div>
+        <p class="section-title">Choose a category to play</p>
       </div>
-      <div class="cats-grid">
-        <div class="sport-card" style="--i:0"><div class="card-glow"></div><span class="card-emoji">🏀</span><span class="card-name">NBA</span><span class="card-sub">Basketball</span></div>
-        <div class="sport-card" style="--i:1"><div class="card-glow"></div><span class="card-emoji">🏈</span><span class="card-name">NFL</span><span class="card-sub">Football</span></div>
-        <div class="sport-card" style="--i:2"><div class="card-glow"></div><span class="card-emoji">⚾</span><span class="card-name">MLB</span><span class="card-sub">Baseball</span></div>
-        <div class="sport-card" style="--i:3"><div class="card-glow"></div><span class="card-emoji">⚽</span><span class="card-name">Soccer</span><span class="card-sub">Football</span></div>
-        <div class="sport-card" style="--i:4"><div class="card-glow"></div><span class="card-emoji">🥊</span><span class="card-name">MMA</span><span class="card-sub">Fighting</span></div>
-        <div class="sport-card" style="--i:5"><div class="card-glow"></div><span class="card-emoji">🏒</span><span class="card-name">NHL</span><span class="card-sub">Hockey</span></div>
-        <div class="sport-card" style="--i:6"><div class="card-glow"></div><span class="card-emoji">🎾</span><span class="card-name">Tennis</span><span class="card-sub">Tennis</span></div>
-      </div>
+      <div class="sports-grid" id="sports-grid"></div>
     </section>
 
-    <!-- ── Leaderboard ───────────────────────────────────────────────── -->
+    <!-- ── Leaderboard ─────────────────────────────────────────────────────── -->
     <section class="section-wrap" style="padding-top:0">
-      <div class="section-heading">
-        <span class="section-line"></span>
-        <span class="section-text">Leaderboard</span>
-        <span class="section-line"></span>
+      <div class="section-header">
+        <div class="section-eyebrow">Hall of Fame</div>
+        <p class="section-title">Top Imposters</p>
       </div>
       <div class="lb-box">
-        <div class="lb-header">
-          <span class="lb-title">Top Imposters</span>
+        <div class="lb-head">
+          <span class="lb-head-title">LEADERBOARD</span>
           <span class="lb-live"><span class="lb-live-dot"></span>Live</span>
         </div>
         <div class="lb-cols">
           <span>#</span><span>Player</span><span style="text-align:right">Wins</span><span style="text-align:right">Games</span><span style="text-align:right">Win %</span>
         </div>
         <div id="lb-body">
-          <div class="lb-empty">
-            <strong>No games played yet</strong>
-            <p>Create an account and be the first on the board!</p>
-          </div>
+          <div class="lb-empty"><strong>No games played yet</strong>Sign in and be the first on the board!</div>
         </div>
       </div>
     </section>
 
   </div><!-- /.page -->
 
-  <!-- ── Auth modal ───────────────────────────────────────────────────── -->
+  <!-- ── Queue overlay ──────────────────────────────────────────────────── -->
+  <div id="queue-overlay" class="queue-overlay" style="display:none">
+    <div class="queue-card">
+      <div class="q-emoji" id="q-emoji">🏀</div>
+      <div class="q-sport" id="q-sport">NBA</div>
+      <div class="q-label">Searching for opponents…</div>
+      <div class="q-pips">
+        <span class="q-pip" id="pip-0"></span>
+        <span class="q-pip" id="pip-1"></span>
+        <span class="q-pip" id="pip-2"></span>
+      </div>
+      <div class="q-count-text"><strong id="queue-live">1</strong> / 3 players ready</div>
+      <button class="btn-cancel" id="cancel-btn">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ── Auth modal ─────────────────────────────────────────────────────── -->
   <div class="auth-backdrop" id="auth-modal" style="display:none">
     <div class="auth-modal">
       <div class="auth-modal-header">
@@ -301,7 +460,7 @@
         <button class="btn-auth" id="btn-login">Login</button>
       </div>
       <div id="auth-register-form" style="display:none">
-        <div class="auth-field"><label>Username</label><input class="auth-input" id="reg-username" type="text" autocomplete="username" placeholder="choose a name (2–20 chars)"></div>
+        <div class="auth-field"><label>Username</label><input class="auth-input" id="reg-username" type="text" autocomplete="username" placeholder="2–20 characters"></div>
         <div class="auth-field"><label>Password</label><input class="auth-input" id="reg-password" type="password" autocomplete="new-password" placeholder="min. 4 characters"></div>
         <div class="auth-error" id="reg-error"></div>
         <button class="btn-auth" id="btn-register">Create Account</button>
@@ -311,49 +470,76 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    // ── State ──────────────────────────────────────────────────────────────────
+    // ── Sport config ───────────────────────────────────────────────────────────
+    const SPORT_CARDS = [
+      { key: 'NBA Players',    emoji: '🏀', name: 'NBA',    sub: 'Basketball' },
+      { key: 'NFL Players',    emoji: '🏈', name: 'NFL',    sub: 'Football'   },
+      { key: 'MLB Players',    emoji: '⚾', name: 'MLB',    sub: 'Baseball'   },
+      { key: 'Soccer Players', emoji: '⚽', name: 'Soccer', sub: 'Football'   },
+      { key: 'MMA Fighters',   emoji: '🥊', name: 'MMA',    sub: 'Fighting'   },
+      { key: 'NHL Players',    emoji: '🏒', name: 'NHL',    sub: 'Hockey'     },
+    ];
+
+    // ── Socket + state ─────────────────────────────────────────────────────────
     const socket = io();
 
-    let peerId   = sessionStorage.getItem('peerId');
+    let peerId = sessionStorage.getItem('peerId');
     if (!peerId) {
       peerId = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
       sessionStorage.setItem('peerId', peerId);
     }
 
-    let authToken    = localStorage.getItem('imposter_token')   || null;
-    let authUsername = localStorage.getItem('imposter_user')    || null;
+    let authToken    = localStorage.getItem('imposter_token') || null;
+    let authUsername = localStorage.getItem('imposter_user')  || null;
+    let categoryCounts = {};
+    let selectedCategory = null;
 
-    // ── DOM refs ───────────────────────────────────────────────────────────────
-    const homeScreen      = document.getElementById('home-screen');
-    const queueScreen     = document.getElementById('queue-screen');
-    const nameInput       = document.getElementById('name-input');
-    const queueBtn        = document.getElementById('queue-btn');
-    const queueBtnAuth    = document.getElementById('queue-btn-auth');
-    const cancelBtn       = document.getElementById('cancel-btn');
-    const queueCount      = document.getElementById('queue-count');
-    const queueLive       = document.getElementById('queue-live');
-    const pips            = ['pip-0','pip-1','pip-2'].map(id => document.getElementById(id));
-    const loggedInRow     = document.getElementById('logged-in-row');
-    const loggedInAvatar  = document.getElementById('logged-in-avatar');
-    const loggedInName    = document.getElementById('logged-in-name');
-    const guestInputRow   = document.getElementById('guest-input-row');
-    const openAuthBtn     = document.getElementById('open-auth-btn');
-    const authModal       = document.getElementById('auth-modal');
+    // ── Build sport cards ──────────────────────────────────────────────────────
+    const sportsGrid = document.getElementById('sports-grid');
+    SPORT_CARDS.forEach((s, i) => {
+      const card = document.createElement('div');
+      card.className = 'sport-card';
+      card.style.setProperty('--i', i);
+      card.dataset.key = s.key;
+      card.innerHTML = `
+        <span class="card-emoji">${s.emoji}</span>
+        <span class="card-name">${s.name}</span>
+        <span class="card-sub">${s.sub}</span>
+        <span class="card-waiting" id="wait-${s.key.replace(/\s+/g,'-')}"></span>
+      `;
+      card.addEventListener('click', () => tryJoinQueue(s));
+      sportsGrid.appendChild(card);
+    });
 
-    // ── Auth UI helpers ────────────────────────────────────────────────────────
+    function updateWaitingBadges(counts) {
+      categoryCounts = counts || {};
+      SPORT_CARDS.forEach(s => {
+        const el = document.getElementById('wait-' + s.key.replace(/\s+/g, '-'));
+        if (!el) return;
+        const n = categoryCounts[s.key] || 0;
+        el.textContent = n > 0 ? `${n} waiting` : '';
+      });
+    }
+
+    // ── Auth state ─────────────────────────────────────────────────────────────
     function setLoggedIn(username, token) {
       authToken    = token;
       authUsername = username;
       localStorage.setItem('imposter_token', token);
       localStorage.setItem('imposter_user',  username);
 
-      loggedInAvatar.textContent  = username.charAt(0).toUpperCase();
-      loggedInName.textContent    = username;
-      loggedInRow.style.display   = 'flex';
-      guestInputRow.style.display = 'none';
-      queueBtn.style.display      = 'none';
-      queueBtnAuth.style.display  = 'block';
-      openAuthBtn.style.display   = 'none';
+      document.getElementById('guest-section').style.display     = 'none';
+      document.getElementById('logged-in-section').style.display = 'flex';
+      document.getElementById('pa-avatar').textContent           = username.charAt(0).toUpperCase();
+      document.getElementById('pa-name').textContent             = username;
+
+      document.getElementById('header-right').innerHTML = `
+        <div class="user-chip">
+          <div class="user-chip-avatar">${username.charAt(0).toUpperCase()}</div>
+          <span class="user-chip-name">${username}</span>
+          <button class="btn-signout-chip" id="btn-signout-header">↩</button>
+        </div>`;
+      document.getElementById('btn-signout-header').addEventListener('click', setLoggedOut);
     }
 
     function setLoggedOut() {
@@ -362,53 +548,59 @@
       localStorage.removeItem('imposter_token');
       localStorage.removeItem('imposter_user');
 
-      loggedInRow.style.display   = 'none';
-      guestInputRow.style.display = 'flex';
-      queueBtn.style.display      = 'block'; // inside input-row
-      queueBtnAuth.style.display  = 'none';
-      openAuthBtn.style.display   = 'inline-block';
+      document.getElementById('guest-section').style.display     = 'block';
+      document.getElementById('logged-in-section').style.display = 'none';
+
+      document.getElementById('header-right').innerHTML = `<button class="btn-signin" id="btn-open-auth">Sign In</button>`;
+      document.getElementById('btn-open-auth').addEventListener('click', openAuthModal);
     }
 
-    // Restore session on load
     if (authToken && authUsername) setLoggedIn(authUsername, authToken);
 
     document.getElementById('btn-signout').addEventListener('click', setLoggedOut);
 
-    // ── Queue helpers ──────────────────────────────────────────────────────────
-    function switchCard(hideEl, showEl) {
-      hideEl.classList.add('anim-fade-out');
-      setTimeout(() => {
-        hideEl.style.display = 'none';
-        hideEl.classList.remove('anim-fade-out');
-        showEl.style.display = 'flex';
-        showEl.classList.add('anim-fade-in');
-        setTimeout(() => showEl.classList.remove('anim-fade-in'), 400);
-      }, 200);
-    }
+    // ── Queue logic ────────────────────────────────────────────────────────────
+    function tryJoinQueue(sport) {
+      const name = authUsername || document.getElementById('name-input').value.trim();
+      if (!name) {
+        const bar = document.getElementById('name-bar');
+        bar.classList.add('shake');
+        document.getElementById('name-input').focus();
+        bar.addEventListener('animationend', () => bar.classList.remove('shake'), { once: true });
+        return;
+      }
 
-    function joinQueue() {
-      const name = authUsername || nameInput.value.trim();
-      if (!name) { nameInput.classList.add('error'); nameInput.focus(); return; }
-      nameInput.classList.remove('error');
+      selectedCategory = sport.key;
       sessionStorage.setItem('playerName', name);
-      socket.emit('joinQueue', { name, peerId, token: authToken });
-      switchCard(homeScreen, queueScreen);
+
+      socket.emit('joinQueue', { name, peerId, token: authToken, category: sport.key });
+
+      document.getElementById('q-emoji').textContent = sport.emoji;
+      document.getElementById('q-sport').textContent = sport.name;
+      updateQueuePips(1);
+      document.getElementById('queue-live').textContent = '1';
+      document.getElementById('queue-overlay').style.display = 'flex';
     }
 
-    queueBtn.addEventListener('click', joinQueue);
-    queueBtnAuth.addEventListener('click', joinQueue);
-    nameInput.addEventListener('input',   () => nameInput.classList.remove('error'));
-    nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') joinQueue(); });
-
-    cancelBtn.addEventListener('click', () => {
+    document.getElementById('cancel-btn').addEventListener('click', () => {
       socket.emit('leaveQueue');
-      switchCard(queueScreen, homeScreen);
+      document.getElementById('queue-overlay').style.display = 'none';
+      selectedCategory = null;
     });
 
-    socket.on('queueUpdate', ({ count }) => {
-      queueCount.textContent = count;
-      queueLive.textContent  = count;
-      pips.forEach((pip, i) => pip.classList.toggle('active', i < count));
+    function updateQueuePips(count) {
+      for (let i = 0; i < 3; i++) {
+        document.getElementById(`pip-${i}`).classList.toggle('active', i < count);
+      }
+    }
+
+    socket.on('queueUpdate', ({ counts }) => {
+      updateWaitingBadges(counts);
+      if (selectedCategory) {
+        const n = Math.max(1, counts[selectedCategory] || 1);
+        document.getElementById('queue-live').textContent = n;
+        updateQueuePips(n);
+      }
     });
 
     socket.on('gameStart', (data) => {
@@ -417,12 +609,15 @@
     });
 
     // ── Auth modal ─────────────────────────────────────────────────────────────
-    openAuthBtn.addEventListener('click', () => { authModal.style.display = 'flex'; });
-    document.getElementById('auth-close').addEventListener('click', () => { authModal.style.display = 'none'; });
-    authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.style.display = 'none'; });
+    function openAuthModal()  { document.getElementById('auth-modal').style.display = 'flex'; }
+    function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
 
-    // Tabs
-    document.querySelectorAll('.auth-tab').forEach((tab) => {
+    document.getElementById('btn-open-auth').addEventListener('click', openAuthModal);
+    document.getElementById('open-auth-hint').addEventListener('click', openAuthModal);
+    document.getElementById('auth-close').addEventListener('click', closeAuthModal);
+    document.getElementById('auth-modal').addEventListener('click', e => { if (e.target.id === 'auth-modal') closeAuthModal(); });
+
+    document.querySelectorAll('.auth-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
@@ -434,7 +629,6 @@
       });
     });
 
-    // Login
     document.getElementById('btn-login').addEventListener('click', async () => {
       const btn = document.getElementById('btn-login');
       const err = document.getElementById('login-error');
@@ -444,15 +638,14 @@
       if (!username || !password) { err.textContent = 'Fill in both fields.'; return; }
       btn.disabled = true; btn.textContent = 'Logging in…';
       try {
-        const res  = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ username, password }) });
+        const res  = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
         const data = await res.json();
-        if (data.error) { err.textContent = data.error; }
-        else { setLoggedIn(data.username, data.token); authModal.style.display = 'none'; loadLeaderboard(); }
+        if (data.error) err.textContent = data.error;
+        else { setLoggedIn(data.username, data.token); closeAuthModal(); loadLeaderboard(); }
       } catch { err.textContent = 'Network error. Try again.'; }
       finally { btn.disabled = false; btn.textContent = 'Login'; }
     });
 
-    // Register
     document.getElementById('btn-register').addEventListener('click', async () => {
       const btn = document.getElementById('btn-register');
       const err = document.getElementById('reg-error');
@@ -462,46 +655,41 @@
       if (!username || !password) { err.textContent = 'Fill in both fields.'; return; }
       btn.disabled = true; btn.textContent = 'Creating…';
       try {
-        const res  = await fetch('/api/register', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ username, password }) });
+        const res  = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
         const data = await res.json();
-        if (data.error) { err.textContent = data.error; }
-        else { setLoggedIn(data.username, data.token); authModal.style.display = 'none'; loadLeaderboard(); }
+        if (data.error) err.textContent = data.error;
+        else { setLoggedIn(data.username, data.token); closeAuthModal(); loadLeaderboard(); }
       } catch { err.textContent = 'Network error. Try again.'; }
       finally { btn.disabled = false; btn.textContent = 'Create Account'; }
     });
 
-    // Enter key in auth inputs
     ['login-username','login-password'].forEach(id =>
-      document.getElementById(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('btn-login').click(); })
+      document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-login').click(); })
     );
     ['reg-username','reg-password'].forEach(id =>
-      document.getElementById(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('btn-register').click(); })
+      document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-register').click(); })
     );
 
     // ── Leaderboard ────────────────────────────────────────────────────────────
-    const RANK_LABELS = ['🥇','🥈','🥉'];
-    const RANK_CLASSES = ['r1','r2','r3'];
-
     function renderLeaderboard(rows) {
       const body = document.getElementById('lb-body');
       if (!rows || rows.length === 0) {
-        body.innerHTML = '<div class="lb-empty"><strong>No games played yet</strong><p>Create an account and be the first on the board!</p></div>';
+        body.innerHTML = '<div class="lb-empty"><strong>No games played yet</strong>Sign in and be the first on the board!</div>';
         return;
       }
-
-      // Keep track of previous rows to flash changed ones
+      const MEDALS = ['🥇','🥈','🥉'];
+      const RCLS   = ['r1','r2','r3'];
       const prev = {};
       body.querySelectorAll('.lb-row[data-user]').forEach(el => {
-        prev[el.dataset.user] = { wins: parseInt(el.dataset.wins || 0) };
+        prev[el.dataset.user] = parseInt(el.dataset.wins || 0);
       });
-
       body.innerHTML = rows.map((row, i) => {
         const rate    = row.games_played > 0 ? Math.round((row.imposter_wins / row.games_played) * 100) : 0;
         const rClass  = rate >= 40 ? 'good' : rate >= 20 ? 'mid' : 'low';
-        const rankCls = RANK_CLASSES[i] || 'rn';
-        const rankLbl = RANK_LABELS[i]  || (i + 1);
+        const rankCls = RCLS[i]   || 'rn';
+        const rankLbl = MEDALS[i] || (i + 1);
         const isMe    = authUsername && row.username.toLowerCase() === authUsername.toLowerCase();
-        const changed = prev[row.username] && prev[row.username].wins !== row.imposter_wins;
+        const changed = prev[row.username] !== undefined && prev[row.username] !== row.imposter_wins;
         return `
           <div class="lb-row${changed ? ' flash' : ''}" data-user="${row.username}" data-wins="${row.imposter_wins}">
             <span class="lb-rank ${rankCls}">${rankLbl}</span>
@@ -515,15 +703,12 @@
 
     async function loadLeaderboard() {
       try {
-        const res  = await fetch('/api/leaderboard');
-        const data = await res.json();
+        const data = await (await fetch('/api/leaderboard')).json();
         renderLeaderboard(data);
-      } catch { /* silent fail */ }
+      } catch { /* silent */ }
     }
 
-    socket.on('leaderboardUpdate', (rows) => renderLeaderboard(rows));
-
-    // Initial load
+    socket.on('leaderboardUpdate', rows => renderLeaderboard(rows));
     loadLeaderboard();
   </script>
 </body>
