@@ -7,35 +7,6 @@
   const { roomId, role, category, word, hint, playerIndex, players, jitsiRoom } = gameData;
   const authUser = localStorage.getItem('imposter_user');
 
-  // ── Debug overlay ─────────────────────────────────────────────────────────────
-  const dbg = document.createElement('div');
-  dbg.id = 'debug-overlay';
-  dbg.innerHTML = `
-    <div class="dbg-title">
-      <span>DEBUG</span>
-      <span class="dbg-close" onclick="document.getElementById('debug-overlay').style.display='none'">[×]</span>
-    </div>
-    <div><span class="dl">Socket ID</span> <span class="dv mid" id="dv-socket">${socket.id || 'connecting…'}</span></div>
-    <div><span class="dl">Room ID</span> <span class="dv" id="dv-room">${roomId.slice(0,8)}…</span></div>
-    <div><span class="dl">Player index</span> <span class="dv" id="dv-pidx">${playerIndex}</span></div>
-    <div><span class="dl">Jitsi room</span> <span class="dv" id="dv-jitsi">${jitsiRoom || 'none'}</span></div>
-    <div><span class="dl">peerReady sent</span> <span class="dv bad" id="dv-pr-sent">no</span></div>
-    <div><span class="dl">Server ack</span> <span class="dv bad" id="dv-ack">waiting</span></div>
-    <div><span class="dl">allPeersReady</span> <span class="dv bad" id="dv-all">no</span></div>
-    <div><span class="dl">Jitsi event</span> <span class="dv bad" id="dv-jitsi-ev">waiting</span></div>
-  `;
-  document.body.appendChild(dbg);
-
-  function dbgSet(id, text, cls) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = text;
-    if (cls) { el.className = 'dv ' + cls; }
-  }
-
-  socket.on('connect', () => dbgSet('dv-socket', socket.id, 'ok'));
-  socket.on('peerReadyAck', ({ count }) => dbgSet('dv-ack', `${count}/3 ready`, count >= 3 ? 'ok' : 'mid'));
-
   // ── Role banner ───────────────────────────────────────────────────────────────
   const roleBanner  = document.getElementById('role-banner');
   const roleContent = document.getElementById('role-content');
@@ -78,7 +49,6 @@
 
   function showVoteBar() {
     document.getElementById('waiting-overlay').style.display = 'none';
-    dbgSet('dv-all', 'YES — vote bar shown', 'ok');
     voteBar.style.display = 'flex';
     remotePlayers.forEach(p => {
       const btn = document.createElement('button');
@@ -122,7 +92,7 @@
     document.getElementById('result-overlay').style.display = 'flex';
   });
 
-  // ── Jitsi Meet video call ─────────────────────────────────────────────────────
+  // ── Video call (framatalk.org — no moderator/JWT requirement) ─────────────────
   socket.on('allPeersReady', () => {
     showVoteBar();
   });
@@ -132,26 +102,23 @@
     function sendPeerReady() {
       if (peerReadySent) return;
       peerReadySent = true;
-      dbgSet('dv-pr-sent', 'YES', 'ok');
-      // Include playerIndex so server can update the stale socket ID stored from the lobby
       socket.emit('peerReady', { roomId, playerIndex });
     }
 
-    // Fallback: if videoConferenceJoined never fires within 20s, proceed anyway
     const peerReadyTimeout = setTimeout(sendPeerReady, 20000);
 
-    const api = new JitsiMeetExternalAPI('meet.jit.si', {
+    const api = new JitsiMeetExternalAPI('framatalk.org', {
       roomName:   jitsiRoom,
       width:      '100%',
       height:     '100%',
       parentNode: document.getElementById('video-container'),
       userInfo:   { displayName: players[playerIndex].name },
       configOverwrite: {
-        prejoinPageEnabled:   false,
-        startWithAudioMuted:  false,
-        startWithVideoMuted:  false,
-        disableDeepLinking:   true,
-        enableWelcomePage:    false,
+        prejoinPageEnabled:  false,
+        startWithAudioMuted: false,
+        startWithVideoMuted: false,
+        disableDeepLinking:  true,
+        enableWelcomePage:   false,
       },
       interfaceConfigOverwrite: {
         SHOW_JITSI_WATERMARK:      false,
@@ -163,13 +130,11 @@
     });
 
     api.addEventListener('videoConferenceJoined', () => {
-      dbgSet('dv-jitsi-ev', 'videoConferenceJoined ✓', 'ok');
       clearTimeout(peerReadyTimeout);
       sendPeerReady();
     });
 
-    api.addEventListener('errorOccurred', (e) => {
-      dbgSet('dv-jitsi-ev', 'error: ' + (e?.error?.name || 'unknown'), 'bad');
+    api.addEventListener('errorOccurred', () => {
       clearTimeout(peerReadyTimeout);
       sendPeerReady();
     });
