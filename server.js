@@ -43,7 +43,7 @@ db.exec(`
 const stmts = {
   register:      db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)'),
   findByName:    db.prepare('SELECT * FROM users WHERE username = ?'),
-  leaderboard:   db.prepare('SELECT username, imposter_wins, games_played FROM users ORDER BY imposter_wins DESC, games_played ASC LIMIT 10'),
+  leaderboard:   db.prepare('SELECT username, imposter_wins, games_played FROM users WHERE games_played > 0 ORDER BY imposter_wins DESC, CAST(imposter_wins AS REAL)/games_played DESC LIMIT 10'),
   addGame:       db.prepare('UPDATE users SET games_played = games_played + 1 WHERE id = ?'),
   addWin:        db.prepare('UPDATE users SET imposter_wins = imposter_wins + 1, games_played = games_played + 1 WHERE id = ?'),
 };
@@ -809,10 +809,12 @@ io.on('connection', (socket) => {
       // Update stats for any logged-in players
       room.players.forEach((player, index) => {
         if (!player.userId) return;
-        if (index === room.imposterIndex && !imposterCaught) {
-          stmts.addWin.run(player.userId);   // imposter escaped — counts as win + game
+        const isImposter = index === room.imposterIndex;
+        const playerWon  = (isImposter && !imposterCaught) || (!isImposter && imposterCaught);
+        if (playerWon) {
+          stmts.addWin.run(player.userId);
         } else {
-          stmts.addGame.run(player.userId);  // everyone else just gets games_played++
+          stmts.addGame.run(player.userId);
         }
       });
 

@@ -95,7 +95,7 @@
   // ── Result overlay ────────────────────────────────────────────────────────────
   socket.on('gameResult', ({ imposterCaught, imposterIndex: impIdx, imposterName, word: secretWord, votes }) => {
     const isImposter = playerIndex === impIdx;
-    const iWon       = isImposter && !imposterCaught;
+    const iWon       = (isImposter && !imposterCaught) || (!isImposter && imposterCaught);
 
     document.getElementById('result-emoji').textContent = imposterCaught ? '🚨' : '🎭';
     const verdictEl = document.getElementById('result-verdict');
