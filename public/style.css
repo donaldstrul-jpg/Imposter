@@ -2,25 +2,25 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:          #0d0d14;
-  --surface:     #16161f;
-  --surface2:    #1e1e2d;
-  --border:      #2a2a3d;
-  --text:        #e2e2f0;
-  --muted:       #7c7c9a;
-  --accent:      #818cf8;
-  --accent2:     #e879f9;
-  --knower:      #38bdf8;
+  --bg:          #111111;
+  --surface:     #191919;
+  --surface2:    #202020;
+  --border:      rgba(255,255,255,0.08);
+  --text:        #ededed;
+  --muted:       #666666;
+  --accent:      #e5191f;
+  --knower:      #60a5fa;
   --imposter:    #f87171;
-  --knower-bg:   #0c1f36;
-  --imposter-bg: #2a0d0d;
+  --knower-bg:   #0d1e30;
+  --imposter-bg: #1e0d0d;
 }
 
 body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ── Home screen layout ─────────────────────────────────────────────── */
@@ -47,15 +47,15 @@ body:not(.game-body) {
 }
 
 .logo-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.6rem;
-  font-weight: 900;
+  font-size: 1.4rem;
+  font-weight: 800;
   color: white;
   flex-shrink: 0;
 }
@@ -63,10 +63,7 @@ body:not(.game-body) {
 h1 {
   font-size: 2.4rem;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--accent2), var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text);
 }
 
 .subtitle {
@@ -95,7 +92,7 @@ input[type="text"] {
   transition: border-color 0.18s;
 }
 input[type="text"]::placeholder { color: var(--muted); }
-input[type="text"]:focus  { border-color: var(--accent); }
+input[type="text"]:focus  { border-color: rgba(255,255,255,0.28); }
 input[type="text"].error  { border-color: var(--imposter); animation: shake 0.35s ease; }
 
 @keyframes shake {
@@ -118,7 +115,7 @@ input[type="text"].error  { border-color: var(--imposter); animation: shake 0.35
 .btn:active { transform: scale(0.97); }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  background: var(--accent);
   color: #fff;
 }
 .btn-primary:hover { opacity: 0.88; }
@@ -162,13 +159,12 @@ input[type="text"].error  { border-color: var(--imposter); animation: shake 0.35
 .pip.active {
   background: var(--accent);
   border-color: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
 }
 
 .queue-fraction {
   font-size: 1.6rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--text);
 }
 
 /* Spinner */
@@ -176,7 +172,7 @@ input[type="text"].error  { border-color: var(--imposter); animation: shake 0.35
   width: 44px;
   height: 44px;
   border: 4px solid var(--surface2);
-  border-top-color: var(--accent);
+  border-top-color: rgba(255,255,255,0.5);
   border-radius: 50%;
   animation: spin 0.75s linear infinite;
 }
@@ -184,8 +180,8 @@ input[type="text"].error  { border-color: var(--imposter); animation: shake 0.35
 .mini-spinner {
   width: 28px;
   height: 28px;
-  border: 3px solid rgba(255,255,255,0.1);
-  border-top-color: var(--accent);
+  border: 3px solid rgba(255,255,255,0.07);
+  border-top-color: rgba(255,255,255,0.4);
   border-radius: 50%;
   animation: spin 0.75s linear infinite;
 }

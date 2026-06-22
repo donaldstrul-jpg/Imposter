@@ -4,387 +4,390 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Imposport — Sports Edition</title>
+  <meta name="description" content="Three players. One secret sports star. One faker. Find the imposter before time runs out.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --red:      #c8181e;
-      --red-d:    #a01015;
-      --red-h:    #b01820;
-      --red-pale: rgba(200,24,30,0.07);
-      --cream:    #faf7f2;
-      --beige:    #f2e8d8;
-      --beige-d:  #e8d8c0;
-      --white:    #ffffff;
-      --text:     #180808;
-      --body:     #3d2020;
-      --muted:    #9a7070;
-      --border:   rgba(180,20,26,0.13);
-      --sh-sm:    0 2px 10px rgba(60,10,10,0.07);
-      --sh-md:    0 4px 24px rgba(60,10,10,0.1);
-      --sh-lg:    0 10px 44px rgba(60,10,10,0.13);
+      --bg:          #111111;
+      --surf:        #191919;
+      --surf-2:      #202020;
+      --border:      rgba(255,255,255,0.07);
+      --border-2:    rgba(255,255,255,0.12);
+      --text:        #ededed;
+      --sub:         #888888;
+      --dim:         #555555;
+      --accent:      #e5191f;
+      --accent-d:    #c8181e;
+      --accent-bg:   rgba(229,25,31,0.07);
     }
 
     body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--cream);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    /* ── Subtle background blobs ─────────────────────────────────────── */
-    .bg-blob { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
-    .bg-blob-1 { width: 700px; height: 700px; top: -250px; left: -200px; background: radial-gradient(circle, rgba(200,24,30,0.07) 0%, transparent 65%); }
-    .bg-blob-2 { width: 600px; height: 600px; bottom: -200px; right: -200px; background: radial-gradient(circle, rgba(220,120,30,0.06) 0%, transparent 65%); }
-
-    /* ── Header ──────────────────────────────────────────────────────── */
+    /* ── Header ────────────────────────────────────────────────── */
     .site-header {
+      height: 56px;
       position: sticky; top: 0; z-index: 50;
-      background: rgba(250,247,242,0.92);
-      backdrop-filter: blur(14px);
+      background: rgba(17,17,17,0.88);
+      backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
-      height: 62px;
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 2rem;
     }
-    .header-logo { display: flex; align-items: center; gap: 0.65rem; }
-    .logo-badge {
-      width: 38px; height: 38px; border-radius: 9px;
-      background: var(--red); color: white;
-      font-weight: 900; font-size: 1.35rem;
+    .header-logo { display: flex; align-items: center; gap: 9px; }
+    .logo-mark {
+      width: 26px; height: 26px;
+      background: var(--accent);
+      border-radius: 5px;
       display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 800; color: #fff;
+      flex-shrink: 0; letter-spacing: -0.02em;
     }
-    .logo-text {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.25rem; font-weight: 900;
-      color: var(--red); letter-spacing: 0.06em;
-    }
-    .header-right { display: flex; align-items: center; gap: 0.75rem; }
+    .logo-text { font-size: 0.9rem; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+    .header-right { display: flex; align-items: center; gap: 6px; }
 
     .btn-signin {
-      padding: 0.45rem 1.1rem;
-      background: white; border: 1.5px solid var(--border);
-      border-radius: 8px; color: var(--body);
-      font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600;
-      cursor: pointer; transition: all 0.2s;
+      padding: 0.38rem 0.85rem;
+      background: transparent;
+      border: 1px solid var(--border-2);
+      border-radius: 6px; color: var(--sub);
+      font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 500;
+      cursor: pointer; transition: border-color 0.15s, color 0.15s;
     }
-    .btn-signin:hover { border-color: var(--red); color: var(--red); background: var(--red-pale); }
+    .btn-signin:hover { color: var(--text); border-color: rgba(255,255,255,0.24); }
 
     .user-chip {
-      display: flex; align-items: center; gap: 0.55rem;
-      background: white; border: 1.5px solid var(--border);
-      border-radius: 20px; padding: 0.3rem 0.85rem 0.3rem 0.35rem;
-      box-shadow: var(--sh-sm);
+      display: flex; align-items: center; gap: 7px;
+      border: 1px solid var(--border-2);
+      border-radius: 6px; padding: 5px 10px 5px 6px;
     }
     .user-chip-avatar {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: var(--red); color: white;
-      font-weight: 800; font-size: 0.78rem;
+      width: 20px; height: 20px; border-radius: 4px;
+      background: var(--accent); color: white;
+      font-weight: 700; font-size: 0.65rem;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .user-chip-name { font-size: 0.82rem; font-weight: 700; }
+    .user-chip-name { font-size: 0.8rem; font-weight: 600; color: var(--text); }
     .btn-signout-chip {
-      background: none; border: none; color: var(--muted);
-      font-size: 0.75rem; cursor: pointer; padding: 0.1rem 0.2rem; border-radius: 4px;
-      transition: color 0.2s;
+      background: none; border: none; color: var(--dim);
+      font-size: 0.72rem; cursor: pointer; padding: 0;
+      transition: color 0.15s; line-height: 1;
     }
-    .btn-signout-chip:hover { color: var(--red); }
+    .btn-signout-chip:hover { color: var(--sub); }
 
-    /* ── Page wrapper ────────────────────────────────────────────────── */
-    .page { position: relative; z-index: 1; }
+    /* ── Page ──────────────────────────────────────────────────── */
+    .page { max-width: 860px; margin: 0 auto; padding: 0 2rem; }
 
-    /* ── Hero ────────────────────────────────────────────────────────── */
-    .hero {
-      text-align: center;
-      padding: 5.5rem 1.5rem 4rem;
-      max-width: 660px; margin: 0 auto;
+    /* ── Hero ──────────────────────────────────────────────────── */
+    .hero { padding: 72px 0 60px; max-width: 540px; }
+
+    .hero-label {
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--dim);
+      margin-bottom: 20px;
     }
-    .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: 0.45rem;
-      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--red);
-      background: var(--red-pale); border: 1px solid rgba(200,24,30,0.18);
-      border-radius: 20px; padding: 0.3rem 0.85rem;
-      margin-bottom: 1.5rem;
-    }
-    .hero-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); animation: hDot 2s ease-in-out infinite; }
-    @keyframes hDot { 0%,100%{opacity:1}50%{opacity:.4} }
     .hero-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: clamp(2.4rem, 7vw, 4.2rem);
-      font-weight: 900; color: var(--text);
-      line-height: 1.08; margin-bottom: 1rem;
-      letter-spacing: -0.01em;
+      font-size: clamp(2.6rem, 6vw, 3.8rem);
+      font-weight: 800;
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      margin-bottom: 16px;
     }
-    .hero-title .accent { color: var(--red); }
-    .hero-sub { color: var(--muted); font-size: 1rem; line-height: 1.65; margin-bottom: 2.5rem; }
+    .hero-title em { font-style: normal; color: var(--accent); }
+    .hero-sub {
+      font-size: 0.95rem; color: var(--sub); line-height: 1.65;
+      margin-bottom: 32px; font-weight: 400; max-width: 400px;
+    }
 
-    /* Name bar */
-    .name-bar-wrap { max-width: 400px; margin: 0 auto; }
+    /* Name input */
+    .name-bar-wrap { max-width: 360px; }
     .name-bar {
       display: flex; align-items: center;
-      background: white; border: 2px solid var(--border);
-      border-radius: 12px; overflow: hidden;
-      box-shadow: var(--sh-sm);
-      transition: border-color 0.2s, box-shadow 0.2s;
+      background: var(--surf);
+      border: 1px solid var(--border-2);
+      border-radius: 8px; overflow: hidden;
+      transition: border-color 0.15s;
     }
-    .name-bar:focus-within { border-color: var(--red); box-shadow: 0 0 0 3px rgba(200,24,30,0.1); }
-    .name-bar.shake { animation: shake 0.35s ease; }
-    @keyframes shake { 0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)} }
-    .name-bar-icon { padding: 0 0 0 1rem; color: var(--muted); font-size: 1rem; flex-shrink: 0; }
+    .name-bar:focus-within { border-color: rgba(255,255,255,0.26); }
+    .name-bar.shake { animation: shake 0.3s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)} }
     #name-input {
-      flex: 1; padding: 0.82rem 0.75rem;
+      flex: 1; padding: 0.7rem 0.9rem;
       background: none; border: none; outline: none;
-      font-family: 'Inter', sans-serif; font-size: 0.95rem; color: var(--text);
+      font-family: 'Inter', sans-serif; font-size: 0.88rem; color: var(--text);
     }
-    #name-input::placeholder { color: var(--muted); }
+    #name-input::placeholder { color: var(--dim); }
     .name-bar-hint {
-      padding: 0.5rem 0; font-size: 0.72rem; color: var(--muted);
-      text-align: center; margin-top: 0.5rem;
+      font-size: 0.7rem; color: var(--dim); margin-top: 8px;
     }
-    .name-bar-hint button { background: none; border: none; color: var(--red); font-size: 0.72rem; cursor: pointer; text-decoration: underline; }
+    .name-bar-hint button {
+      background: none; border: none; color: var(--sub);
+      font-size: 0.7rem; cursor: pointer; transition: color 0.15s;
+    }
+    .name-bar-hint button:hover { color: var(--text); }
 
-    /* Logged-in playing-as */
+    /* Playing as (logged in) */
     .playing-as {
-      display: flex; align-items: center; gap: 0.75rem;
-      max-width: 400px; margin: 0 auto;
-      background: white; border: 2px solid var(--border);
-      border-radius: 12px; padding: 0.7rem 1rem;
-      box-shadow: var(--sh-sm);
+      display: flex; align-items: center; gap: 10px;
+      max-width: 360px;
+      background: var(--surf); border: 1px solid var(--border-2);
+      border-radius: 8px; padding: 10px 12px;
     }
     .pa-avatar {
-      width: 34px; height: 34px; border-radius: 50%;
-      background: var(--red); color: white;
-      font-weight: 800; font-size: 0.9rem;
+      width: 28px; height: 28px; border-radius: 5px;
+      background: var(--accent); color: white;
+      font-weight: 700; font-size: 0.78rem;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .pa-text { flex: 1; }
-    .pa-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-    .pa-name { font-size: 0.95rem; font-weight: 700; }
-    .btn-pa-signout { background: none; border: none; color: var(--muted); font-size: 0.78rem; cursor: pointer; padding: 0.2rem; transition: color 0.2s; }
-    .btn-pa-signout:hover { color: var(--red); }
-
-    /* ── Section layout ──────────────────────────────────────────────── */
-    .section-wrap { max-width: 900px; margin: 0 auto; padding: 0 1.5rem 5rem; }
-    .section-header { text-align: center; margin-bottom: 2rem; }
-    .section-eyebrow {
-      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--red);
-      display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+    .pa-label { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--dim); }
+    .pa-name { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-top: 1px; }
+    .btn-pa-signout {
+      background: none; border: none; color: var(--dim);
+      font-size: 0.72rem; cursor: pointer; transition: color 0.15s;
     }
-    .section-eyebrow::before, .section-eyebrow::after {
-      content: ''; flex: 1; max-width: 100px; height: 1px; background: var(--border);
-    }
-    .section-title { font-size: 1.5rem; font-weight: 800; color: var(--text); margin-top: 0.4rem; }
+    .btn-pa-signout:hover { color: var(--sub); }
 
-    /* ── Sport cards ─────────────────────────────────────────────────── */
+    /* ── Section ───────────────────────────────────────────────── */
+    .section { padding-bottom: 64px; }
+    .section-label {
+      font-size: 0.66rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--dim);
+      margin-bottom: 12px;
+    }
+
+    /* ── Sport cards ───────────────────────────────────────────── */
     .sports-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--border-2); border-radius: 10px; overflow: hidden;
+      background: var(--border-2);
+      gap: 1px;
     }
     .sport-card {
-      background: white; border: 2px solid var(--border);
-      border-radius: 18px; padding: 2rem 1.25rem 1.6rem;
-      display: flex; flex-direction: column; align-items: center; gap: 0.45rem;
-      cursor: pointer; transition: all 0.22s ease;
-      box-shadow: var(--sh-sm);
-      position: relative; overflow: hidden;
-      opacity: 0; animation: cardIn 0.5s ease calc(var(--i) * 0.07s) forwards;
+      background: var(--surf);
+      padding: 22px 20px 18px;
+      display: flex; flex-direction: column;
+      cursor: pointer;
+      transition: background 0.1s;
+      opacity: 0;
+      animation: fadeUp 0.28s ease calc(var(--i) * 0.05s) forwards;
     }
-    .sport-card:hover {
-      background: var(--red); border-color: var(--red);
-      box-shadow: 0 8px 32px rgba(200,24,30,0.28);
-      transform: translateY(-5px) scale(1.02);
-    }
-    .sport-card:active { transform: translateY(-2px) scale(0.99); }
-    @keyframes cardIn { from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)} }
+    .sport-card:hover { background: var(--surf-2); }
+    .sport-card:active { background: #262626; }
 
-    .card-emoji {
-      font-size: 2.6rem; line-height: 1;
-      transition: transform 0.22s;
+    .card-sport-code {
+      font-size: 1.35rem; font-weight: 800;
+      color: var(--text); letter-spacing: -0.04em;
+      line-height: 1; margin-bottom: 4px;
     }
-    .sport-card:hover .card-emoji { transform: scale(1.2); }
     .card-name {
-      font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 700;
-      color: var(--text); transition: color 0.22s;
+      font-size: 0.68rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--dim); margin-bottom: 14px;
     }
-    .sport-card:hover .card-name { color: white; }
-    .card-sub {
-      font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
-      letter-spacing: 0.08em; color: var(--muted); transition: color 0.22s;
-    }
-    .sport-card:hover .card-sub { color: rgba(255,255,255,0.7); }
     .card-waiting {
-      margin-top: 0.4rem; font-size: 0.7rem; font-weight: 700;
-      color: var(--red); transition: color 0.22s;
-      min-height: 1rem;
+      font-size: 0.67rem; font-weight: 600;
+      color: var(--accent); min-height: 0.85rem;
     }
-    .sport-card:hover .card-waiting { color: rgba(255,255,255,0.85); }
 
-    /* ── Queue overlay ───────────────────────────────────────────────── */
+    /* ── Queue overlay ─────────────────────────────────────────── */
     .queue-overlay {
       position: fixed; inset: 0; z-index: 80;
-      background: rgba(250,244,236,0.93);
-      backdrop-filter: blur(14px);
+      background: rgba(0,0,0,0.78);
+      backdrop-filter: blur(10px);
       display: flex; align-items: center; justify-content: center;
-      animation: fadeIn 0.18s ease;
+      animation: fadeIn 0.15s ease;
     }
     @keyframes fadeIn { from{opacity:0}to{opacity:1} }
     .queue-card {
-      background: white; border: 2px solid var(--border);
-      border-radius: 24px; padding: 3rem 2.5rem;
-      text-align: center; max-width: 340px; width: 100%;
-      box-shadow: var(--sh-lg);
-      animation: slideUp 0.22s ease;
+      background: var(--surf);
+      border: 1px solid var(--border-2);
+      border-radius: 12px; padding: 36px 32px 28px;
+      text-align: center; max-width: 300px; width: 100%;
+      animation: scaleIn 0.18s ease;
     }
-    @keyframes slideUp { from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1} }
-    .q-emoji { font-size: 4rem; line-height: 1; margin-bottom: 0.75rem; }
-    .q-sport { font-family: 'Orbitron', sans-serif; font-size: 1.15rem; font-weight: 700; color: var(--red); margin-bottom: 0.35rem; }
-    .q-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.75rem; }
-    .q-pips { display: flex; gap: 10px; justify-content: center; margin-bottom: 1rem; }
+    @keyframes scaleIn { from{transform:scale(0.96);opacity:0}to{transform:scale(1);opacity:1} }
+    .q-sport {
+      font-size: 1.2rem; font-weight: 700; color: var(--text);
+      margin-bottom: 6px; letter-spacing: -0.03em;
+    }
+    .q-label { font-size: 0.8rem; color: var(--sub); margin-bottom: 32px; }
+    .q-pips { display: flex; gap: 7px; justify-content: center; margin-bottom: 10px; }
     .q-pip {
-      width: 18px; height: 18px; border-radius: 50%;
-      background: var(--red-pale); border: 2px solid rgba(200,24,30,0.2);
-      transition: all 0.3s ease;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--surf-2); border: 1px solid var(--border-2);
+      transition: all 0.22s ease;
     }
-    .q-pip.active {
-      background: var(--red); border-color: var(--red);
-      box-shadow: 0 0 10px rgba(200,24,30,0.45);
-    }
-    .q-count-text { font-size: 0.82rem; color: var(--muted); margin-bottom: 2rem; }
-    .q-count-text strong { color: var(--text); }
+    .q-pip.active { background: var(--accent); border-color: var(--accent); }
+    .q-count-text { font-size: 0.75rem; color: var(--dim); margin-bottom: 28px; }
+    .q-count-text strong { color: var(--text); font-weight: 600; }
     .btn-cancel {
-      background: white; border: 2px solid var(--border);
-      border-radius: 10px; color: var(--muted);
-      font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 600;
-      padding: 0.65rem 2rem; cursor: pointer; transition: all 0.2s;
+      background: transparent; border: 1px solid var(--border-2);
+      border-radius: 6px; color: var(--sub);
+      font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 500;
+      padding: 0.5rem 1.5rem; cursor: pointer; transition: all 0.15s;
     }
-    .btn-cancel:hover { border-color: var(--red); color: var(--red); }
+    .btn-cancel:hover { color: var(--text); border-color: rgba(255,255,255,0.22); }
 
-    /* ── Leaderboard ─────────────────────────────────────────────────── */
-    .lb-box { background: white; border: 2px solid var(--border); border-radius: 20px; overflow: hidden; box-shadow: var(--sh-md); }
+    /* ── Leaderboard ───────────────────────────────────────────── */
+    .lb-box { border: 1px solid var(--border-2); border-radius: 10px; overflow: hidden; }
     .lb-head {
-      background: var(--red); color: white;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0.9rem 1.5rem;
+      padding: 13px 20px; border-bottom: 1px solid var(--border);
     }
-    .lb-head-title { font-family: 'Orbitron', sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; }
-    .lb-live { display: flex; align-items: center; gap: 0.4rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.9; }
-    .lb-live-dot { width: 6px; height: 6px; border-radius: 50%; background: white; animation: dotP 2s ease-in-out infinite; }
-    @keyframes dotP { 0%,100%{opacity:1}50%{opacity:.5} }
+    .lb-head-title {
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--sub);
+    }
+    .lb-live { display: flex; align-items: center; gap: 5px; }
+    .lb-live-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--accent); animation: pulse 2.2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+    .lb-live-text {
+      font-size: 0.62rem; font-weight: 600;
+      letter-spacing: 0.09em; text-transform: uppercase; color: var(--dim);
+    }
     .lb-cols {
-      display: grid; grid-template-columns: 2.5rem 1fr 5rem 4.5rem 4.5rem;
-      gap: 0.5rem 1rem; padding: 0.55rem 1.5rem;
+      display: grid; grid-template-columns: 2.5rem 1fr 4.5rem 4rem 4rem;
+      padding: 8px 20px; gap: 0 1rem;
+      font-size: 0.6rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--dim);
       border-bottom: 1px solid var(--border);
-      font-size: 0.63rem; font-weight: 700; letter-spacing: 0.12em;
-      text-transform: uppercase; color: var(--muted);
     }
     .lb-row {
-      display: grid; grid-template-columns: 2.5rem 1fr 5rem 4.5rem 4.5rem;
-      gap: 0.5rem 1rem; align-items: center;
-      padding: 0.85rem 1.5rem; border-bottom: 1px solid rgba(180,20,26,0.06);
-      transition: background 0.15s;
+      display: grid; grid-template-columns: 2.5rem 1fr 4.5rem 4rem 4rem;
+      gap: 0 1rem; align-items: center;
+      padding: 11px 20px; border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
     }
     .lb-row:last-child { border-bottom: none; }
-    .lb-row:hover { background: var(--red-pale); }
-    .lb-row.flash { animation: rowFlash 1.1s ease; }
-    @keyframes rowFlash { 0%,100%{background:transparent}40%,60%{background:rgba(200,24,30,0.1)} }
-    .lb-rank { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700; text-align: center; }
-    .lb-rank.r1 { color: #c8911a; } .lb-rank.r2 { color: #888; } .lb-rank.r3 { color: #b07040; } .lb-rank.rn { color: var(--muted); }
-    .lb-name { font-weight: 700; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .lb-name.is-me { color: var(--red); }
-    .lb-wins { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--red); text-align: right; }
-    .lb-games { font-size: 0.78rem; color: var(--muted); text-align: right; }
-    .lb-rate { font-size: 0.75rem; font-weight: 700; text-align: right; }
-    .lb-rate.good { color: #16a34a; } .lb-rate.mid { color: #c8911a; } .lb-rate.low { color: var(--muted); }
-    .lb-empty { text-align: center; padding: 2.5rem 1rem; color: var(--muted); }
-    .lb-empty strong { display: block; margin-bottom: 0.3rem; font-size: 0.95rem; color: var(--body); }
+    .lb-row:hover { background: var(--surf); }
+    .lb-row.flash { animation: rowFlash 0.9s ease; }
+    @keyframes rowFlash { 0%,100%{background:transparent}40%,60%{background:rgba(229,25,31,0.05)} }
+    .lb-rank { font-size: 0.75rem; font-weight: 700; text-align: center; color: var(--dim); }
+    .lb-rank.r1 { color: #c8911a; } .lb-rank.r2 { color: #777; } .lb-rank.r3 { color: #9a6840; }
+    .lb-name { font-size: 0.85rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+    .lb-name.is-me { color: var(--accent); }
+    .lb-wins { font-size: 0.85rem; font-weight: 700; color: var(--text); text-align: right; }
+    .lb-games { font-size: 0.78rem; color: var(--sub); text-align: right; }
+    .lb-rate { font-size: 0.72rem; font-weight: 600; text-align: right; color: var(--dim); }
+    .lb-rate.good { color: #4ade80; } .lb-rate.mid { color: #facc15; }
+    .lb-empty {
+      text-align: center; padding: 44px 20px; color: var(--dim); font-size: 0.82rem;
+    }
+    .lb-empty strong { display: block; margin-bottom: 5px; font-size: 0.88rem; color: var(--sub); font-weight: 600; }
 
-    /* ── Auth modal ──────────────────────────────────────────────────── */
+    /* ── Auth modal ─────────────────────────────────────────────── */
     .auth-backdrop {
       position: fixed; inset: 0; z-index: 200;
-      background: rgba(245,236,224,0.88);
+      background: rgba(0,0,0,0.72);
       backdrop-filter: blur(10px);
       display: flex; align-items: center; justify-content: center;
-      padding: 1.5rem; animation: fadeIn 0.18s ease;
+      padding: 1.5rem; animation: fadeIn 0.15s ease;
     }
     .auth-modal {
-      background: white; border: 2px solid var(--border);
-      border-radius: 22px; padding: 2rem;
-      max-width: 370px; width: 100%;
-      box-shadow: var(--sh-lg); animation: slideUp 0.22s ease;
+      background: var(--surf);
+      border: 1px solid var(--border-2);
+      border-radius: 12px; padding: 28px 24px;
+      max-width: 340px; width: 100%;
+      animation: scaleIn 0.18s ease;
     }
-    .auth-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-    .auth-modal-title { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--red); letter-spacing: 0.08em; }
-    .auth-close { background: none; border: none; color: var(--muted); font-size: 1.2rem; cursor: pointer; line-height: 1; transition: color 0.2s; }
-    .auth-close:hover { color: var(--text); }
-    .auth-tabs { display: flex; background: var(--red-pale); border-radius: 10px; padding: 3px; margin-bottom: 1.5rem; gap: 3px; }
-    .auth-tab { flex: 1; padding: 0.55rem; border: none; background: transparent; border-radius: 8px; color: var(--muted); font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    .auth-tab.active { background: white; color: var(--red); box-shadow: var(--sh-sm); }
-    .auth-field { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.9rem; }
-    .auth-field label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .auth-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .auth-modal-title { font-size: 0.82rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+    .auth-close {
+      background: none; border: none; color: var(--dim);
+      font-size: 0.9rem; cursor: pointer; transition: color 0.15s; line-height: 1;
+    }
+    .auth-close:hover { color: var(--sub); }
+    .auth-tabs {
+      display: flex; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 7px;
+      padding: 3px; margin-bottom: 20px; gap: 2px;
+    }
+    .auth-tab {
+      flex: 1; padding: 0.42rem; border: none; background: transparent;
+      border-radius: 5px; color: var(--dim);
+      font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .auth-tab.active { background: var(--surf-2); color: var(--text); }
+    .auth-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .auth-field label {
+      font-size: 0.65rem; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim);
+    }
     .auth-input {
-      padding: 0.75rem 0.9rem; background: var(--cream);
-      border: 1.5px solid var(--border); border-radius: 10px;
-      color: var(--text); font-family: 'Inter', sans-serif; font-size: 0.92rem;
-      outline: none; transition: border-color 0.2s, box-shadow 0.2s; width: 100%;
+      padding: 0.62rem 0.85rem;
+      background: var(--bg); border: 1px solid var(--border-2);
+      border-radius: 7px; color: var(--text);
+      font-family: 'Inter', sans-serif; font-size: 0.88rem;
+      outline: none; transition: border-color 0.15s; width: 100%;
     }
-    .auth-input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(200,24,30,0.1); background: white; }
-    .auth-error { font-size: 0.78rem; color: var(--red); min-height: 1.1rem; text-align: center; }
+    .auth-input:focus { border-color: rgba(255,255,255,0.26); }
+    .auth-error { font-size: 0.73rem; color: var(--accent); min-height: 1rem; text-align: center; margin-top: 2px; }
     .btn-auth {
-      width: 100%; padding: 0.82rem;
-      background: var(--red); border: none; border-radius: 11px;
-      color: white; font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 700;
-      cursor: pointer; transition: all 0.2s; margin-top: 0.4rem;
-      box-shadow: 0 4px 14px rgba(200,24,30,0.35);
+      width: 100%; padding: 0.68rem;
+      background: var(--accent); border: none; border-radius: 7px;
+      color: white; font-family: 'Inter', sans-serif;
+      font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; transition: background 0.15s; margin-top: 4px;
+      letter-spacing: -0.01em;
     }
-    .btn-auth:hover:not(:disabled) { background: var(--red-h); box-shadow: 0 6px 20px rgba(200,24,30,0.45); transform: translateY(-1px); }
-    .btn-auth:disabled { opacity: 0.5; cursor: default; }
+    .btn-auth:hover:not(:disabled) { background: var(--accent-d); }
+    .btn-auth:disabled { opacity: 0.35; cursor: default; }
 
+    /* ── Mobile ─────────────────────────────────────────────────── */
     @media (max-width: 640px) {
       .sports-grid { grid-template-columns: repeat(2, 1fr); }
-      .hero-title { font-size: 2.2rem; }
+      .hero { padding: 48px 0 44px; }
+      .hero-title { font-size: 2.4rem; }
       .lb-cols, .lb-row { grid-template-columns: 2rem 1fr 4rem 3.5rem; }
       .lb-cols > :last-child, .lb-row > :last-child { display: none; }
+      .page { padding: 0 1.25rem; }
+      .site-header { padding: 0 1.25rem; }
     }
   </style>
 </head>
 <body>
 
-  <div class="bg-blob bg-blob-1" aria-hidden="true"></div>
-  <div class="bg-blob bg-blob-2" aria-hidden="true"></div>
-
-  <!-- ── Header ─────────────────────────────────────────────────────────── -->
   <header class="site-header">
     <div class="header-logo">
-      <div class="logo-badge">?</div>
-      <span class="logo-text">IMPOSPORT</span>
+      <div class="logo-mark">I</div>
+      <span class="logo-text">Imposport</span>
     </div>
     <div class="header-right" id="header-right">
-      <button class="btn-signin" id="btn-open-auth">Sign In</button>
+      <button class="btn-signin" id="btn-open-auth">Sign in</button>
     </div>
   </header>
 
   <div class="page">
 
-    <!-- ── Hero ───────────────────────────────────────────────────────────── -->
     <section class="hero">
-      <div class="hero-eyebrow"><span class="hero-dot"></span>Social Deduction · Sports Edition</div>
-      <h1 class="hero-title">Find the<br><span class="accent">Imposter</span></h1>
-      <p class="hero-sub">Three players. One secret sports star. One faker.<br>Pick a sport below to jump into the action.</p>
+      <p class="hero-label">Social deduction &middot; Sports edition</p>
+      <h1 class="hero-title">Find the<br><em>imposter.</em></h1>
+      <p class="hero-sub">Three players. One secret athlete. One faker who doesn't know the name. Pick a sport to start.</p>
 
-      <!-- Guest: name input -->
       <div class="name-bar-wrap" id="guest-section">
         <div class="name-bar" id="name-bar">
-          <span class="name-bar-icon">👤</span>
-          <input type="text" id="name-input" placeholder="Enter your display name…" maxlength="20" autocomplete="off">
+          <input type="text" id="name-input" placeholder="Your display name" maxlength="20" autocomplete="off">
         </div>
-        <p class="name-bar-hint">No account needed · <button id="open-auth-hint">Sign in to track wins →</button></p>
+        <p class="name-bar-hint">No account needed &middot; <button id="open-auth-hint">Sign in to track wins</button></p>
       </div>
 
-      <!-- Logged in: playing-as -->
       <div class="playing-as" id="logged-in-section" style="display:none">
         <div class="pa-avatar" id="pa-avatar">?</div>
         <div class="pa-text">
@@ -395,75 +398,66 @@
       </div>
     </section>
 
-    <!-- ── Sport cards ─────────────────────────────────────────────────────── -->
-    <section class="section-wrap">
-      <div class="section-header">
-        <div class="section-eyebrow">Pick Your Sport</div>
-        <p class="section-title">Choose a category to play</p>
-      </div>
+    <section class="section">
+      <p class="section-label">Pick a sport</p>
       <div class="sports-grid" id="sports-grid"></div>
     </section>
 
-    <!-- ── Leaderboard ─────────────────────────────────────────────────────── -->
-    <section class="section-wrap" style="padding-top:0">
-      <div class="section-header">
-        <div class="section-eyebrow">Hall of Fame</div>
-        <p class="section-title">Top Imposters</p>
-      </div>
+    <section class="section">
+      <p class="section-label">Leaderboard</p>
       <div class="lb-box">
         <div class="lb-head">
-          <span class="lb-head-title">LEADERBOARD</span>
-          <span class="lb-live"><span class="lb-live-dot"></span>Live</span>
+          <span class="lb-head-title">Top players</span>
+          <span class="lb-live"><span class="lb-live-dot"></span><span class="lb-live-text">Live</span></span>
         </div>
         <div class="lb-cols">
           <span>#</span><span>Player</span><span style="text-align:right">Wins</span><span style="text-align:right">Games</span><span style="text-align:right">Win %</span>
         </div>
         <div id="lb-body">
-          <div class="lb-empty"><strong>No games played yet</strong>Sign in and be the first on the board!</div>
+          <div class="lb-empty"><strong>No games played yet</strong>Sign in and be the first on the board.</div>
         </div>
       </div>
     </section>
 
-  </div><!-- /.page -->
+  </div>
 
-  <!-- ── Queue overlay ──────────────────────────────────────────────────── -->
+  <!-- Queue overlay -->
   <div id="queue-overlay" class="queue-overlay" style="display:none">
     <div class="queue-card">
-      <div class="q-emoji" id="q-emoji">🏀</div>
-      <div class="q-sport" id="q-sport">NBA</div>
-      <div class="q-label">Searching for opponents…</div>
+      <p class="q-sport" id="q-sport">NBA</p>
+      <p class="q-label">Searching for players&hellip;</p>
       <div class="q-pips">
         <span class="q-pip" id="pip-0"></span>
         <span class="q-pip" id="pip-1"></span>
         <span class="q-pip" id="pip-2"></span>
       </div>
-      <div class="q-count-text"><strong id="queue-live">1</strong> / 3 players ready</div>
+      <p class="q-count-text"><strong id="queue-live">1</strong> / 3 players ready</p>
       <button class="btn-cancel" id="cancel-btn">Cancel</button>
     </div>
   </div>
 
-  <!-- ── Auth modal ─────────────────────────────────────────────────────── -->
+  <!-- Auth modal -->
   <div class="auth-backdrop" id="auth-modal" style="display:none">
     <div class="auth-modal">
       <div class="auth-modal-header">
-        <span class="auth-modal-title">ACCOUNT</span>
-        <button class="auth-close" id="auth-close">✕</button>
+        <span class="auth-modal-title">Account</span>
+        <button class="auth-close" id="auth-close">&#x2715;</button>
       </div>
       <div class="auth-tabs">
-        <button class="auth-tab active" data-tab="login">Login</button>
+        <button class="auth-tab active" data-tab="login">Sign in</button>
         <button class="auth-tab" data-tab="register">Register</button>
       </div>
       <div id="auth-login-form">
         <div class="auth-field"><label>Username</label><input class="auth-input" id="login-username" type="text" autocomplete="username" placeholder="your_name"></div>
-        <div class="auth-field"><label>Password</label><input class="auth-input" id="login-password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+        <div class="auth-field"><label>Password</label><input class="auth-input" id="login-password" type="password" autocomplete="current-password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"></div>
         <div class="auth-error" id="login-error"></div>
-        <button class="btn-auth" id="btn-login">Login</button>
+        <button class="btn-auth" id="btn-login">Sign in</button>
       </div>
       <div id="auth-register-form" style="display:none">
         <div class="auth-field"><label>Username</label><input class="auth-input" id="reg-username" type="text" autocomplete="username" placeholder="2–20 characters"></div>
         <div class="auth-field"><label>Password</label><input class="auth-input" id="reg-password" type="password" autocomplete="new-password" placeholder="min. 4 characters"></div>
         <div class="auth-error" id="reg-error"></div>
-        <button class="btn-auth" id="btn-register">Create Account</button>
+        <button class="btn-auth" id="btn-register">Create account</button>
       </div>
     </div>
   </div>
@@ -472,12 +466,12 @@
   <script>
     // ── Sport config ───────────────────────────────────────────────────────────
     const SPORT_CARDS = [
-      { key: 'NBA Players',    emoji: '🏀', name: 'NBA',    sub: 'Basketball' },
-      { key: 'NFL Players',    emoji: '🏈', name: 'NFL',    sub: 'Football'   },
-      { key: 'MLB Players',    emoji: '⚾', name: 'MLB',    sub: 'Baseball'   },
-      { key: 'Soccer Players', emoji: '⚽', name: 'Soccer', sub: 'Football'   },
-      { key: 'MMA Fighters',   emoji: '🥊', name: 'MMA',    sub: 'Fighting'   },
-      { key: 'NHL Players',    emoji: '🏒', name: 'NHL',    sub: 'Hockey'     },
+      { key: 'NBA Players',    name: 'NBA',    sub: 'Basketball' },
+      { key: 'NFL Players',    name: 'NFL',    sub: 'Football'   },
+      { key: 'MLB Players',    name: 'MLB',    sub: 'Baseball'   },
+      { key: 'Soccer Players', name: 'Soccer', sub: 'Football'   },
+      { key: 'MMA Fighters',   name: 'MMA',    sub: 'Fighting'   },
+      { key: 'NHL Players',    name: 'NHL',    sub: 'Hockey'     },
     ];
 
     // ── Socket + state ─────────────────────────────────────────────────────────
@@ -502,9 +496,8 @@
       card.style.setProperty('--i', i);
       card.dataset.key = s.key;
       card.innerHTML = `
-        <span class="card-emoji">${s.emoji}</span>
-        <span class="card-name">${s.name}</span>
-        <span class="card-sub">${s.sub}</span>
+        <span class="card-sport-code">${s.name}</span>
+        <span class="card-name">${s.sub}</span>
         <span class="card-waiting" id="wait-${s.key.replace(/\s+/g,'-')}"></span>
       `;
       card.addEventListener('click', () => tryJoinQueue(s));
@@ -537,7 +530,7 @@
         <div class="user-chip">
           <div class="user-chip-avatar">${username.charAt(0).toUpperCase()}</div>
           <span class="user-chip-name">${username}</span>
-          <button class="btn-signout-chip" id="btn-signout-header">↩</button>
+          <button class="btn-signout-chip" id="btn-signout-header">&#x21A9;</button>
         </div>`;
       document.getElementById('btn-signout-header').addEventListener('click', setLoggedOut);
     }
@@ -551,7 +544,7 @@
       document.getElementById('guest-section').style.display     = 'block';
       document.getElementById('logged-in-section').style.display = 'none';
 
-      document.getElementById('header-right').innerHTML = `<button class="btn-signin" id="btn-open-auth">Sign In</button>`;
+      document.getElementById('header-right').innerHTML = `<button class="btn-signin" id="btn-open-auth">Sign in</button>`;
       document.getElementById('btn-open-auth').addEventListener('click', openAuthModal);
     }
 
@@ -575,7 +568,6 @@
 
       socket.emit('joinQueue', { name, peerId, token: authToken, category: sport.key });
 
-      document.getElementById('q-emoji').textContent = sport.emoji;
       document.getElementById('q-sport').textContent = sport.name;
       updateQueuePips(1);
       document.getElementById('queue-live').textContent = '1';
@@ -636,14 +628,14 @@
       const password = document.getElementById('login-password').value;
       err.textContent = '';
       if (!username || !password) { err.textContent = 'Fill in both fields.'; return; }
-      btn.disabled = true; btn.textContent = 'Logging in…';
+      btn.disabled = true; btn.textContent = 'Signing in…';
       try {
         const res  = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
         const data = await res.json();
         if (data.error) err.textContent = data.error;
         else { setLoggedIn(data.username, data.token); closeAuthModal(); loadLeaderboard(); }
       } catch { err.textContent = 'Network error. Try again.'; }
-      finally { btn.disabled = false; btn.textContent = 'Login'; }
+      finally { btn.disabled = false; btn.textContent = 'Sign in'; }
     });
 
     document.getElementById('btn-register').addEventListener('click', async () => {
@@ -660,7 +652,7 @@
         if (data.error) err.textContent = data.error;
         else { setLoggedIn(data.username, data.token); closeAuthModal(); loadLeaderboard(); }
       } catch { err.textContent = 'Network error. Try again.'; }
-      finally { btn.disabled = false; btn.textContent = 'Create Account'; }
+      finally { btn.disabled = false; btn.textContent = 'Create account'; }
     });
 
     ['login-username','login-password'].forEach(id =>
@@ -674,11 +666,11 @@
     function renderLeaderboard(rows) {
       const body = document.getElementById('lb-body');
       if (!rows || rows.length === 0) {
-        body.innerHTML = '<div class="lb-empty"><strong>No games played yet</strong>Sign in and be the first on the board!</div>';
+        body.innerHTML = '<div class="lb-empty"><strong>No games played yet</strong>Sign in and be the first on the board.</div>';
         return;
       }
-      const MEDALS = ['🥇','🥈','🥉'];
-      const RCLS   = ['r1','r2','r3'];
+      const RANK_LABELS = ['1', '2', '3'];
+      const RANK_CLS    = ['r1', 'r2', 'r3'];
       const prev = {};
       body.querySelectorAll('.lb-row[data-user]').forEach(el => {
         prev[el.dataset.user] = parseInt(el.dataset.wins || 0);
@@ -686,14 +678,14 @@
       body.innerHTML = rows.map((row, i) => {
         const rate    = row.games_played > 0 ? Math.round((row.imposter_wins / row.games_played) * 100) : 0;
         const rClass  = rate >= 40 ? 'good' : rate >= 20 ? 'mid' : 'low';
-        const rankCls = RCLS[i]   || 'rn';
-        const rankLbl = MEDALS[i] || (i + 1);
+        const rankCls = RANK_CLS[i]    || 'rn';
+        const rankLbl = RANK_LABELS[i] || (i + 1);
         const isMe    = authUsername && row.username.toLowerCase() === authUsername.toLowerCase();
         const changed = prev[row.username] !== undefined && prev[row.username] !== row.imposter_wins;
         return `
           <div class="lb-row${changed ? ' flash' : ''}" data-user="${row.username}" data-wins="${row.imposter_wins}">
             <span class="lb-rank ${rankCls}">${rankLbl}</span>
-            <span class="lb-name${isMe ? ' is-me' : ''}">${row.username}${isMe ? ' ★' : ''}</span>
+            <span class="lb-name${isMe ? ' is-me' : ''}">${row.username}${isMe ? ' &starf;' : ''}</span>
             <span class="lb-wins">${row.imposter_wins}</span>
             <span class="lb-games">${row.games_played}</span>
             <span class="lb-rate ${rClass}">${rate}%</span>
