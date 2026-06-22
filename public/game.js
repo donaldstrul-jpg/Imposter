@@ -176,10 +176,43 @@
     pending[remoteIdx] = [];
   }
 
-  // allPeersReady: show vote bar immediately, then kick off WebRTC handshake.
-  // Vote bar appears right away so players aren't blocked waiting for video streams.
-  socket.on('allPeersReady', async () => {
-    showVoteBar();
+  const TIMER_DURATION = 30000;
+  const TIMER_R = 20;
+  const TIMER_CIRCUMFERENCE = 2 * Math.PI * TIMER_R; // ≈ 125.66
+
+  function startDiscussionTimer(voteOpenAt) {
+    document.getElementById('waiting-overlay').style.display = 'none';
+    const timerEl = document.getElementById('discussion-timer');
+    const arc = document.getElementById('timer-arc');
+    const numEl = document.getElementById('timer-number');
+
+    arc.style.strokeDasharray = `${TIMER_CIRCUMFERENCE}`;
+    arc.style.strokeDashoffset = '0';
+    timerEl.style.display = 'flex';
+
+    const tick = () => {
+      const remaining = Math.max(0, voteOpenAt - Date.now());
+      const secs = Math.ceil(remaining / 1000);
+      numEl.textContent = secs;
+      arc.style.strokeDashoffset = TIMER_CIRCUMFERENCE * (1 - remaining / TIMER_DURATION);
+      const urgent = secs <= 5;
+      arc.style.stroke = urgent ? '#e5191f' : '#ededed';
+      numEl.style.color = urgent ? '#e5191f' : '#ededed';
+
+      if (remaining <= 0) {
+        timerEl.style.opacity = '0';
+        setTimeout(() => { timerEl.style.display = 'none'; showVoteBar(); }, 300);
+        return;
+      }
+      setTimeout(tick, 100);
+    };
+
+    tick();
+  }
+
+  // allPeersReady: start 30s discussion timer, then reveal vote bar. Also kicks off WebRTC.
+  socket.on('allPeersReady', async ({ voteOpenAt }) => {
+    startDiscussionTimer(voteOpenAt);
 
     for (const p of remotePlayers) makePc(p.index);
 

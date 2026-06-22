@@ -28,13 +28,13 @@
       font-weight: 700;
       letter-spacing: .1em;
       text-transform: uppercase;
-      color: rgba(196,181,253,.6);
+      color: rgba(255,255,255,0.4);
       white-space: nowrap;
     }
     .vote-options { display: flex; gap: .6rem; flex-wrap: wrap; }
     .btn-vote-player {
       padding: .45rem 1.1rem;
-      background: rgba(139,92,246,.12);
+      background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.14);
       border-radius: 8px;
       color: #ededed;
@@ -57,6 +57,56 @@
       white-space: nowrap;
     }
 
+    /* ── Discussion timer ────────────────────────────────────────────── */
+    .discussion-timer {
+      flex-shrink: 0;
+      background: rgba(17,17,17,.97);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.1rem;
+      transition: opacity .3s ease;
+    }
+    .timer-ring-wrap {
+      position: relative;
+      width: 48px; height: 48px;
+      flex-shrink: 0;
+    }
+    .timer-ring {
+      width: 48px; height: 48px;
+      transform: rotate(-90deg);
+      overflow: visible;
+    }
+    .timer-track {
+      fill: none;
+      stroke: rgba(255,255,255,0.08);
+      stroke-width: 3;
+    }
+    .timer-arc {
+      fill: none;
+      stroke: #ededed;
+      stroke-width: 3;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.12s linear, stroke 0.4s ease;
+    }
+    .timer-number {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1rem;
+      font-weight: 700;
+      color: #ededed;
+      font-family: 'Inter', sans-serif;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      transition: color 0.4s ease;
+    }
+    .timer-text { display: flex; flex-direction: column; gap: 3px; }
+    .timer-title { font-size: .82rem; font-weight: 600; color: #ededed; }
+    .timer-sub { font-size: .7rem; color: rgba(255,255,255,0.3); }
+
     /* ── Result overlay ──────────────────────────────────────────────── */
     .result-overlay {
       position: fixed; inset: 0;
@@ -69,55 +119,55 @@
     }
     @keyframes fadeIn { from{opacity:0}to{opacity:1} }
     .result-card {
-      background: #0e0e1c;
-      border: 1px solid rgba(139,92,246,.3);
-      border-radius: 24px;
+      background: #161616;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
       padding: 2.5rem 2rem;
-      max-width: 420px; width: 100%;
+      max-width: 400px; width: 100%;
       text-align: center;
-      box-shadow: 0 0 80px rgba(124,58,237,.25), 0 30px 60px rgba(0,0,0,.5);
+      box-shadow: 0 30px 60px rgba(0,0,0,.6);
       animation: slideUp .4s ease;
     }
-    @keyframes slideUp { from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1} }
+    @keyframes slideUp { from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1} }
     .result-verdict {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.5rem; font-weight: 900; letter-spacing: .04em;
+      font-family: 'Inter', sans-serif;
+      font-size: 1.4rem; font-weight: 800; letter-spacing: -.02em;
       margin-bottom: .75rem;
     }
-    .result-verdict.caught  { color: #f87171; text-shadow: 0 0 30px rgba(248,113,113,.5); }
-    .result-verdict.escaped { color: #a78bfa; text-shadow: 0 0 30px rgba(167,139,250,.5); }
-    .result-emoji { font-size: 3.5rem; margin-bottom: .75rem; }
+    .result-verdict.caught  { color: #e5191f; }
+    .result-verdict.escaped { color: #ededed; }
+    .result-emoji { font-size: 2.8rem; margin-bottom: .75rem; }
     .result-section {
       background: rgba(255,255,255,.04);
-      border: 1px solid rgba(139,92,246,.15);
-      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
       padding: .85rem 1rem; margin: .6rem 0; font-size: .9rem;
     }
     .result-section-label {
       font-size: .65rem; text-transform: uppercase; letter-spacing: .12em;
-      color: rgba(196,181,253,.5); margin-bottom: .25rem;
+      color: rgba(255,255,255,.35); margin-bottom: .25rem;
     }
-    .result-section-value { font-weight: 700; font-size: 1.05rem; color: #e2e2f0; }
-    .result-section-value.highlight { color: #c4b5fd; }
+    .result-section-value { font-weight: 700; font-size: 1.05rem; color: #ededed; }
+    .result-section-value.highlight { color: #e5191f; }
     .result-votes {
-      font-size: .78rem; color: rgba(180,180,220,.55); margin: .5rem 0 1.25rem;
+      font-size: .78rem; color: rgba(255,255,255,.3); margin: .5rem 0 1.25rem;
     }
     .result-win-badge {
       display: inline-block; padding: .3rem .9rem;
-      background: linear-gradient(135deg,#7c3aed,#9333ea);
+      background: rgba(229,25,31,0.18);
+      border: 1px solid rgba(229,25,31,0.4);
       border-radius: 20px; font-size: .75rem; font-weight: 700;
-      color: #fff; margin-bottom: 1rem;
-      box-shadow: 0 0 16px rgba(124,58,237,.5);
+      color: #e5191f; margin-bottom: 1rem;
     }
     .btn-play-again {
       display: inline-block; margin-top: .5rem; padding: .8rem 2rem;
-      background: linear-gradient(135deg,#7c3aed,#9333ea);
-      border-radius: 11px; color: #fff;
+      background: #e5191f;
+      border-radius: 10px; color: #fff;
       font-family: 'Inter', sans-serif; font-weight: 700;
       text-decoration: none; font-size: .95rem;
-      transition: all .2s; box-shadow: 0 0 20px rgba(124,58,237,.4);
+      transition: background .15s;
     }
-    .btn-play-again:hover { box-shadow: 0 0 35px rgba(124,58,237,.7); transform: translateY(-1px); }
+    .btn-play-again:hover { background: #c8181e; }
   </style>
 </head>
 <body class="game-body">
@@ -156,7 +206,22 @@
     </div>
   </div>
 
-  <!-- Vote bar — revealed when all 3 players are ready -->
+  <!-- Discussion timer — 30s countdown before voting opens -->
+  <div id="discussion-timer" class="discussion-timer" style="display:none">
+    <div class="timer-ring-wrap">
+      <svg class="timer-ring" viewBox="0 0 48 48">
+        <circle class="timer-track" cx="24" cy="24" r="20"/>
+        <circle class="timer-arc" id="timer-arc" cx="24" cy="24" r="20"/>
+      </svg>
+      <span class="timer-number" id="timer-number">30</span>
+    </div>
+    <div class="timer-text">
+      <span class="timer-title">Discuss</span>
+      <span class="timer-sub">Voting opens when timer ends</span>
+    </div>
+  </div>
+
+  <!-- Vote bar — revealed after discussion timer ends -->
   <div id="vote-bar" class="vote-bar" style="display:none">
     <span class="vote-bar-label">Who's the imposter?</span>
     <div class="vote-options" id="vote-options"></div>

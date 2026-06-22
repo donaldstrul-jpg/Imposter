@@ -834,8 +834,10 @@ io.on('connection', (socket) => {
     // Ack back to this socket so the debug overlay can show progress
     socket.emit('peerReadyAck', { count: room.readyCount });
 
-    if (room.readyCount >= 3)
-      room.players.forEach((p) => io.to(p.socketId).emit('allPeersReady'));
+    if (room.readyCount >= 3) {
+      const voteOpenAt = Date.now() + 30000;
+      room.players.forEach((p) => io.to(p.socketId).emit('allPeersReady', { voteOpenAt }));
+    }
   });
 
   socket.on('submitVote', ({ roomId, votedForIndex }) => {
