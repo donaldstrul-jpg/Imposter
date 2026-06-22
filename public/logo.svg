@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-label="Imposport">
+  <rect width="80" height="80" fill="#F5F0E8"/>
+  <defs>
+    <!-- Person silhouette: circle head + body path -->
+    <clipPath id="person">
+      <circle cx="40" cy="20" r="8"/>
+      <path d="M31,31 C27,46 27,60 30,72 L50,72 C53,60 53,46 49,31 C46,28 34,28 31,31 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- All barcode bars — black -->
+  <g fill="#1a1a1a">
+    <rect x="2"    width="2"   height="80"/>
+    <rect x="5.5"  width="1"   height="80"/>
+    <rect x="7.5"  width="2.5" height="80"/>
+    <rect x="11"   width="1.5" height="80"/>
+    <rect x="14"   width="1"   height="80"/>
+    <rect x="16"   width="2"   height="80"/>
+    <rect x="19.5" width="1.5" height="80"/>
+    <rect x="22.5" width="1"   height="80"/>
+    <rect x="24.5" width="2"   height="80"/>
+    <rect x="28"   width="1.5" height="80"/>
+    <rect x="31"   width="2"   height="80"/>
+    <rect x="35"   width="1.5" height="80"/>
+    <rect x="38"   width="4"   height="80"/>
+    <rect x="44"   width="2"   height="80"/>
+    <rect x="48"   width="1.5" height="80"/>
+    <rect x="51"   width="2"   height="80"/>
+    <rect x="55"   width="1.5" height="80"/>
+    <rect x="58"   width="2"   height="80"/>
+    <rect x="61.5" width="1"   height="80"/>
+    <rect x="64"   width="2.5" height="80"/>
+    <rect x="68"   width="1.5" height="80"/>
+    <rect x="71"   width="1"   height="80"/>
+    <rect x="74"   width="2"   height="80"/>
+    <rect x="77.5" width="1.5" height="80"/>
+  </g>
+
+  <!-- Same bars in red, clipped to person silhouette -->
+  <g fill="#e8192c" clip-path="url(#person)">
+    <rect x="2"    width="2"   height="80"/>
+    <rect x="5.5"  width="1"   height="80"/>
+    <rect x="7.5"  width="2.5" height="80"/>
+    <rect x="11"   width="1.5" height="80"/>
+    <rect x="14"   width="1"   height="80"/>
+    <rect x="16"   width="2"   height="80"/>
+    <rect x="19.5" width="1.5" height="80"/>
+    <rect x="22.5" width="1"   height="80"/>
+    <rect x="24.5" width="2"   height="80"/>
+    <rect x="28"   width="1.5" height="80"/>
+    <rect x="31"   width="2"   height="80"/>
+    <rect x="35"   width="1.5" height="80"/>
+    <rect x="38"   width="4"   height="80"/>
+    <rect x="44"   width="2"   height="80"/>
+    <rect x="48"   width="1.5" height="80"/>
+    <rect x="51"   width="2"   height="80"/>
+    <rect x="55"   width="1.5" height="80"/>
+    <rect x="58"   width="2"   height="80"/>
+    <rect x="61.5" width="1"   height="80"/>
+    <rect x="64"   width="2.5" height="80"/>
+    <rect x="68"   width="1.5" height="80"/>
+    <rect x="71"   width="1"   height="80"/>
+    <rect x="74"   width="2"   height="80"/>
+    <rect x="77.5" width="1.5" height="80"/>
+  </g>
+</svg>

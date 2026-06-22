@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Imposport — Admin</title>
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -54,12 +55,7 @@
       display: flex; align-items: center; gap: 0.7rem;
       margin-bottom: 2rem;
     }
-    .login-badge {
-      width: 40px; height: 40px; border-radius: 10px;
-      background: var(--red); color: white;
-      font-weight: 900; font-size: 1.4rem;
-      display: flex; align-items: center; justify-content: center;
-    }
+    .login-logo img { border-radius: 7px; }
     .login-title {
       font-family: 'Orbitron', sans-serif;
       font-size: 1.1rem; font-weight: 900;
@@ -100,12 +96,7 @@
       padding: 0 1.5rem;
     }
     .admin-logo { display: flex; align-items: center; gap: 0.65rem; }
-    .admin-badge {
-      width: 34px; height: 34px; border-radius: 8px;
-      background: var(--red); color: white;
-      font-weight: 900; font-size: 1.2rem;
-      display: flex; align-items: center; justify-content: center;
-    }
+    .admin-logo img { border-radius: 4px; }
     .admin-logo-text { font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 900; color: var(--red); letter-spacing: 0.08em; }
     .admin-logo-tag { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-left: 0.3rem; }
     .admin-meta { display: flex; align-items: center; gap: 1rem; }
@@ -277,7 +268,7 @@
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo">
-      <div class="login-badge">I</div>
+      <img src="/logo.svg" alt="Imposport" width="44" height="44" style="border-radius:7px;display:block;flex-shrink:0">
       <div>
         <div class="login-title">IMPOSPORT</div>
         <div class="login-sub">Admin Dashboard</div>
@@ -294,7 +285,7 @@
 <div id="dashboard">
   <header class="admin-header">
     <div class="admin-logo">
-      <div class="admin-badge">I</div>
+      <img src="/logo.svg" alt="Imposport" width="28" height="28" style="border-radius:4px;display:block;flex-shrink:0">
       <span class="admin-logo-text">IMPOSPORT</span>
       <span class="admin-logo-tag">Admin</span>
     </div>

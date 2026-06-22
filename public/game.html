@@ -4,15 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Imposport — Game</title>
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
     /* ── Vote bar ────────────────────────────────────────────────────── */
+    .game-logo-link { flex-shrink: 0; display: flex; align-items: center; opacity: 0.7; transition: opacity 0.15s; }
+    .game-logo-link:hover { opacity: 1; }
     .vote-bar {
       flex-shrink: 0;
-      background: rgba(10,10,20,.95);
-      border-top: 1px solid rgba(139,92,246,.25);
+      background: rgba(17,17,17,.97);
+      border-top: 1px solid rgba(255,255,255,0.08);
       padding: .75rem 1.25rem;
       display: flex;
       align-items: center;
@@ -32,26 +35,24 @@
     .btn-vote-player {
       padding: .45rem 1.1rem;
       background: rgba(139,92,246,.12);
-      border: 1px solid rgba(139,92,246,.35);
+      border: 1px solid rgba(255,255,255,0.14);
       border-radius: 8px;
-      color: #c4b5fd;
+      color: #ededed;
       font-family: 'Inter', sans-serif;
       font-size: .85rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all .2s;
+      transition: all .15s;
     }
     .btn-vote-player:hover:not(:disabled) {
-      background: rgba(139,92,246,.28);
-      border-color: #8b5cf6;
-      box-shadow: 0 0 14px rgba(139,92,246,.4);
-      transform: translateY(-1px);
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.28);
     }
-    .btn-vote-player:disabled { opacity: .45; cursor: default; }
-    .btn-vote-player.voted { background: rgba(139,92,246,.35); border-color: #8b5cf6; color: #fff; }
+    .btn-vote-player:disabled { opacity: .35; cursor: default; }
+    .btn-vote-player.voted { background: rgba(229,25,31,0.18); border-color: rgba(229,25,31,0.5); color: #fff; }
     .vote-status {
-      font-size: .78rem;
-      color: rgba(196,181,253,.55);
+      font-size: .75rem;
+      color: rgba(255,255,255,0.3);
       margin-left: auto;
       white-space: nowrap;
     }
@@ -123,8 +124,11 @@
 
   <!-- Role banner -->
   <div id="role-banner" class="role-banner">
+    <a href="/" class="game-logo-link" title="Imposport">
+      <img src="/logo.svg" alt="Imposport" width="26" height="26" style="border-radius:4px;display:block;">
+    </a>
     <div id="role-content"></div>
-    <button id="toggle-role-btn" class="toggle-role-btn" title="Hide/show role">👁 Hide</button>
+    <button id="toggle-role-btn" class="toggle-role-btn" title="Hide/show role">Hide</button>
   </div>
 
   <!-- 3-tile native video grid -->
