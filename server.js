@@ -24,8 +24,9 @@ const io = new Server(server, {
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ── Database ──────────────────────────────────────────────────────────────────
-const JWT_SECRET = process.env.JWT_SECRET || 'imposter-dev-secret-change-in-prod';
-const DB_DIR     = process.env.DB_DIR || __dirname;
+const JWT_SECRET     = process.env.JWT_SECRET     || 'imposter-dev-secret-change-in-prod';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'imposter-admin';
+const DB_DIR         = process.env.DB_DIR || __dirname;
 if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
 
 const db = new DatabaseSync(path.join(DB_DIR, 'imposter.db'));
@@ -37,15 +38,32 @@ db.exec(`
     imposter_wins INTEGER DEFAULT 0,
     games_played  INTEGER DEFAULT 0,
     created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE TABLE IF NOT EXISTS game_history (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    category        TEXT    NOT NULL,
+    word            TEXT    NOT NULL,
+    imposter_name   TEXT    NOT NULL,
+    imposter_caught INTEGER NOT NULL,
+    players_json    TEXT    NOT NULL,
+    played_at       DATETIME DEFAULT CURRENT_TIMESTAMP
   )
 `);
 
 const stmts = {
-  register:      db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)'),
-  findByName:    db.prepare('SELECT * FROM users WHERE username = ?'),
-  leaderboard:   db.prepare('SELECT username, imposter_wins, games_played FROM users WHERE games_played > 0 ORDER BY imposter_wins DESC, CAST(imposter_wins AS REAL)/games_played DESC LIMIT 10'),
-  addGame:       db.prepare('UPDATE users SET games_played = games_played + 1 WHERE id = ?'),
-  addWin:        db.prepare('UPDATE users SET imposter_wins = imposter_wins + 1, games_played = games_played + 1 WHERE id = ?'),
+  register:       db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)'),
+  findByName:     db.prepare('SELECT * FROM users WHERE username = ?'),
+  leaderboard:    db.prepare('SELECT username, imposter_wins, games_played FROM users WHERE games_played > 0 ORDER BY imposter_wins DESC, CAST(imposter_wins AS REAL)/games_played DESC LIMIT 10'),
+  addGame:        db.prepare('UPDATE users SET games_played = games_played + 1 WHERE id = ?'),
+  addWin:         db.prepare('UPDATE users SET imposter_wins = imposter_wins + 1, games_played = games_played + 1 WHERE id = ?'),
+  insertHistory:  db.prepare('INSERT INTO game_history (category, word, imposter_name, imposter_caught, players_json) VALUES (?, ?, ?, ?, ?)'),
+  totalGames:     db.prepare('SELECT COUNT(*) as count FROM game_history'),
+  totalPlayers:   db.prepare('SELECT COUNT(*) as count FROM users'),
+  categoryStats:  db.prepare('SELECT category, COUNT(*) as games FROM game_history GROUP BY category ORDER BY games DESC'),
+  allLeaderboard: db.prepare('SELECT username, imposter_wins, games_played, created_at FROM users ORDER BY imposter_wins DESC, CASE WHEN games_played > 0 THEN CAST(imposter_wins AS REAL)/games_played ELSE 0 END DESC'),
+  recentHistory:  db.prepare('SELECT * FROM game_history ORDER BY played_at DESC LIMIT 100'),
+  dailySignups:   db.prepare("SELECT DATE(created_at) as day, COUNT(*) as count FROM users WHERE created_at >= DATE('now', '-29 days') GROUP BY day ORDER BY day"),
+  dailyGames:     db.prepare("SELECT DATE(played_at) as day, COUNT(*) as count FROM game_history WHERE played_at >= DATE('now', '-29 days') GROUP BY day ORDER BY day"),
 };
 
 function getLeaderboard() { return stmts.leaderboard.all(); }
@@ -78,6 +96,39 @@ app.post('/api/login', (req, res) => {
 });
 
 app.get('/api/leaderboard', (_req, res) => res.json(getLeaderboard()));
+
+// ── Admin routes ──────────────────────────────────────────────────────────────
+app.get('/admin', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
+
+function requireAdmin(req, res, next) {
+  const pw = req.headers['x-admin-password'] || req.query.pw;
+  if (!pw || pw !== ADMIN_PASSWORD) return res.status(401).json({ error: 'Unauthorized' });
+  next();
+}
+
+app.get('/api/admin/data', requireAdmin, (_req, res) => {
+  const activeGames = Object.entries(rooms).map(([roomId, room]) => ({
+    roomId,
+    category:       room.category,
+    word:           room.word,
+    players:        room.players.map(p => p.name),
+    imposterIndex:  room.imposterIndex,
+    startedAt:      room.startedAt,
+    readyCount:     room.readyCount,
+    votesIn:        Object.keys(room.votes).length,
+  }));
+
+  res.json({
+    totalGames:    stmts.totalGames.get().count,
+    totalPlayers:  stmts.totalPlayers.get().count,
+    activeGames,
+    categoryStats: stmts.categoryStats.all(),
+    leaderboard:   stmts.allLeaderboard.all(),
+    recentHistory: stmts.recentHistory.all(),
+    dailySignups:  stmts.dailySignups.all(),
+    dailyGames:    stmts.dailyGames.all(),
+  });
+});
 
 // ── Game data ─────────────────────────────────────────────────────────────────
 const CATEGORIES = {
@@ -742,7 +793,7 @@ io.on('connection', (socket) => {
       const picked        = wordList[Math.floor(Math.random() * wordList.length)];
       const imposterIndex = Math.floor(Math.random() * 3);
 
-      rooms[roomId] = { players, readyCount: 0, imposterIndex, word: picked.name, votes: {} };
+      rooms[roomId] = { players, readyCount: 0, imposterIndex, word: picked.name, category: validCat, startedAt: Date.now(), votes: {} };
 
       const playerSummary = players.map((p) => ({ name: p.name, peerId: p.peerId }));
 
@@ -828,6 +879,15 @@ io.on('connection', (socket) => {
       };
 
       room.players.forEach((p) => io.to(p.socketId).emit('gameResult', result));
+
+      stmts.insertHistory.run(
+        room.category,
+        room.word,
+        room.players[room.imposterIndex].name,
+        imposterCaught ? 1 : 0,
+        JSON.stringify(room.players.map(p => p.name))
+      );
+
       broadcastLeaderboard();
       delete rooms[roomId];
     }

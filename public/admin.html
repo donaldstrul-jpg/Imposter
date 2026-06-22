@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Imposter — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0b0b0f;
+      --surf:    #131318;
+      --surf2:   #1a1a22;
+      --surf3:   #202030;
+      --red:     #c8181e;
+      --red-d:   #a01015;
+      --red-g:   rgba(200,24,30,0.12);
+      --green:   #22c55e;
+      --amber:   #f59e0b;
+      --blue:    #3b82f6;
+      --text:    #eeeef4;
+      --muted:   #7070a0;
+      --border:  rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Login screen ───────────────────────────────────────────────── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 50% 0%, rgba(200,24,30,0.08) 0%, transparent 60%);
+    }
+    .login-card {
+      background: var(--surf);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 0 60px rgba(200,24,30,0.08), 0 20px 40px rgba(0,0,0,0.5);
+    }
+    .login-logo {
+      display: flex; align-items: center; gap: 0.7rem;
+      margin-bottom: 2rem;
+    }
+    .login-badge {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: var(--red); color: white;
+      font-weight: 900; font-size: 1.4rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .login-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem; font-weight: 900;
+      color: var(--text); letter-spacing: 0.08em;
+    }
+    .login-sub { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 1px; }
+    .login-label { font-size: 0.75rem; color: var(--muted); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.4rem; display: block; }
+    .login-input {
+      width: 100%; padding: 0.75rem 1rem;
+      background: var(--surf2); border: 1px solid var(--border2);
+      border-radius: 10px; color: var(--text);
+      font-family: 'Inter', sans-serif; font-size: 1rem;
+      outline: none; transition: border-color 0.2s;
+      margin-bottom: 1rem;
+    }
+    .login-input:focus { border-color: var(--red); }
+    .login-btn {
+      width: 100%; padding: 0.8rem;
+      background: var(--red); border: none; border-radius: 10px;
+      color: white; font-family: 'Inter', sans-serif;
+      font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; transition: background 0.2s;
+      letter-spacing: 0.04em;
+    }
+    .login-btn:hover { background: var(--red-d); }
+    .login-error { font-size: 0.8rem; color: #f87171; margin-top: 0.75rem; text-align: center; min-height: 1.2em; }
+
+    /* ── Dashboard ──────────────────────────────────────────────────── */
+    #dashboard { display: none; }
+
+    .admin-header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(11,11,15,0.9);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      height: 58px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem;
+    }
+    .admin-logo { display: flex; align-items: center; gap: 0.65rem; }
+    .admin-badge {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: var(--red); color: white;
+      font-weight: 900; font-size: 1.2rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .admin-logo-text { font-family: 'Orbitron', sans-serif; font-size: 1rem; font-weight: 900; color: var(--red); letter-spacing: 0.08em; }
+    .admin-logo-tag { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.15em; text-transform: uppercase; margin-left: 0.3rem; }
+    .admin-meta { display: flex; align-items: center; gap: 1rem; }
+    .refresh-info { font-size: 0.72rem; color: var(--muted); }
+    .btn-logout {
+      padding: 0.35rem 0.85rem;
+      background: transparent; border: 1px solid var(--border2);
+      border-radius: 7px; color: var(--muted);
+      font-size: 0.75rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { color: var(--red); border-color: var(--red); }
+
+    .content { padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+
+    /* ── Stat cards ─────────────────────────────────────────────────── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+    }
+    .stat-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.5rem; }
+    .stat-value { font-family: 'Orbitron', sans-serif; font-size: 2rem; font-weight: 900; line-height: 1; }
+    .stat-value.red    { color: var(--red); }
+    .stat-value.green  { color: var(--green); }
+    .stat-value.amber  { color: var(--amber); }
+    .stat-value.blue   { color: var(--blue); }
+    .stat-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.35rem; }
+
+    /* ── Two-column grid ─────────────────────────────────────────────── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .three-col { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+
+    /* ── Panel ──────────────────────────────────────────────────────── */
+    .panel {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .panel-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+    .panel-badge {
+      font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.6rem;
+      border-radius: 20px; letter-spacing: 0.05em;
+    }
+    .badge-green { background: rgba(34,197,94,0.12); color: var(--green); }
+    .badge-red   { background: rgba(200,24,30,0.12); color: var(--red); }
+    .badge-muted { background: var(--surf2); color: var(--muted); }
+    .panel-body { padding: 1rem 1.25rem; }
+
+    /* ── Live active games ──────────────────────────────────────────── */
+    .active-empty { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.82rem; }
+    .game-card {
+      background: var(--surf2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 0.6rem;
+    }
+    .game-card:last-child { margin-bottom: 0; }
+    .game-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; }
+    .game-cat { font-size: 0.8rem; font-weight: 700; color: var(--text); }
+    .game-timer { font-size: 0.7rem; color: var(--muted); }
+    .game-word { font-size: 0.72rem; color: var(--amber); font-weight: 600; margin-bottom: 0.3rem; }
+    .game-players { font-size: 0.7rem; color: var(--muted); }
+    .game-players strong { color: var(--red); }
+    .game-status { display: flex; gap: 0.5rem; margin-top: 0.35rem; }
+    .status-pip { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 20px; font-weight: 600; }
+    .pip-connecting { background: rgba(245,158,11,0.12); color: var(--amber); }
+    .pip-voting     { background: rgba(200,24,30,0.12); color: var(--red); }
+    .pip-ready      { background: rgba(34,197,94,0.12); color: var(--green); }
+
+    /* ── Category bar chart ─────────────────────────────────────────── */
+    .cat-bar-row { margin-bottom: 0.75rem; }
+    .cat-bar-row:last-child { margin-bottom: 0; }
+    .cat-bar-label { display: flex; justify-content: space-between; margin-bottom: 0.25rem; }
+    .cat-bar-name { font-size: 0.78rem; font-weight: 600; color: var(--text); }
+    .cat-bar-count { font-size: 0.72rem; color: var(--muted); font-family: 'Orbitron', sans-serif; }
+    .cat-bar-track { height: 6px; background: var(--surf2); border-radius: 3px; overflow: hidden; }
+    .cat-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--red-d), var(--red)); transition: width 0.6s ease; }
+
+    /* ── Daily chart ────────────────────────────────────────────────── */
+    .daily-chart { display: flex; align-items: flex-end; gap: 3px; height: 80px; padding: 0 0 0 0; }
+    .day-col { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 2px; height: 100%; justify-content: flex-end; }
+    .day-bar { width: 100%; border-radius: 3px 3px 0 0; min-height: 2px; transition: height 0.4s ease; }
+    .day-bar.games-bar { background: linear-gradient(180deg, var(--red), var(--red-d)); }
+    .day-bar.signup-bar { background: linear-gradient(180deg, var(--blue), #2563eb); }
+    .day-label { font-size: 0.5rem; color: var(--muted); margin-top: 4px; white-space: nowrap; }
+    .chart-legend { display: flex; gap: 1rem; margin-bottom: 0.75rem; }
+    .legend-item { display: flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; color: var(--muted); }
+    .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+    .chart-section { margin-bottom: 1rem; }
+    .chart-section:last-child { margin-bottom: 0; }
+    .chart-section-label { font-size: 0.65rem; color: var(--muted); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.4rem; }
+
+    /* ── Leaderboard table ──────────────────────────────────────────── */
+    .lb-scroll { max-height: 420px; overflow-y: auto; }
+    .lb-scroll::-webkit-scrollbar { width: 4px; }
+    .lb-scroll::-webkit-scrollbar-track { background: transparent; }
+    .lb-scroll::-webkit-scrollbar-thumb { background: var(--surf3); border-radius: 2px; }
+    .admin-table { width: 100%; border-collapse: collapse; }
+    .admin-table th {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); padding: 0.5rem 0.75rem; text-align: left;
+      position: sticky; top: 0; background: var(--surf); border-bottom: 1px solid var(--border);
+    }
+    .admin-table th:not(:first-child) { text-align: right; }
+    .admin-table td { padding: 0.55rem 0.75rem; font-size: 0.82rem; border-bottom: 1px solid var(--border); }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tr:hover td { background: var(--surf2); }
+    .td-rank { font-family: 'Orbitron', sans-serif; font-size: 0.7rem; font-weight: 700; color: var(--muted); }
+    .td-rank.r1 { color: #c8911a; } .td-rank.r2 { color: #888; } .td-rank.r3 { color: #a07040; }
+    .td-name { font-weight: 700; }
+    .td-wins { font-family: 'Orbitron', sans-serif; font-weight: 700; color: var(--red); text-align: right; }
+    .td-games { text-align: right; color: var(--muted); }
+    .td-rate { text-align: right; font-weight: 700; font-size: 0.75rem; }
+    .td-rate.good { color: var(--green); } .td-rate.mid { color: var(--amber); } .td-rate.low { color: var(--muted); }
+    .td-joined { text-align: right; color: var(--muted); font-size: 0.72rem; }
+
+    /* ── Recent history ─────────────────────────────────────────────── */
+    .history-scroll { max-height: 420px; overflow-y: auto; }
+    .history-scroll::-webkit-scrollbar { width: 4px; }
+    .history-scroll::-webkit-scrollbar-track { background: transparent; }
+    .history-scroll::-webkit-scrollbar-thumb { background: var(--surf3); border-radius: 2px; }
+    .hist-row {
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--border);
+      display: grid; grid-template-columns: 1fr auto;
+      gap: 0.5rem; align-items: start;
+    }
+    .hist-row:last-child { border-bottom: none; }
+    .hist-top { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.15rem; }
+    .hist-cat { font-size: 0.72rem; font-weight: 700; color: var(--text); }
+    .hist-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--muted); }
+    .hist-word { font-size: 0.72rem; color: var(--amber); font-weight: 600; }
+    .hist-players { font-size: 0.68rem; color: var(--muted); }
+    .hist-players strong { color: var(--red); font-weight: 700; }
+    .hist-outcome { font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 20px; white-space: nowrap; align-self: start; }
+    .hist-caught  { background: rgba(34,197,94,0.12); color: var(--green); }
+    .hist-escaped { background: rgba(200,24,30,0.12); color: #f87171; }
+    .hist-time { font-size: 0.62rem; color: var(--muted); margin-top: 0.1rem; display: block; }
+
+    /* ── Responsive ─────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .two-col, .three-col { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 500px) {
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      .content { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Login screen ──────────────────────────────────────────────────────── -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-badge">I</div>
+      <div>
+        <div class="login-title">IMPOSTER</div>
+        <div class="login-sub">Admin Dashboard</div>
+      </div>
+    </div>
+    <label class="login-label" for="pw-input">Admin Password</label>
+    <input class="login-input" id="pw-input" type="password" placeholder="Enter password" autocomplete="current-password">
+    <button class="login-btn" id="pw-btn">Access Dashboard</button>
+    <div class="login-error" id="pw-error"></div>
+  </div>
+</div>
+
+<!-- ── Dashboard ─────────────────────────────────────────────────────────── -->
+<div id="dashboard">
+  <header class="admin-header">
+    <div class="admin-logo">
+      <div class="admin-badge">I</div>
+      <span class="admin-logo-text">IMPOSTER</span>
+      <span class="admin-logo-tag">Admin</span>
+    </div>
+    <div class="admin-meta">
+      <span class="refresh-info" id="refresh-info">Auto-refreshes every 10s</span>
+      <button class="btn-logout" id="btn-logout">Log out</button>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- Stat cards -->
+    <div class="stat-grid" id="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Games</div>
+        <div class="stat-value red" id="stat-games">—</div>
+        <div class="stat-sub">all time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Registered Players</div>
+        <div class="stat-value blue" id="stat-players">—</div>
+        <div class="stat-sub">accounts created</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Games Now</div>
+        <div class="stat-value green" id="stat-active">—</div>
+        <div class="stat-sub" id="stat-active-sub">loading…</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Games Today</div>
+        <div class="stat-value amber" id="stat-today">—</div>
+        <div class="stat-sub">past 24 hours</div>
+      </div>
+    </div>
+
+    <!-- Row 1: Category stats + Live games -->
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Sport Popularity</span>
+          <span class="panel-badge badge-muted" id="cat-total-badge">0 games</span>
+        </div>
+        <div class="panel-body" id="cat-bars">
+          <div style="text-align:center;color:var(--muted);padding:1rem;font-size:.82rem">Loading…</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Live Active Games</span>
+          <span class="panel-badge badge-green" id="active-badge">0 active</span>
+        </div>
+        <div class="panel-body" id="active-games">
+          <div class="active-empty">No games in progress</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Daily stats charts -->
+    <div class="panel" style="margin-bottom:1rem">
+      <div class="panel-head">
+        <span class="panel-title">Activity — Last 30 Days</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Games played</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>New signups</div>
+        </div>
+        <div class="daily-chart" id="daily-chart">
+          <div style="color:var(--muted);font-size:.78rem;align-self:center;margin:auto">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Full leaderboard + Recent history -->
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Full Leaderboard</span>
+          <span class="panel-badge badge-muted" id="lb-count-badge">All players</span>
+        </div>
+        <div class="lb-scroll">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Player</th>
+                <th style="text-align:right">Wins</th>
+                <th style="text-align:right">Games</th>
+                <th style="text-align:right">Win%</th>
+                <th style="text-align:right">Joined</th>
+              </tr>
+            </thead>
+            <tbody id="lb-tbody">
+              <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">Recent Game History</span>
+          <span class="panel-badge badge-muted" id="hist-count-badge">Last 100</span>
+        </div>
+        <div class="history-scroll panel-body" id="hist-list">
+          <div style="text-align:center;color:var(--muted);padding:2rem;font-size:.82rem">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.content -->
+</div><!-- /#dashboard -->
+
+<script>
+  let adminPw = sessionStorage.getItem('admin_pw') || '';
+  let refreshTimer = null;
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  async function tryLogin(pw) {
+    const res = await fetch('/api/admin/data', { headers: { 'x-admin-password': pw } });
+    if (res.status === 401) return false;
+    const data = await res.json();
+    adminPw = pw;
+    sessionStorage.setItem('admin_pw', pw);
+    showDashboard(data);
+    return true;
+  }
+
+  document.getElementById('pw-btn').addEventListener('click', async () => {
+    const pw  = document.getElementById('pw-input').value;
+    const err = document.getElementById('pw-error');
+    const btn = document.getElementById('pw-btn');
+    if (!pw) { err.textContent = 'Enter the admin password.'; return; }
+    btn.disabled = true; btn.textContent = 'Checking…';
+    const ok = await tryLogin(pw).catch(() => false);
+    if (!ok) {
+      err.textContent = 'Wrong password.';
+      btn.disabled = false; btn.textContent = 'Access Dashboard';
+    }
+  });
+
+  document.getElementById('pw-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('pw-btn').click();
+  });
+
+  document.getElementById('btn-logout').addEventListener('click', () => {
+    sessionStorage.removeItem('admin_pw');
+    clearInterval(refreshTimer);
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+  });
+
+  // Auto-login if password stored in session
+  if (adminPw) {
+    document.getElementById('login-screen').style.display = 'none';
+    fetch('/api/admin/data', { headers: { 'x-admin-password': adminPw } })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => showDashboard(data))
+      .catch(() => {
+        sessionStorage.removeItem('admin_pw');
+        document.getElementById('login-screen').style.display = 'flex';
+      });
+  }
+
+  // ── Render dashboard ──────────────────────────────────────────────────────
+  function showDashboard(data) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display   = 'block';
+    renderAll(data);
+
+    clearInterval(refreshTimer);
+    let countdown = 10;
+    refreshTimer = setInterval(async () => {
+      countdown--;
+      document.getElementById('refresh-info').textContent =
+        countdown > 0 ? `Refreshes in ${countdown}s` : 'Refreshing…';
+      if (countdown <= 0) {
+        countdown = 10;
+        try {
+          const res  = await fetch('/api/admin/data', { headers: { 'x-admin-password': adminPw } });
+          const data = await res.json();
+          renderAll(data);
+        } catch {}
+      }
+    }, 1000);
+  }
+
+  function renderAll(data) {
+    renderStats(data);
+    renderCategoryBars(data.categoryStats, data.totalGames);
+    renderActiveGames(data.activeGames);
+    renderDailyChart(data.dailyGames, data.dailySignups);
+    renderLeaderboard(data.leaderboard);
+    renderHistory(data.recentHistory);
+    document.getElementById('refresh-info').textContent = `Updated ${new Date().toLocaleTimeString()}`;
+  }
+
+  // ── Stats ─────────────────────────────────────────────────────────────────
+  function renderStats(data) {
+    document.getElementById('stat-games').textContent   = data.totalGames.toLocaleString();
+    document.getElementById('stat-players').textContent = data.totalPlayers.toLocaleString();
+    document.getElementById('stat-active').textContent  = data.activeGames.length;
+    document.getElementById('stat-active-sub').textContent =
+      data.activeGames.length === 1 ? '1 game in progress' :
+      data.activeGames.length > 1 ? `${data.activeGames.length} games in progress` : 'none right now';
+
+    // Today's games
+    const today = new Date().toISOString().slice(0, 10);
+    const todayEntry = data.dailyGames.find(d => d.day === today);
+    document.getElementById('stat-today').textContent = todayEntry ? todayEntry.count : 0;
+  }
+
+  // ── Category bars ─────────────────────────────────────────────────────────
+  const CAT_EMOJI = {
+    'NBA Players': '🏀', 'NFL Players': '🏈', 'MLB Players': '⚾',
+    'Soccer Players': '⚽', 'MMA Fighters': '🥊', 'NHL Players': '🏒',
+  };
+  function renderCategoryBars(stats, totalGames) {
+    document.getElementById('cat-total-badge').textContent = `${totalGames} games`;
+    const max = stats.length ? stats[0].games : 1;
+    const el  = document.getElementById('cat-bars');
+    if (!stats.length) { el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:1rem;font-size:.82rem">No games yet</div>'; return; }
+    el.innerHTML = stats.map(s => {
+      const pct = max > 0 ? Math.round((s.games / max) * 100) : 0;
+      const emoji = CAT_EMOJI[s.category] || '🎮';
+      const shortName = s.category.replace(' Players', '').replace(' Fighters', '');
+      return `<div class="cat-bar-row">
+        <div class="cat-bar-label">
+          <span class="cat-bar-name">${emoji} ${shortName}</span>
+          <span class="cat-bar-count">${s.games}</span>
+        </div>
+        <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Active games ──────────────────────────────────────────────────────────
+  document.getElementById('active-badge').textContent = '0 active';
+  function renderActiveGames(games) {
+    document.getElementById('active-badge').textContent = `${games.length} active`;
+    const el = document.getElementById('active-games');
+    if (!games.length) { el.innerHTML = '<div class="active-empty">No games in progress</div>'; return; }
+    el.innerHTML = games.map(g => {
+      const age     = Math.floor((Date.now() - g.startedAt) / 1000);
+      const ageStr  = age < 60 ? `${age}s ago` : `${Math.floor(age/60)}m ${age%60}s`;
+      const emoji   = CAT_EMOJI[g.category] || '🎮';
+      const catShort = g.category.replace(' Players', '').replace(' Fighters', '');
+      const imposter = g.players[g.imposterIndex] || '?';
+      const knowers  = g.players.filter((_, i) => i !== g.imposterIndex);
+      let statusLabel, statusClass;
+      if (g.readyCount < 3) {
+        statusLabel = `${g.readyCount}/3 connected`; statusClass = 'pip-connecting';
+      } else if (g.votesIn > 0) {
+        statusLabel = `${g.votesIn}/3 voted`; statusClass = 'pip-voting';
+      } else {
+        statusLabel = 'In discussion'; statusClass = 'pip-ready';
+      }
+      return `<div class="game-card">
+        <div class="game-card-top">
+          <span class="game-cat">${emoji} ${catShort}</span>
+          <span class="game-timer">started ${ageStr}</span>
+        </div>
+        <div class="game-word">🎭 ${g.word}</div>
+        <div class="game-players">Imposter: <strong>${imposter}</strong> · Knowers: ${knowers.join(', ')}</div>
+        <div class="game-status"><span class="status-pip ${statusClass}">${statusLabel}</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Daily chart ───────────────────────────────────────────────────────────
+  function renderDailyChart(gamesData, signupsData) {
+    const days = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      days.push(d.toISOString().slice(0, 10));
+    }
+
+    const gMap = {};
+    gamesData.forEach(d => { gMap[d.day] = d.count; });
+    const sMap = {};
+    signupsData.forEach(d => { sMap[d.day] = d.count; });
+
+    const gValues  = days.map(d => gMap[d] || 0);
+    const sValues  = days.map(d => sMap[d] || 0);
+    const maxG     = Math.max(1, ...gValues);
+    const maxS     = Math.max(1, ...sValues);
+    const combinedMax = Math.max(maxG, maxS);
+
+    const el = document.getElementById('daily-chart');
+    el.innerHTML = days.map((day, i) => {
+      const gH    = Math.round((gValues[i] / combinedMax) * 72);
+      const sH    = Math.round((sValues[i] / combinedMax) * 72);
+      const label = day.slice(5); // MM-DD
+      const showLabel = i % 5 === 0 || i === days.length - 1;
+      return `<div class="day-col">
+        <div title="${day}: ${gValues[i]} games" class="day-bar games-bar" style="height:${gH}px"></div>
+        <div title="${day}: ${sValues[i]} signups" class="day-bar signup-bar" style="height:${sH}px"></div>
+        <span class="day-label">${showLabel ? label : ''}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Leaderboard ───────────────────────────────────────────────────────────
+  const MEDALS = ['🥇','🥈','🥉'];
+  function renderLeaderboard(rows) {
+    document.getElementById('lb-count-badge').textContent = `${rows.length} players`;
+    const tbody = document.getElementById('lb-tbody');
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2rem">No players yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map((r, i) => {
+      const rate     = r.games_played > 0 ? Math.round((r.imposter_wins / r.games_played) * 100) : 0;
+      const rCls     = rate >= 40 ? 'good' : rate >= 20 ? 'mid' : 'low';
+      const rankCls  = i < 3 ? `r${i+1}` : '';
+      const rankLbl  = MEDALS[i] || (i + 1);
+      const joined   = r.created_at ? r.created_at.slice(0, 10) : '—';
+      return `<tr>
+        <td><span class="td-rank ${rankCls}">${rankLbl}</span></td>
+        <td class="td-name">${r.username}</td>
+        <td class="td-wins">${r.imposter_wins}</td>
+        <td class="td-games">${r.games_played}</td>
+        <td class="td-rate ${rCls}">${rate}%</td>
+        <td class="td-joined">${joined}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── History ───────────────────────────────────────────────────────────────
+  function renderHistory(rows) {
+    document.getElementById('hist-count-badge').textContent = `${rows.length} games`;
+    const el = document.getElementById('hist-list');
+    if (!rows.length) {
+      el.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem;font-size:.82rem">No games recorded yet</div>';
+      return;
+    }
+    el.innerHTML = rows.map(r => {
+      let players = [];
+      try { players = JSON.parse(r.players_json); } catch {}
+      const imposter = r.imposter_name;
+      const knowers  = players.filter(p => p !== imposter);
+      const caught   = r.imposter_caught;
+      const catShort = (r.category || '').replace(' Players', '').replace(' Fighters', '');
+      const emoji    = CAT_EMOJI[r.category] || '🎮';
+      const when     = r.played_at ? timeAgo(r.played_at) : '';
+      return `<div class="hist-row">
+        <div>
+          <div class="hist-top">
+            <span class="hist-cat">${emoji} ${catShort}</span>
+            <span class="hist-dot"></span>
+            <span class="hist-word">${r.word}</span>
+          </div>
+          <div class="hist-players">Imposter: <strong>${imposter}</strong> · ${knowers.join(', ')}</div>
+          <span class="hist-time">${when}</span>
+        </div>
+        <span class="hist-outcome ${caught ? 'hist-caught' : 'hist-escaped'}">${caught ? '🚨 Caught' : '🎭 Escaped'}</span>
+      </div>`;
+    }).join('');
+  }
+
+  function timeAgo(dtStr) {
+    const d    = new Date(dtStr.replace(' ', 'T') + (dtStr.includes('Z') ? '' : 'Z'));
+    const secs = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (isNaN(secs) || secs < 0) return 'just now';
+    if (secs < 60)   return `${secs}s ago`;
+    if (secs < 3600) return `${Math.floor(secs/60)}m ago`;
+    if (secs < 86400) return `${Math.floor(secs/3600)}h ago`;
+    return `${Math.floor(secs/86400)}d ago`;
+  }
+</script>
+</body>
+</html>
