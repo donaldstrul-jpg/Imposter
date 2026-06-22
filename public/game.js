@@ -5,7 +5,7 @@
   if (!gameData) { window.location.href = '/'; return; }
 
   const { roomId, role, category, word, hint, playerIndex, players } = gameData;
-  const authUser = localStorage.getItem('imposter_user');
+  const authUser = localStorage.getItem('imposport_user');
 
   // ── Role banner ───────────────────────────────────────────────────────────────
   const roleBanner  = document.getElementById('role-banner');

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Imposter — Sports Edition</title>
+  <title>Imposport — Sports Edition</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -360,7 +360,7 @@
   <header class="site-header">
     <div class="header-logo">
       <div class="logo-badge">?</div>
-      <span class="logo-text">IMPOSTER</span>
+      <span class="logo-text">IMPOSPORT</span>
     </div>
     <div class="header-right" id="header-right">
       <button class="btn-signin" id="btn-open-auth">Sign In</button>
@@ -489,8 +489,8 @@
       sessionStorage.setItem('peerId', peerId);
     }
 
-    let authToken    = localStorage.getItem('imposter_token') || null;
-    let authUsername = localStorage.getItem('imposter_user')  || null;
+    let authToken    = localStorage.getItem('imposport_token') || null;
+    let authUsername = localStorage.getItem('imposport_user')  || null;
     let categoryCounts = {};
     let selectedCategory = null;
 
@@ -525,8 +525,8 @@
     function setLoggedIn(username, token) {
       authToken    = token;
       authUsername = username;
-      localStorage.setItem('imposter_token', token);
-      localStorage.setItem('imposter_user',  username);
+      localStorage.setItem('imposport_token', token);
+      localStorage.setItem('imposport_user',  username);
 
       document.getElementById('guest-section').style.display     = 'none';
       document.getElementById('logged-in-section').style.display = 'flex';
@@ -545,8 +545,8 @@
     function setLoggedOut() {
       authToken    = null;
       authUsername = null;
-      localStorage.removeItem('imposter_token');
-      localStorage.removeItem('imposter_user');
+      localStorage.removeItem('imposport_token');
+      localStorage.removeItem('imposport_user');
 
       document.getElementById('guest-section').style.display     = 'block';
       document.getElementById('logged-in-section').style.display = 'none';
