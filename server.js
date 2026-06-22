@@ -58,6 +58,8 @@ const stmts = {
   addWin:         db.prepare('UPDATE users SET imposter_wins = imposter_wins + 1, games_played = games_played + 1 WHERE id = ?'),
   insertHistory:  db.prepare('INSERT INTO game_history (category, word, imposter_name, imposter_caught, players_json) VALUES (?, ?, ?, ?, ?)'),
   totalGames:     db.prepare('SELECT COUNT(*) as count FROM game_history'),
+  todayGames:     db.prepare("SELECT COUNT(*) as count FROM game_history WHERE DATE(played_at) = DATE('now')"),
+  recentGames:    db.prepare('SELECT id, category, word, imposter_name, imposter_caught, players_json, played_at FROM game_history ORDER BY id DESC LIMIT 8'),
   totalPlayers:   db.prepare('SELECT COUNT(*) as count FROM users'),
   categoryStats:  db.prepare('SELECT category, COUNT(*) as games FROM game_history GROUP BY category ORDER BY games DESC'),
   allLeaderboard: db.prepare('SELECT username, imposter_wins, games_played, created_at FROM users ORDER BY imposter_wins DESC, CASE WHEN games_played > 0 THEN CAST(imposter_wins AS REAL)/games_played ELSE 0 END DESC'),
@@ -68,6 +70,16 @@ const stmts = {
 
 function getLeaderboard() { return stmts.leaderboard.all(); }
 function broadcastLeaderboard() { io.emit('leaderboardUpdate', getLeaderboard()); }
+
+function getStats() {
+  return {
+    gamesToday:    stmts.todayGames.get().count,
+    playersOnline: io.sockets.sockets.size,
+    activeGames:   Object.keys(rooms).length,
+  };
+}
+function broadcastStats() { io.emit('statsUpdate', getStats()); }
+function broadcastRecentGames() { io.emit('recentGames', stmts.recentGames.all()); }
 
 // ── Auth routes ───────────────────────────────────────────────────────────────
 app.post('/api/register', (req, res) => {
@@ -95,7 +107,9 @@ app.post('/api/login', (req, res) => {
   res.json({ token, username: user.username });
 });
 
-app.get('/api/leaderboard', (_req, res) => res.json(getLeaderboard()));
+app.get('/api/leaderboard',    (_req, res) => res.json(getLeaderboard()));
+app.get('/api/stats',         (_req, res) => res.json(getStats()));
+app.get('/api/recent-games',  (_req, res) => res.json(stmts.recentGames.all()));
 
 // ── Admin routes ──────────────────────────────────────────────────────────────
 app.get('/admin', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
@@ -761,6 +775,9 @@ function broadcastQueueCount() {
 }
 
 io.on('connection', (socket) => {
+  socket.emit('statsUpdate', getStats());
+  socket.emit('recentGames', stmts.recentGames.all());
+  broadcastStats();
 
   socket.on('joinQueue', ({ name, peerId, token, category }) => {
     const validCat = CATEGORIES[category] ? category : null;
@@ -891,6 +908,8 @@ io.on('connection', (socket) => {
       );
 
       broadcastLeaderboard();
+      broadcastRecentGames();
+      broadcastStats();
       delete rooms[roomId];
     }
   });
@@ -911,6 +930,7 @@ io.on('connection', (socket) => {
       if (i !== -1) q.splice(i, 1);
     });
     broadcastQueueCount();
+    broadcastStats();
   });
 });
 
