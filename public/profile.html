@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMPOSPORT — Player Profile</title>
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #111111;
+      --surf:    #171717;
+      --surf-2:  #1e1e1e;
+      --border:  rgba(255,255,255,0.08);
+      --border-b: rgba(255,255,255,0.14);
+      --text:    #f0f0f0;
+      --sub:     #888888;
+      --dim:     #4a4a4a;
+      --accent:  #e5191f;
+      --accent-d:#c8181e;
+      --mono:    'IBM Plex Mono', 'Courier New', monospace;
+    }
+
+    body {
+      font-family: var(--mono);
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+    /* ── HEADER ─────────────────────────────────────────────────── */
+    .site-header {
+      height: 52px; flex-shrink: 0;
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(17,17,17,0.95); backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.75rem;
+    }
+    .header-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-img    { display: block; border-radius: 3px; flex-shrink: 0; }
+    .logo-text   { font-size: 0.82rem; font-weight: 700; color: var(--text); letter-spacing: 0.1em; }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .btn-back {
+      font-family: var(--mono); font-size: 0.7rem; font-weight: 500; letter-spacing: 0.06em;
+      padding: 0.32rem 0.8rem; background: transparent; border: 1px solid var(--border-b);
+      color: var(--sub); cursor: pointer; text-decoration: none; transition: color 0.12s, border-color 0.12s;
+    }
+    .btn-back:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
+    .header-username { font-size: 0.72rem; color: var(--dim); letter-spacing: 0.06em; }
+
+    /* ── PAGE ───────────────────────────────────────────────────── */
+    .page { max-width: 860px; margin: 0 auto; padding: 0 1.75rem; flex: 1; padding-top: 48px; padding-bottom: 72px; }
+
+    /* ── DIVIDER ────────────────────────────────────────────────── */
+    .divider { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .divider-label { font-size: 0.56rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--dim); white-space: nowrap; }
+    .divider-line  { flex: 1; height: 1px; background: var(--border); }
+
+    /* ── PLAYER HEADER ──────────────────────────────────────────── */
+    .profile-head {
+      margin-bottom: 32px;
+      animation: fadeUp 0.3s ease;
+    }
+    .profile-eyebrow {
+      font-size: 0.6rem; font-weight: 500; letter-spacing: 0.2em;
+      color: var(--dim); margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .profile-eyebrow::before { content: '>'; color: var(--accent); }
+    .profile-name {
+      font-size: clamp(2rem, 6vw, 3.5rem); font-weight: 700;
+      letter-spacing: -0.03em; color: var(--text); line-height: 1;
+      margin-bottom: 8px; text-transform: uppercase;
+    }
+    .profile-sub { font-size: 0.68rem; color: var(--dim); letter-spacing: 0.08em; }
+    .profile-sub span { color: var(--accent); }
+
+    /* ── SCOREBOARD BAR ─────────────────────────────────────────── */
+    .scoreboard {
+      border-top: 2px solid var(--accent);
+      border-bottom: 2px solid var(--accent);
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      margin-bottom: 32px;
+      animation: fadeUp 0.3s ease 0.05s both;
+    }
+    .score-block {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 16px 8px; gap: 4px;
+      border-right: 1px solid var(--border);
+    }
+    .score-block:last-child { border-right: none; }
+    .score-key {
+      font-size: 0.52rem; font-weight: 500; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--accent);
+    }
+    .score-val {
+      font-size: 1.5rem; font-weight: 700; color: var(--text); letter-spacing: -0.03em;
+    }
+    .score-val.good { color: #4ade80; }
+    .score-val.bad  { color: var(--accent); }
+
+    /* ── ROLE BREAKDOWN ─────────────────────────────────────────── */
+    .role-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 12px; margin-bottom: 32px;
+      animation: fadeUp 0.3s ease 0.1s both;
+    }
+    .role-card { border: 1px solid var(--border-b); padding: 20px; }
+    .role-card-label {
+      font-size: 0.56rem; font-weight: 600; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 14px;
+    }
+    .role-stat { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .role-stat:last-child { margin-bottom: 0; }
+    .role-stat-key  { font-size: 0.62rem; color: var(--sub); letter-spacing: 0.06em; }
+    .role-stat-val  { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+    .role-stat-val.good { color: #4ade80; }
+    .role-big {
+      font-size: 2rem; font-weight: 700; color: var(--text); letter-spacing: -0.03em;
+      margin-bottom: 4px; display: block;
+    }
+    .role-sub { font-size: 0.65rem; color: var(--sub); }
+
+    /* ── BEST SPORT ─────────────────────────────────────────────── */
+    .best-sport-row {
+      display: flex; align-items: center; gap: 16px;
+      border: 1px solid var(--border-b); padding: 16px 20px;
+      margin-bottom: 36px;
+      animation: fadeUp 0.3s ease 0.12s both;
+    }
+    .best-sport-label { font-size: 0.56rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); }
+    .best-sport-val   { font-size: 1.15rem; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+    .best-sport-sep   { width: 1px; height: 28px; background: var(--border-b); flex-shrink: 0; }
+
+    /* ── RECENT GAMES TABLE ─────────────────────────────────────── */
+    .games-section { animation: fadeUp 0.3s ease 0.15s both; }
+    .games-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border-b); }
+    .games-table th {
+      padding: 8px 14px; text-align: left;
+      font-size: 0.54rem; font-weight: 600; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--dim); background: var(--surf);
+      border-bottom: 1px solid var(--border);
+    }
+    .games-table th:last-child { text-align: right; }
+    .games-table td {
+      padding: 10px 14px; font-size: 0.75rem; color: var(--sub);
+      border-bottom: 1px solid var(--border); vertical-align: middle;
+    }
+    .games-table tr:last-child td { border-bottom: none; }
+    .games-table tr:hover td { background: var(--surf); }
+    .games-table td:last-child { text-align: right; }
+    .td-sport {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 34px; height: 26px; background: var(--surf-2);
+      border: 1px solid var(--border); font-size: 0.54rem; font-weight: 700; color: var(--sub);
+    }
+    .td-role-imp  { color: var(--accent); font-weight: 600; font-size: 0.7rem; }
+    .td-role-know { color: var(--sub); font-size: 0.7rem; }
+    .td-word { color: var(--text); font-weight: 500; }
+    .td-result { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; }
+    .td-result.win  { color: #4ade80; }
+    .td-result.loss { color: var(--dim); }
+    .td-time { font-size: 0.62rem; color: var(--dim); }
+    .no-games { padding: 40px 20px; text-align: center; font-size: 0.75rem; color: var(--dim); border: 1px solid var(--border-b); }
+
+    /* ── ERROR / LOADING ────────────────────────────────────────── */
+    .loading, .error-msg {
+      padding: 80px 0; text-align: center; font-size: 0.78rem; color: var(--dim); letter-spacing: 0.08em;
+    }
+    .error-msg { color: var(--accent); }
+
+    /* ── FOOTER ─────────────────────────────────────────────────── */
+    .site-footer { border-top: 1px solid var(--border); padding: 16px 1.75rem; flex-shrink: 0; }
+    .footer-inner {
+      max-width: 860px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
+    }
+    .footer-logo      { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .footer-logo-text { font-size: 0.68rem; font-weight: 700; color: var(--dim); letter-spacing: 0.1em; }
+    .footer-copy      { font-size: 0.62rem; color: var(--dim); }
+
+    @media (max-width: 640px) {
+      .scoreboard { grid-template-columns: repeat(2, 1fr); }
+      .score-block:nth-child(2) { border-right: none; }
+      .score-block:nth-child(3) { border-top: 1px solid var(--border); }
+      .role-grid   { grid-template-columns: 1fr; }
+      .page        { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .site-header { padding: 0 1.25rem; }
+      .games-table th:nth-child(3), .games-table td:nth-child(3) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="/" class="header-logo">
+      <img src="/logo.svg" alt="Imposport" class="logo-img" width="28" height="28">
+      <span class="logo-text">IMPOSPORT</span>
+    </a>
+    <div class="header-right">
+      <span class="header-username" id="header-username"></span>
+      <a href="/" class="btn-back">← HOME</a>
+    </div>
+  </header>
+
+  <div class="page" id="page-content">
+    <div class="loading">LOADING PROFILE…</div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <a href="/" class="footer-logo">
+        <img src="/logo.svg" width="20" height="20" style="border-radius:2px;display:block;">
+        <span class="footer-logo-text">IMPOSPORT</span>
+      </a>
+      <span class="footer-copy">&copy; 2025 IMPOSPORT</span>
+    </div>
+  </footer>
+
+  <script>
+    const SPORT_CODE = {
+      'NBA Players': 'NBA', 'NFL Players': 'NFL', 'MLB Players': 'MLB',
+      'Soccer Players': 'SOC', 'MMA Fighters': 'MMA', 'NHL Players': 'NHL',
+    };
+    const SPORT_FULL = {
+      'NBA Players': 'NBA BASKETBALL', 'NFL Players': 'NFL FOOTBALL', 'MLB Players': 'MLB BASEBALL',
+      'Soccer Players': 'SOCCER', 'MMA Fighters': 'MMA FIGHTING', 'NHL Players': 'NHL HOCKEY',
+    };
+
+    function timeAgo(played_at) {
+      const d    = new Date(played_at.replace(' ', 'T') + 'Z');
+      const diff = Date.now() - d.getTime();
+      if (diff < 60000)    return 'just now';
+      if (diff < 3600000)  return `${Math.floor(diff / 60000)}m ago`;
+      if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+      return `${Math.floor(diff / 86400000)}d ago`;
+    }
+
+    function pct(wins, games) {
+      if (!games) return '—';
+      return Math.round((wins / games) * 100) + '%';
+    }
+
+    function renderProfile(d) {
+      const winRate = d.games_played > 0 ? Math.round((d.wins / d.games_played) * 100) : 0;
+      const imposterRate = d.times_imposter > 0 ? Math.round((d.imposter_wins / d.times_imposter) * 100) : 0;
+      const knowerRate   = d.times_knower > 0   ? Math.round((d.knower_wins   / d.times_knower)   * 100) : 0;
+
+      const gamesHTML = d.recent_games.length === 0
+        ? '<div class="no-games">— no games recorded yet —</div>'
+        : `<table class="games-table">
+            <thead>
+              <tr>
+                <th>SPORT</th>
+                <th>ROLE</th>
+                <th>WORD</th>
+                <th>RESULT</th>
+                <th>TIME</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${d.recent_games.map(g => {
+                const isImposter = g.imposter_name.toLowerCase() === d.username.toLowerCase();
+                const caught     = g.imposter_caught === 1;
+                const won        = (isImposter && !caught) || (!isImposter && caught);
+                const code       = SPORT_CODE[g.category] || g.category.split(' ')[0].slice(0,4).toUpperCase();
+                return `<tr>
+                  <td><span class="td-sport">${code}</span></td>
+                  <td class="${isImposter ? 'td-role-imp' : 'td-role-know'}">${isImposter ? 'IMPOSTER' : 'KNOWER'}</td>
+                  <td class="td-word">${g.word}</td>
+                  <td><span class="td-result ${won ? 'win' : 'loss'}">${won ? 'WIN' : 'LOSS'}</span></td>
+                  <td class="td-time">${timeAgo(g.played_at)}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>`;
+
+      const bestSportDisplay = d.best_sport ? SPORT_FULL[d.best_sport] || d.best_sport.toUpperCase() : null;
+
+      document.getElementById('page-content').innerHTML = `
+        <!-- Player header -->
+        <div class="profile-head">
+          <p class="profile-eyebrow">PLAYER PROFILE</p>
+          <h1 class="profile-name">${d.username}</h1>
+          <p class="profile-sub">${d.games_played} games played &middot; <span>${d.wins}W / ${d.losses}L</span></p>
+        </div>
+
+        <!-- Scoreboard stats bar -->
+        <div class="scoreboard">
+          <div class="score-block">
+            <span class="score-key">RECORD</span>
+            <span class="score-val">${d.wins}–${d.losses}</span>
+          </div>
+          <div class="score-block">
+            <span class="score-key">WIN RATE</span>
+            <span class="score-val ${winRate >= 40 ? 'good' : ''}">${winRate}%</span>
+          </div>
+          <div class="score-block">
+            <span class="score-key">AS IMPOSTER</span>
+            <span class="score-val">${d.imposter_wins}–${d.times_imposter - d.imposter_wins}</span>
+          </div>
+          <div class="score-block">
+            <span class="score-key">AS KNOWER</span>
+            <span class="score-val">${d.knower_wins}–${d.times_knower - d.knower_wins}</span>
+          </div>
+        </div>
+
+        <!-- Role breakdown -->
+        <div class="divider"><span class="divider-label">ROLE BREAKDOWN</span><div class="divider-line"></div></div>
+        <div class="role-grid">
+          <div class="role-card">
+            <div class="role-card-label">AS IMPOSTER</div>
+            <span class="role-big">${d.times_imposter}</span>
+            <div class="role-sub">games as the imposter</div>
+            <div style="height:14px"></div>
+            <div class="role-stat">
+              <span class="role-stat-key">WINS (escaped)</span>
+              <span class="role-stat-val good">${d.imposter_wins}</span>
+            </div>
+            <div class="role-stat">
+              <span class="role-stat-key">LOSSES (caught)</span>
+              <span class="role-stat-val">${d.times_imposter - d.imposter_wins}</span>
+            </div>
+            <div class="role-stat">
+              <span class="role-stat-key">ESCAPE RATE</span>
+              <span class="role-stat-val">${pct(d.imposter_wins, d.times_imposter)}</span>
+            </div>
+          </div>
+          <div class="role-card">
+            <div class="role-card-label">AS KNOWER</div>
+            <span class="role-big">${d.times_knower}</span>
+            <div class="role-sub">games as a knower</div>
+            <div style="height:14px"></div>
+            <div class="role-stat">
+              <span class="role-stat-key">WINS (caught imposter)</span>
+              <span class="role-stat-val good">${d.knower_wins}</span>
+            </div>
+            <div class="role-stat">
+              <span class="role-stat-key">LOSSES (imposter escaped)</span>
+              <span class="role-stat-val">${d.times_knower - d.knower_wins}</span>
+            </div>
+            <div class="role-stat">
+              <span class="role-stat-key">DETECTION RATE</span>
+              <span class="role-stat-val">${pct(d.knower_wins, d.times_knower)}</span>
+            </div>
+          </div>
+        </div>
+
+        ${bestSportDisplay ? `
+        <!-- Best sport -->
+        <div class="divider"><span class="divider-label">BEST SPORT</span><div class="divider-line"></div></div>
+        <div class="best-sport-row">
+          <div>
+            <div class="best-sport-label">MOST PLAYED</div>
+            <div class="best-sport-val">${bestSportDisplay}</div>
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Recent games -->
+        <div class="games-section">
+          <div class="divider"><span class="divider-label">RECENT GAMES</span><div class="divider-line"></div></div>
+          ${gamesHTML}
+        </div>
+      `;
+    }
+
+    async function loadProfile() {
+      const params   = new URLSearchParams(location.search);
+      let   username = params.get('u');
+
+      if (!username) {
+        username = localStorage.getItem('imposport_user');
+        if (!username) { location.href = '/'; return; }
+      }
+
+      document.title = `IMPOSPORT — ${username.toUpperCase()}`;
+      const authUser = localStorage.getItem('imposport_user');
+      if (authUser) document.getElementById('header-username').textContent = authUser;
+
+      try {
+        const res  = await fetch(`/api/profile/${encodeURIComponent(username)}`);
+        const data = await res.json();
+        if (data.error) {
+          document.getElementById('page-content').innerHTML = `<div class="error-msg">PLAYER NOT FOUND: ${username}</div>`;
+          return;
+        }
+        renderProfile(data);
+      } catch {
+        document.getElementById('page-content').innerHTML = '<div class="error-msg">FAILED TO LOAD PROFILE</div>';
+      }
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>

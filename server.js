@@ -66,16 +66,22 @@ const stmts = {
   recentHistory:  db.prepare('SELECT * FROM game_history ORDER BY played_at DESC LIMIT 100'),
   dailySignups:   db.prepare("SELECT DATE(created_at) as day, COUNT(*) as count FROM users WHERE created_at >= DATE('now', '-29 days') GROUP BY day ORDER BY day"),
   dailyGames:     db.prepare("SELECT DATE(played_at) as day, COUNT(*) as count FROM game_history WHERE played_at >= DATE('now', '-29 days') GROUP BY day ORDER BY day"),
+  profileUser:     db.prepare('SELECT username, imposter_wins, games_played FROM users WHERE LOWER(username) = LOWER(?)'),
+  profileImpGames: db.prepare('SELECT COUNT(*) as count FROM game_history WHERE LOWER(imposter_name) = LOWER(?)'),
+  profileImpWins:  db.prepare('SELECT COUNT(*) as count FROM game_history WHERE LOWER(imposter_name) = LOWER(?) AND imposter_caught = 0'),
+  profileBestSport:db.prepare('SELECT category, COUNT(*) as c FROM game_history WHERE players_json LIKE ? GROUP BY category ORDER BY c DESC LIMIT 1'),
+  profileRecent:   db.prepare('SELECT id, category, word, imposter_name, imposter_caught, played_at FROM game_history WHERE players_json LIKE ? ORDER BY id DESC LIMIT 10'),
 };
 
 function getLeaderboard() { return stmts.leaderboard.all(); }
 function broadcastLeaderboard() { io.emit('leaderboardUpdate', getLeaderboard()); }
 
 function getStats() {
+  const topRow = stmts.categoryStats.get();
   return {
-    gamesToday:    stmts.todayGames.get().count,
-    playersOnline: io.sockets.sockets.size,
-    activeGames:   Object.keys(rooms).length,
+    totalPlayers: stmts.totalPlayers.get().count,
+    gamesToday:   stmts.todayGames.get().count,
+    topSport:     topRow ? topRow.category : null,
   };
 }
 function broadcastStats() { io.emit('statsUpdate', getStats()); }
@@ -110,6 +116,34 @@ app.post('/api/login', (req, res) => {
 app.get('/api/leaderboard',    (_req, res) => res.json(getLeaderboard()));
 app.get('/api/stats',         (_req, res) => res.json(getStats()));
 app.get('/api/recent-games',  (_req, res) => res.json(stmts.recentGames.all()));
+
+app.get('/api/profile/:username', (req, res) => {
+  const { username } = req.params;
+  if (!username || username.length > 30) return res.status(400).json({ error: 'Invalid' });
+  const user = stmts.profileUser.get(username);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const like          = `%"${username}"%`;
+  const timesImposter = stmts.profileImpGames.get(username).count;
+  const imposterWins  = stmts.profileImpWins.get(username).count;
+  const timesKnower   = user.games_played - timesImposter;
+  const knowerWins    = user.imposter_wins - imposterWins;
+  const bestRow       = stmts.profileBestSport.get(like);
+  const recentGames   = stmts.profileRecent.all(like);
+  res.json({
+    username:       user.username,
+    games_played:   user.games_played,
+    wins:           user.imposter_wins,
+    losses:         user.games_played - user.imposter_wins,
+    times_imposter: timesImposter,
+    times_knower:   timesKnower,
+    imposter_wins:  imposterWins,
+    knower_wins:    knowerWins,
+    best_sport:     bestRow ? bestRow.category : null,
+    recent_games:   recentGames,
+  });
+});
+
+app.get('/profile', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'profile.html')));
 
 // ── Admin routes ──────────────────────────────────────────────────────────────
 app.get('/admin', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
