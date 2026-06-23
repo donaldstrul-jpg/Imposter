@@ -168,6 +168,52 @@
       transition: background .15s;
     }
     .btn-play-again:hover { background: #c8181e; }
+
+    /* ── Mobile layout (≤640px) ─────────────────────────────────────── */
+    @media (max-width: 640px) {
+      /* Timer pinned to bottom, always visible */
+      .discussion-timer {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 40;
+        height: auto;
+        padding: 0.75rem 1.25rem;
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+        justify-content: center;
+        border-top: 1px solid rgba(255,255,255,0.08);
+      }
+
+      /* Vote bar pinned to bottom, always reachable by thumb */
+      .vote-bar {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 40;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.4rem;
+        padding: 0.75rem 1rem;
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+      }
+      .vote-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+      }
+      .btn-vote-player {
+        padding: 0.75rem;
+        min-height: 48px;
+        font-size: 0.9rem;
+        text-align: center;
+        justify-content: center;
+      }
+      .vote-bar-label { font-size: 0.65rem; }
+      .vote-status { margin-left: 0; text-align: center; font-size: 0.65rem; }
+
+      /* Result card fits small screens */
+      .result-card { padding: 1.75rem 1.25rem; border-radius: 16px; }
+      .result-verdict { font-size: 1.15rem; }
+      .result-emoji { font-size: 2.2rem; }
+    }
   </style>
 </head>
 <body class="game-body">

@@ -897,6 +897,7 @@ io.on('connection', (socket) => {
 
     const voterIndex = room.players.findIndex((p) => p.socketId === socket.id);
     if (voterIndex === -1 || voterIndex in room.votes) return; // not in room or already voted
+    if (typeof votedForIndex !== 'number' || votedForIndex < 0 || votedForIndex > 2) return;
 
     room.votes[voterIndex] = votedForIndex;
     const votesIn = Object.keys(room.votes).length;
@@ -904,23 +905,16 @@ io.on('connection', (socket) => {
     room.players.forEach((p) => io.to(p.socketId).emit('voteProgress', { votesIn }));
 
     if (votesIn === 3) {
+      // Validate all votes reference real player indices
+      const validIndices = new Set([0, 1, 2]);
+      const allValid = Object.values(room.votes).every(v => validIndices.has(v));
+      if (!allValid) { console.error('[error] invalid votedForIndex in room', roomId); return; }
+
       // Tally votes
       const tally = {};
       Object.values(room.votes).forEach((v) => { tally[v] = (tally[v] || 0) + 1; });
-      const topVote      = parseInt(Object.entries(tally).sort((a, b) => b[1] - a[1])[0][0]);
+      const topVote        = parseInt(Object.entries(tally).sort((a, b) => b[1] - a[1])[0][0]);
       const imposterCaught = topVote === room.imposterIndex;
-
-      // Update stats for any logged-in players
-      room.players.forEach((player, index) => {
-        if (!player.userId) return;
-        const isImposter = index === room.imposterIndex;
-        const playerWon  = (isImposter && !imposterCaught) || (!isImposter && imposterCaught);
-        if (playerWon) {
-          stmts.addWin.run(player.userId);
-        } else {
-          stmts.addGame.run(player.userId);
-        }
-      });
 
       const result = {
         imposterCaught,
@@ -931,15 +925,34 @@ io.on('connection', (socket) => {
         votes:         room.votes,
       };
 
+      // Emit result to players FIRST so they always see the outcome
       room.players.forEach((p) => io.to(p.socketId).emit('gameResult', result));
 
-      stmts.insertHistory.run(
-        room.category,
-        room.word,
-        room.players[room.imposterIndex].name,
-        imposterCaught ? 1 : 0,
-        JSON.stringify(room.players.map(p => p.name))
-      );
+      // Save game history
+      try {
+        stmts.insertHistory.run(
+          room.category,
+          room.word,
+          room.players[room.imposterIndex].name,
+          imposterCaught ? 1 : 0,
+          JSON.stringify(room.players.map(p => p.name))
+        );
+      } catch (e) { console.error('[error] insertHistory failed:', e.message); }
+
+      // Update stats for logged-in players
+      room.players.forEach((player, index) => {
+        if (!player.userId) return;
+        const isImposter = index === room.imposterIndex;
+        const playerWon  = (isImposter && !imposterCaught) || (!isImposter && imposterCaught);
+        try {
+          const stmt    = playerWon ? stmts.addWin : stmts.addGame;
+          const changes = stmt.run(player.userId).changes;
+          console.log(`[stats] userId=${player.userId} name=${player.name} won=${playerWon} rows=${changes}`);
+          if (changes === 0) console.warn(`[warn] stat update matched 0 rows for userId=${player.userId}`);
+        } catch (e) {
+          console.error(`[error] stat update failed for userId=${player.userId}:`, e.message);
+        }
+      });
 
       broadcastLeaderboard();
       broadcastRecentGames();
