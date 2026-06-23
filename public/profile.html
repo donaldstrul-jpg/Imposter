@@ -177,6 +177,8 @@
       padding: 80px 0; text-align: center; font-size: 0.78rem; color: var(--dim); letter-spacing: 0.08em;
     }
     .error-msg { color: var(--accent); }
+    .error-msg strong { display: block; margin-bottom: 0.4rem; font-size: 1rem; letter-spacing: 0.08em; }
+    .btn-reregister { margin-top: 0.25rem; padding: 0.6rem 1.25rem; background: var(--accent); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-family: var(--mono); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.05em; }
 
     /* ── FOOTER ─────────────────────────────────────────────────── */
     .site-footer { border-top: 1px solid var(--border); padding: 16px 1.75rem; flex-shrink: 0; }
@@ -391,7 +393,15 @@
         const res  = await fetch(`/api/profile/${encodeURIComponent(username)}`);
         const data = await res.json();
         if (data.error) {
-          document.getElementById('page-content').innerHTML = `<div class="error-msg">PLAYER NOT FOUND: ${username}</div>`;
+          const ownProfile = authUser && authUser.toLowerCase() === username.toLowerCase();
+          document.getElementById('page-content').innerHTML = ownProfile
+            ? `<div class="error-msg">
+                <strong>ACCOUNT NOT FOUND</strong>
+                Your account was reset when the server redeployed. Sign out and register again to start tracking stats.
+                <br><br>
+                <button class="btn-reregister" onclick="localStorage.removeItem('imposport_token');localStorage.removeItem('imposport_user');window.location='/'">SIGN OUT &amp; RE-REGISTER</button>
+               </div>`
+            : `<div class="error-msg"><strong>PLAYER NOT FOUND</strong>${username} has no stats yet.</div>`;
           return;
         }
         renderProfile(data);

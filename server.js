@@ -28,6 +28,9 @@ const JWT_SECRET     = process.env.JWT_SECRET     || 'imposter-dev-secret-change
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'imposter-admin';
 const DB_DIR         = process.env.DB_DIR || __dirname;
 if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
+if (DB_DIR === __dirname && process.env.RAILWAY_ENVIRONMENT) {
+  console.warn('[WARN] DB_DIR is not set — database lives in the app directory, which is ephemeral on Railway. Add a volume and set the DB_DIR environment variable to its mount path.');
+}
 
 const db = new DatabaseSync(path.join(DB_DIR, 'imposter.db'));
 db.exec(`
@@ -71,6 +74,7 @@ const stmts = {
   profileImpWins:  db.prepare('SELECT COUNT(*) as count FROM game_history WHERE LOWER(imposter_name) = LOWER(?) AND imposter_caught = 0'),
   profileBestSport:db.prepare('SELECT category, COUNT(*) as c FROM game_history WHERE players_json LIKE ? GROUP BY category ORDER BY c DESC LIMIT 1'),
   profileRecent:   db.prepare('SELECT id, category, word, imposter_name, imposter_caught, played_at FROM game_history WHERE players_json LIKE ? ORDER BY id DESC LIMIT 10'),
+  findById:        db.prepare('SELECT * FROM users WHERE id = ?'),
 };
 
 function getLeaderboard() { return stmts.leaderboard.all(); }
@@ -122,7 +126,7 @@ app.get('/api/profile/:username', (req, res) => {
   if (!username || username.length > 30) return res.status(400).json({ error: 'Invalid' });
   const user = stmts.profileUser.get(username);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  const like          = `%"${username}"%`;
+  const like          = `%"${user.username}"%`;
   const timesImposter = stmts.profileImpGames.get(username).count;
   const imposterWins  = stmts.profileImpWins.get(username).count;
   const timesKnower   = user.games_played - timesImposter;
@@ -144,6 +148,19 @@ app.get('/api/profile/:username', (req, res) => {
 });
 
 app.get('/profile', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'profile.html')));
+
+app.get('/api/me', (req, res) => {
+  const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
+  if (!token) return res.status(401).json({ error: 'No token' });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user    = stmts.findById.get(decoded.userId);
+    if (!user) return res.status(404).json({ error: 'Account not found' });
+    res.json({ username: user.username, games_played: user.games_played, imposter_wins: user.imposter_wins });
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
 
 // ── Admin routes ──────────────────────────────────────────────────────────────
 app.get('/admin', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));

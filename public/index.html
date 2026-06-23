@@ -724,7 +724,19 @@
       document.getElementById('btn-open-auth').addEventListener('click', openAuthModal);
     }
 
-    if (authToken && authUsername) setLoggedIn(authUsername, authToken);
+    if (authToken && authUsername) {
+      // Validate token against DB — if the DB was wiped the user row won't exist
+      fetch('/api/me', { headers: { Authorization: `Bearer ${authToken}` } })
+        .then(r => {
+          if (r.ok) return r.json().then(d => setLoggedIn(d.username, authToken));
+          // 401 = bad/expired token, 404 = DB wiped; clear stale auth either way
+          localStorage.removeItem('imposport_token');
+          localStorage.removeItem('imposport_user');
+          authToken    = null;
+          authUsername = null;
+        })
+        .catch(() => setLoggedIn(authUsername, authToken)); // network error → trust localStorage
+    }
     document.getElementById('btn-signout').addEventListener('click', setLoggedOut);
 
     // ── Queue logic ─────────────────────────────────────────────────────────────
