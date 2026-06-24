@@ -9,37 +9,11 @@ const fs         = require('fs');
 const { DatabaseSync } = require('node:sqlite');
 const bcrypt     = require('bcryptjs');
 const jwt        = require('jsonwebtoken');
-let multer = null; try { multer = require('multer'); } catch { console.warn('[multer] not installed — avatar uploads disabled'); }
-let stripe = null; try { if (process.env.STRIPE_SECRET_KEY) stripe = require('stripe')(process.env.STRIPE_SECRET_KEY); } catch { console.warn('[stripe] not installed'); }
 
 const app    = express();
 const server = http.createServer(app);
 
 app.set('trust proxy', 1);
-
-// Stripe webhook must receive raw body — register before express.json()
-app.post('/api/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  if (!stripe) return res.status(503).json({ error: 'Stripe not configured' });
-  const whSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
-  if (!whSecret) return res.status(503).json({ error: 'Webhook secret not set' });
-  let event;
-  try {
-    event = stripe.webhooks.constructEvent(req.body, req.headers['stripe-signature'], whSecret);
-  } catch (err) {
-    console.error('[stripe webhook]', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-  if (event.type === 'checkout.session.completed') {
-    const s = event.data.object;
-    const uid = parseInt(s.client_reference_id);
-    if (uid) { stmts.updateIsPro.run(1, s.customer, s.subscription, uid); console.log(`[stripe] user ${uid} upgraded to Pro`); }
-  } else if (event.type === 'customer.subscription.deleted' || event.type === 'customer.subscription.updated') {
-    const sub = event.data.object;
-    if (!['active', 'trialing'].includes(sub.status)) { stmts.clearIsPro.run(sub.customer); console.log(`[stripe] Pro revoked for customer ${sub.customer}`); }
-  }
-  res.json({ received: true });
-});
-
 app.use(express.json());
 
 const io = new Server(server, {
@@ -53,16 +27,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 const JWT_SECRET     = process.env.JWT_SECRET     || 'imposter-dev-secret-change-in-prod';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'imposter-admin';
 const DB_DIR         = process.env.DB_DIR || __dirname;
-const APP_URL        = process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`;
-const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID || '';
 if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
 if (DB_DIR === __dirname && process.env.RAILWAY_ENVIRONMENT) {
   console.warn('[WARN] DB_DIR is not set — database lives in the app directory, which is ephemeral on Railway. Add a volume and set the DB_DIR environment variable to its mount path.');
 }
-
-const AVATARS_DIR = path.join(DB_DIR, 'avatars');
-if (!fs.existsSync(AVATARS_DIR)) fs.mkdirSync(AVATARS_DIR, { recursive: true });
-app.use('/uploads/avatars', express.static(AVATARS_DIR));
 
 const db = new DatabaseSync(path.join(DB_DIR, 'imposter.db'));
 db.exec(`
@@ -98,22 +66,11 @@ db.exec(`
     console.log('[migration] users table upgraded: added email + display_name columns');
   }
 }
-// Add Pro columns if missing
-{
-  const cols = db.prepare('PRAGMA table_info(users)').all().map(c => c.name);
-  if (!cols.includes('is_pro')) {
-    db.exec('ALTER TABLE users ADD COLUMN is_pro INTEGER NOT NULL DEFAULT 0');
-    db.exec('ALTER TABLE users ADD COLUMN avatar_url TEXT');
-    db.exec('ALTER TABLE users ADD COLUMN stripe_customer_id TEXT');
-    db.exec('ALTER TABLE users ADD COLUMN stripe_subscription_id TEXT');
-    console.log('[migration] users table upgraded: added Pro columns');
-  }
-}
 
 const stmts = {
   registerUser:    db.prepare('INSERT INTO users (username, email, display_name, password_hash) VALUES (?, ?, ?, ?)'),
   findByIdentifier:db.prepare('SELECT * FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)'),
-  leaderboard:    db.prepare('SELECT display_name AS username, imposter_wins, games_played, is_pro FROM users WHERE games_played > 0 ORDER BY imposter_wins DESC, CAST(imposter_wins AS REAL)/games_played DESC LIMIT 10'),
+  leaderboard:    db.prepare('SELECT display_name AS username, imposter_wins, games_played FROM users WHERE games_played > 0 ORDER BY imposter_wins DESC, CAST(imposter_wins AS REAL)/games_played DESC LIMIT 10'),
   addGame:        db.prepare('UPDATE users SET games_played = games_played + 1 WHERE id = ?'),
   addWin:         db.prepare('UPDATE users SET imposter_wins = imposter_wins + 1, games_played = games_played + 1 WHERE id = ?'),
   insertHistory:  db.prepare('INSERT INTO game_history (category, word, imposter_name, imposter_caught, players_json) VALUES (?, ?, ?, ?, ?)'),
@@ -122,19 +79,16 @@ const stmts = {
   recentGames:    db.prepare('SELECT id, category, word, imposter_name, imposter_caught, players_json, played_at FROM game_history ORDER BY id DESC LIMIT 8'),
   totalPlayers:   db.prepare('SELECT COUNT(*) as count FROM users'),
   categoryStats:  db.prepare('SELECT category, COUNT(*) as games FROM game_history GROUP BY category ORDER BY games DESC'),
-  allLeaderboard: db.prepare('SELECT display_name AS username, imposter_wins, games_played, is_pro, created_at FROM users ORDER BY imposter_wins DESC, CASE WHEN games_played > 0 THEN CAST(imposter_wins AS REAL)/games_played ELSE 0 END DESC'),
+  allLeaderboard: db.prepare('SELECT display_name AS username, imposter_wins, games_played, created_at FROM users ORDER BY imposter_wins DESC, CASE WHEN games_played > 0 THEN CAST(imposter_wins AS REAL)/games_played ELSE 0 END DESC'),
   recentHistory:  db.prepare('SELECT * FROM game_history ORDER BY played_at DESC LIMIT 100'),
   dailySignups:   db.prepare("SELECT DATE(created_at) as day, COUNT(*) as count FROM users WHERE created_at >= DATE('now', '-29 days') GROUP BY day ORDER BY day"),
   dailyGames:     db.prepare("SELECT DATE(played_at) as day, COUNT(*) as count FROM game_history WHERE played_at >= DATE('now', '-29 days') GROUP BY day ORDER BY day"),
-  profileUser:    db.prepare('SELECT display_name AS username, imposter_wins, games_played, is_pro, avatar_url FROM users WHERE LOWER(display_name) = LOWER(?)'),
+  profileUser:    db.prepare('SELECT display_name AS username, imposter_wins, games_played FROM users WHERE LOWER(display_name) = LOWER(?)'),
   profileImpGames:db.prepare('SELECT COUNT(*) as count FROM game_history WHERE LOWER(imposter_name) = LOWER(?)'),
   profileImpWins: db.prepare('SELECT COUNT(*) as count FROM game_history WHERE LOWER(imposter_name) = LOWER(?) AND imposter_caught = 0'),
   profileBestSport:db.prepare('SELECT category, COUNT(*) as c FROM game_history WHERE players_json LIKE ? GROUP BY category ORDER BY c DESC LIMIT 1'),
   profileRecent:  db.prepare('SELECT id, category, word, imposter_name, imposter_caught, played_at FROM game_history WHERE players_json LIKE ? ORDER BY id DESC LIMIT 10'),
   findById:       db.prepare('SELECT * FROM users WHERE id = ?'),
-  updateIsPro:    db.prepare('UPDATE users SET is_pro = ?, stripe_customer_id = ?, stripe_subscription_id = ? WHERE id = ?'),
-  clearIsPro:     db.prepare('UPDATE users SET is_pro = 0, stripe_subscription_id = NULL WHERE stripe_customer_id = ?'),
-  updateAvatar:   db.prepare('UPDATE users SET avatar_url = ? WHERE id = ?'),
 };
 
 function getLeaderboard() { return stmts.leaderboard.all(); }
@@ -176,7 +130,7 @@ app.post('/api/register', (req, res) => {
   try {
     const { lastInsertRowid } = stmts.registerUser.run(username, email, displayName, hash);
     const token = jwt.sign({ userId: lastInsertRowid, username: displayName }, JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, username: displayName, is_pro: false });
+    res.json({ token, username: displayName });
   } catch (e) {
     if (e.message.includes('UNIQUE')) {
       if (e.message.includes('email'))        return res.json({ error: 'Email already registered' });
@@ -195,7 +149,7 @@ app.post('/api/login', (req, res) => {
   if (!user || !bcrypt.compareSync(password, user.password_hash))
     return res.json({ error: 'Invalid username, email, or password' });
   const token = jwt.sign({ userId: user.id, username: user.display_name }, JWT_SECRET, { expiresIn: '30d' });
-  res.json({ token, username: user.display_name, is_pro: !!user.is_pro });
+  res.json({ token, username: user.display_name });
 });
 
 app.get('/api/leaderboard',    (_req, res) => res.json(getLeaderboard()));
@@ -225,118 +179,23 @@ app.get('/api/profile/:username', (req, res) => {
     knower_wins:    knowerWins,
     best_sport:     bestRow ? bestRow.category : null,
     recent_games:   recentGames,
-    is_pro:         !!user.is_pro,
-    avatar_url:     user.avatar_url || null,
   });
 });
 
 app.get('/profile', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'profile.html')));
 app.get('/login',   (_req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
-app.get('/pro',     (_req, res) => res.sendFile(path.join(__dirname, 'public', 'pro.html')));
 
-function requireAuth(req, res, next) {
+app.get('/api/me', (req, res) => {
   const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
-  if (!token) return res.status(401).json({ error: 'Not logged in' });
+  if (!token) return res.status(401).json({ error: 'No token' });
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user    = stmts.findById.get(decoded.userId);
     if (!user) return res.status(404).json({ error: 'Account not found' });
-    req.user = user;
-    next();
+    res.json({ username: user.display_name, games_played: user.games_played, imposter_wins: user.imposter_wins });
   } catch {
     res.status(401).json({ error: 'Invalid token' });
   }
-}
-
-app.get('/api/me', requireAuth, (req, res) => {
-  res.json({
-    username:      req.user.display_name,
-    games_played:  req.user.games_played,
-    imposter_wins: req.user.imposter_wins,
-    is_pro:        !!req.user.is_pro,
-    avatar_url:    req.user.avatar_url || null,
-  });
-});
-
-// ── Pro / Stripe routes ───────────────────────────────────────────────────────
-app.get('/api/stripe-config', (_req, res) => {
-  res.json({
-    configured:     !!(stripe && STRIPE_PRICE_ID),
-    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || null,
-  });
-});
-
-app.post('/api/create-checkout-session', requireAuth, async (req, res) => {
-  if (!stripe || !STRIPE_PRICE_ID) return res.status(503).json({ error: 'Payments not configured' });
-  if (req.user.is_pro) return res.json({ error: 'Already Pro' });
-  try {
-    const session = await stripe.checkout.sessions.create({
-      mode:                 'subscription',
-      payment_method_types: ['card'],
-      line_items:           [{ price: STRIPE_PRICE_ID, quantity: 1 }],
-      success_url:          `${APP_URL}/pro?success=1`,
-      cancel_url:           `${APP_URL}/pro`,
-      client_reference_id:  String(req.user.id),
-      customer_email:       req.user.email || undefined,
-      metadata:             { userId: String(req.user.id) },
-    });
-    res.json({ url: session.url });
-  } catch (e) {
-    console.error('[stripe] checkout error:', e.message);
-    res.status(500).json({ error: 'Failed to create checkout session' });
-  }
-});
-
-app.get('/api/billing-portal', requireAuth, async (req, res) => {
-  if (!stripe) return res.status(503).json({ error: 'Payments not configured' });
-  if (!req.user.stripe_customer_id) return res.status(404).json({ error: 'No subscription found' });
-  try {
-    const session = await stripe.billingPortal.sessions.create({
-      customer:   req.user.stripe_customer_id,
-      return_url: `${APP_URL}/pro`,
-    });
-    res.json({ url: session.url });
-  } catch (e) {
-    res.status(500).json({ error: 'Failed to open billing portal' });
-  }
-});
-
-// Avatar upload
-let upload = null;
-if (multer) {
-  const storage = multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, AVATARS_DIR),
-    filename:    (req, file, cb) => {
-      const ext = ['.jpg','.jpeg','.png','.webp','.gif'].includes(path.extname(file.originalname).toLowerCase())
-        ? path.extname(file.originalname).toLowerCase() : '.jpg';
-      cb(null, `u${req.user.id}${ext}`);
-    },
-  });
-  upload = multer({
-    storage,
-    limits:      { fileSize: 2 * 1024 * 1024 },
-    fileFilter:  (_req, file, cb) => cb(null, /^image\/(jpeg|png|webp|gif)$/.test(file.mimetype)),
-  });
-}
-
-app.post('/api/upload-avatar', requireAuth, (req, res, next) => {
-  if (!req.user.is_pro) return res.status(403).json({ error: 'Pro membership required' });
-  if (!upload) return res.status(503).json({ error: 'Upload not available' });
-  next();
-}, (req, res, next) => upload.single('avatar')(req, res, next), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No image uploaded or file too large (max 2 MB)' });
-  // Remove old avatar file if different filename
-  const old = req.user.avatar_url;
-  if (old) { try { const oldPath = path.join(AVATARS_DIR, path.basename(old)); if (oldPath !== req.file.path) fs.unlinkSync(oldPath); } catch {} }
-  const avatarUrl = `/uploads/avatars/${req.file.filename}`;
-  stmts.updateAvatar.run(avatarUrl, req.user.id);
-  res.json({ avatar_url: avatarUrl });
-});
-
-app.delete('/api/avatar', requireAuth, (req, res) => {
-  if (req.user.avatar_url) { try { fs.unlinkSync(path.join(AVATARS_DIR, path.basename(req.user.avatar_url))); } catch {} }
-  stmts.updateAvatar.run(null, req.user.id);
-  res.json({ ok: true });
 });
 
 // ── Admin routes ──────────────────────────────────────────────────────────────
@@ -995,18 +854,6 @@ const queues = {};
 Object.keys(CATEGORIES).forEach(cat => { queues[cat] = []; });
 
 const rooms = {};
-const privateRooms = {}; // code → { category, players, hostSocketId, createdAt }
-
-// Expire private rooms older than 15 minutes
-setInterval(() => {
-  const cutoff = Date.now() - 15 * 60 * 1000;
-  Object.keys(privateRooms).forEach(code => {
-    if (privateRooms[code].createdAt < cutoff) {
-      io.to(`pr:${code}`).emit('privateRoomError', { error: 'Room expired (15 min timeout)' });
-      delete privateRooms[code];
-    }
-  });
-}, 60 * 1000);
 
 function broadcastQueueCount() {
   const counts = {};
@@ -1023,29 +870,25 @@ io.on('connection', (socket) => {
     const validCat = CATEGORIES[category] ? category : null;
     if (!validCat) return;
 
-    let userId = null, isPro = false, avatarUrl = null;
+    let userId = null;
     let displayName = String(name || '').trim().slice(0, 20) || 'Player';
 
     if (token) {
       try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        userId        = decoded.userId;
-        displayName   = decoded.username;
-        const u       = stmts.findById.get(userId);
-        if (u) { isPro = !!u.is_pro; avatarUrl = u.avatar_url || null; }
-      } catch {}
+        userId      = decoded.userId;
+        displayName = decoded.username;
+      } catch { /* invalid token — play as guest */ }
     }
 
     Object.values(queues).forEach(q => {
       const i = q.findIndex(p => p.socketId === socket.id);
       if (i !== -1) q.splice(i, 1);
     });
-    queues[validCat].push({ socketId: socket.id, name: displayName, peerId, userId, isPro, avatarUrl, joinedAt: Date.now() });
+    queues[validCat].push({ socketId: socket.id, name: displayName, peerId, userId });
     broadcastQueueCount();
 
     if (queues[validCat].length >= 3) {
-      // Priority matchmaking: sort pros first (FIFO within each tier)
-      queues[validCat].sort((a, b) => (b.isPro ? 1 : 0) - (a.isPro ? 1 : 0) || a.joinedAt - b.joinedAt);
       const players = queues[validCat].splice(0, 3);
       broadcastQueueCount();
 
@@ -1056,7 +899,7 @@ io.on('connection', (socket) => {
 
       rooms[roomId] = { players, readyCount: 0, imposterIndex, word: picked.name, category: validCat, startedAt: Date.now(), votes: {} };
 
-      const playerSummary = players.map((p) => ({ name: p.name, peerId: p.peerId, isPro: !!p.isPro, avatarUrl: p.avatarUrl || null }));
+      const playerSummary = players.map((p) => ({ name: p.name, peerId: p.peerId }));
 
       players.forEach((player, index) => {
         const isImposter = index === imposterIndex;
@@ -1181,100 +1024,10 @@ io.on('connection', (socket) => {
     io.to(target.socketId).emit('rtc-signal', { fromIndex: senderIdx, signal });
   });
 
-  // ── Private rooms ──────────────────────────────────────────────────────────
-  socket.on('createPrivateRoom', ({ token, category }) => {
-    const validCat = CATEGORIES[category] ? category : null;
-    if (!validCat) return socket.emit('privateRoomError', { error: 'Invalid sport' });
-
-    let userId = null, isPro = false, avatarUrl = null, displayName = 'Host';
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        userId        = decoded.userId;
-        displayName   = decoded.username;
-        const u       = stmts.findById.get(userId);
-        if (u) { isPro = !!u.is_pro; avatarUrl = u.avatar_url || null; }
-      } catch {}
-    }
-    if (!isPro) return socket.emit('privateRoomError', { error: 'Pro membership required to create private rooms' });
-
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code;
-    do { code = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join(''); }
-    while (privateRooms[code]);
-
-    privateRooms[code] = { category: validCat, players: [{ socketId: socket.id, name: displayName, userId, isPro, avatarUrl }], hostSocketId: socket.id, createdAt: Date.now() };
-    socket.join(`pr:${code}`);
-    socket.emit('privateRoomCreated', { code, category: validCat });
-    io.to(`pr:${code}`).emit('privateRoomUpdate', { code, category: validCat, players: privateRooms[code].players.map(p => ({ name: p.name, isPro: p.isPro })) });
-  });
-
-  socket.on('joinPrivateRoom', ({ token, code }) => {
-    const room = privateRooms[code];
-    if (!room) return socket.emit('privateRoomError', { error: 'Room not found. Check the code and try again.' });
-    if (room.players.length >= 3) return socket.emit('privateRoomError', { error: 'Room is full (3/3 players)' });
-    if (room.players.some(p => p.socketId === socket.id)) return socket.emit('privateRoomError', { error: 'Already in this room' });
-
-    let userId = null, isPro = false, avatarUrl = null, displayName = 'Guest';
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        userId        = decoded.userId;
-        displayName   = decoded.username;
-        const u       = stmts.findById.get(userId);
-        if (u) { isPro = !!u.is_pro; avatarUrl = u.avatar_url || null; }
-      } catch {}
-    }
-
-    room.players.push({ socketId: socket.id, name: displayName, userId, isPro, avatarUrl });
-    socket.join(`pr:${code}`);
-    io.to(`pr:${code}`).emit('privateRoomUpdate', { code, category: room.category, players: room.players.map(p => ({ name: p.name, isPro: p.isPro })) });
-
-    if (room.players.length === 3) {
-      const players = room.players;
-      delete privateRooms[code];
-
-      const roomId        = randomUUID();
-      const wordList      = CATEGORIES[room.category];
-      const picked        = wordList[Math.floor(Math.random() * wordList.length)];
-      const imposterIndex = Math.floor(Math.random() * 3);
-
-      rooms[roomId] = { players, readyCount: 0, imposterIndex, word: picked.name, category: room.category, startedAt: Date.now(), votes: {} };
-
-      const playerSummary = players.map(p => ({ name: p.name, peerId: p.peerId || null, isPro: !!p.isPro, avatarUrl: p.avatarUrl || null }));
-      players.forEach((player, index) => {
-        const isImposter = index === imposterIndex;
-        io.to(player.socketId).emit('gameStart', {
-          roomId, role: isImposter ? 'imposter' : 'knower',
-          category: room.category, word: isImposter ? null : picked.name,
-          hint: isImposter ? picked.hint : null, playerIndex: index, players: playerSummary,
-        });
-      });
-    }
-  });
-
-  socket.on('leavePrivateRoom', ({ code }) => {
-    const room = privateRooms[code];
-    if (!room) return;
-    room.players = room.players.filter(p => p.socketId !== socket.id);
-    socket.leave(`pr:${code}`);
-    if (room.players.length === 0) { delete privateRooms[code]; return; }
-    if (room.hostSocketId === socket.id && room.players.length > 0) room.hostSocketId = room.players[0].socketId;
-    io.to(`pr:${code}`).emit('privateRoomUpdate', { code, category: room.category, players: room.players.map(p => ({ name: p.name, isPro: p.isPro })) });
-  });
-
   socket.on('disconnect', () => {
     Object.values(queues).forEach(q => {
       const i = q.findIndex(p => p.socketId === socket.id);
       if (i !== -1) q.splice(i, 1);
-    });
-    // Leave any private rooms
-    Object.entries(privateRooms).forEach(([code, room]) => {
-      if (room.players.some(p => p.socketId === socket.id)) {
-        room.players = room.players.filter(p => p.socketId !== socket.id);
-        if (room.players.length === 0) { delete privateRooms[code]; }
-        else { io.to(`pr:${code}`).emit('privateRoomUpdate', { code, category: room.category, players: room.players.map(p => ({ name: p.name, isPro: p.isPro })) }); }
-      }
     });
     broadcastQueueCount();
     broadcastStats();

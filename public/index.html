@@ -72,97 +72,6 @@
       color: var(--sub); cursor: pointer; transition: border-color 0.12s, color 0.12s;
     }
     .btn-signin:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
-    .btn-pro-nav {
-      font-family: var(--mono); font-size: 0.68rem; font-weight: 700;
-      padding: 0.32rem 0.75rem; letter-spacing: 0.08em; text-decoration: none;
-      background: rgba(229,25,31,0.1); border: 1px solid rgba(229,25,31,0.35);
-      color: var(--accent); transition: background 0.12s, border-color 0.12s;
-    }
-    .btn-pro-nav:hover { background: rgba(229,25,31,0.18); border-color: rgba(229,25,31,0.6); }
-
-    /* ── PRO BADGE (shared) ── */
-    .pro-badge {
-      display: inline-flex; align-items: center;
-      background: var(--accent); color: #fff;
-      font-size: 0.48rem; font-weight: 700; letter-spacing: 0.12em;
-      padding: 1px 4px; margin-left: 4px; vertical-align: middle; flex-shrink: 0;
-    }
-
-    /* ── PRIVATE ROOM SECTION ── */
-    .private-room-section { padding-bottom: 48px; }
-    .private-row {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-      border: 1px solid var(--border-b);
-    }
-    .pr-panel { padding: 18px 16px; border-right: 1px solid var(--border); }
-    .pr-panel:last-child { border-right: none; }
-    .pr-panel-label {
-      font-size: 0.56rem; font-weight: 700; letter-spacing: 0.18em;
-      text-transform: uppercase; color: var(--dim); margin-bottom: 8px;
-    }
-    .pr-panel-title { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-    .pr-panel-sub { font-size: 0.68rem; color: var(--sub); line-height: 1.6; margin-bottom: 14px; }
-    .btn-pr-create {
-      padding: 0.55rem 1.2rem; background: var(--accent); border: none;
-      color: #fff; font-family: var(--mono); font-size: 0.75rem; font-weight: 700;
-      letter-spacing: 0.08em; cursor: pointer; transition: background 0.12s;
-    }
-    .btn-pr-create:hover { background: var(--accent-d); }
-    .btn-pr-create:disabled { opacity: 0.4; cursor: default; }
-    .btn-pr-upgrade {
-      padding: 0.53rem 1.1rem; background: transparent;
-      border: 1px solid rgba(229,25,31,0.4); color: var(--accent);
-      font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
-      letter-spacing: 0.06em; cursor: pointer; text-decoration: none; display: inline-block;
-      transition: border-color 0.12s, background 0.12s;
-    }
-    .btn-pr-upgrade:hover { border-color: var(--accent); background: rgba(229,25,31,0.06); }
-    .pr-join-row { display: flex; gap: 6px; }
-    .pr-code-input {
-      flex: 1; padding: 0.58rem 0.75rem; background: var(--bg);
-      border: 1px solid var(--border-b); color: var(--text);
-      font-family: var(--mono); font-size: 0.95rem; font-weight: 700;
-      letter-spacing: 0.18em; text-transform: uppercase; outline: none;
-      transition: border-color 0.12s;
-    }
-    .pr-code-input::placeholder { color: var(--dim); font-weight: 400; letter-spacing: 0.08em; font-size: 0.75rem; text-transform: none; }
-    .pr-code-input:focus { border-color: rgba(255,255,255,0.32); }
-    .btn-pr-join {
-      padding: 0.58rem 1rem; background: var(--surf); border: 1px solid var(--border-b);
-      color: var(--sub); font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
-      letter-spacing: 0.06em; cursor: pointer; transition: color 0.12s, border-color 0.12s, background 0.12s; white-space: nowrap;
-    }
-    .btn-pr-join:hover { color: var(--text); border-color: rgba(255,255,255,0.3); background: var(--surf-2); }
-    .pr-error { font-size: 0.68rem; color: var(--accent); margin-top: 6px; min-height: 1rem; }
-
-    /* ── PRIVATE ROOM WAITING OVERLAY ── */
-    .pr-overlay {
-      position: fixed; inset: 0; z-index: 80;
-      background: rgba(0,0,0,0.82); backdrop-filter: blur(8px);
-      display: flex; align-items: center; justify-content: center;
-      animation: fadeIn 0.15s ease;
-    }
-    .pr-card {
-      background: var(--surf); border: 1px solid var(--border-b);
-      padding: 28px 24px; max-width: 320px; width: 100%;
-      animation: scaleIn 0.18s ease; text-align: center;
-    }
-    .pr-card-label { font-size: 0.56rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
-    .pr-card-title { font-size: 0.92rem; font-weight: 700; color: var(--text); margin-bottom: 20px; }
-    .pr-code-display {
-      font-size: 2rem; font-weight: 700; letter-spacing: 0.22em; color: var(--accent);
-      background: var(--surf-2); border: 1px solid var(--border-b); padding: 12px 16px;
-      margin-bottom: 10px; cursor: pointer; transition: border-color 0.12s;
-      user-select: all;
-    }
-    .pr-code-display:hover { border-color: rgba(255,255,255,0.24); }
-    .pr-copy-hint { font-size: 0.62rem; color: var(--dim); margin-bottom: 20px; }
-    .pr-copy-hint.copied { color: #4ade80; }
-    .pr-pips { display: flex; gap: 8px; justify-content: center; margin-bottom: 8px; }
-    .pr-pip { width: 7px; height: 7px; border-radius: 50%; background: var(--surf-2); border: 1px solid var(--border-b); transition: all 0.2s; }
-    .pr-pip.active { background: var(--accent); border-color: var(--accent); }
-    .pr-player-count { font-size: 0.7rem; color: var(--dim); margin-bottom: 20px; }
-    .pr-player-count strong { color: var(--text); }
 
     .user-chip {
       display: flex; align-items: center;
@@ -576,35 +485,6 @@
       <div class="sports-grid" id="sports-grid"></div>
     </section>
 
-    <!-- Private room -->
-    <section class="private-room-section" id="private-room-section">
-      <div class="divider">
-        <span class="divider-label">PRIVATE ROOM</span>
-        <div class="divider-line"></div>
-      </div>
-      <div class="private-row">
-        <div class="pr-panel" id="pr-create-panel">
-          <div class="pr-panel-label">PRO FEATURE</div>
-          <div class="pr-panel-title">Create a Private Room</div>
-          <div class="pr-panel-sub">Generate a 6-digit code and share it with friends. Only invited players can join your game.</div>
-          <div id="pr-create-cta">
-            <!-- populated by JS based on auth state -->
-          </div>
-          <div class="pr-error" id="pr-create-error"></div>
-        </div>
-        <div class="pr-panel">
-          <div class="pr-panel-label">OPEN TO ALL</div>
-          <div class="pr-panel-title">Join a Private Room</div>
-          <div class="pr-panel-sub">Have a code from a friend? Enter it below to join their room.</div>
-          <div class="pr-join-row">
-            <input class="pr-code-input" id="pr-join-input" maxlength="6" placeholder="Enter code" spellcheck="false" autocomplete="off" autocapitalize="characters">
-            <button class="btn-pr-join" id="btn-pr-join">JOIN</button>
-          </div>
-          <div class="pr-error" id="pr-join-error"></div>
-        </div>
-      </div>
-    </section>
-
     <!-- How it works -->
     <section class="section" id="how">
       <div class="divider">
@@ -687,23 +567,6 @@
       </div>
       <p class="q-count-text"><strong id="queue-live">1</strong> / 3 players ready</p>
       <button class="btn-cancel" id="cancel-btn">CANCEL</button>
-    </div>
-  </div>
-
-  <!-- Private room waiting overlay -->
-  <div id="pr-overlay" class="pr-overlay" style="display:none">
-    <div class="pr-card">
-      <div class="pr-card-label" id="pr-overlay-sport">NBA</div>
-      <div class="pr-card-title">Waiting for players…</div>
-      <div class="pr-code-display" id="pr-overlay-code" title="Click to copy">——————</div>
-      <div class="pr-copy-hint" id="pr-copy-hint">Tap code to copy &amp; share</div>
-      <div class="pr-pips">
-        <span class="pr-pip" id="pr-pip-0"></span>
-        <span class="pr-pip" id="pr-pip-1"></span>
-        <span class="pr-pip" id="pr-pip-2"></span>
-      </div>
-      <p class="pr-player-count"><strong id="pr-count">1</strong> / 3 players joined</p>
-      <button class="btn-cancel" id="pr-cancel-btn">LEAVE ROOM</button>
     </div>
   </div>
 
@@ -828,66 +691,26 @@
     }
 
     // ── Auth ────────────────────────────────────────────────────────────────────
-    let pendingSport   = null;
-    let currentPrCode  = null;
-
-    let authIsPro = (localStorage.getItem('imposport_ispro') === '1');
-
-    function renderPrivateRoomCreate() {
-      const el = document.getElementById('pr-create-cta');
-      if (!el) return;
-      if (!authToken) {
-        el.innerHTML = `<button class="btn-pr-create" onclick="showAuthModal('login')">SIGN IN TO CREATE</button>`;
-      } else if (!authIsPro) {
-        el.innerHTML = `<a href="/pro" class="btn-pr-upgrade">UPGRADE TO PRO ↗</a>`;
-      } else {
-        const sportOptions = [
-          { key: 'NBA Players', name: 'NBA' }, { key: 'NFL Players', name: 'NFL' },
-          { key: 'MLB Players', name: 'MLB' }, { key: 'Soccer Players', name: 'SOCCER' },
-          { key: 'MMA Fighters', name: 'MMA' }, { key: 'NHL Players', name: 'NHL' },
-        ];
-        el.innerHTML = `
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <select id="pr-sport-select" style="flex:1;min-width:0;padding:0.5rem 0.6rem;background:var(--bg);border:1px solid var(--border-b);color:var(--text);font-family:var(--mono);font-size:0.78rem;outline:none;">
-              ${sportOptions.map(s => `<option value="${s.key}">${s.name}</option>`).join('')}
-            </select>
-            <button class="btn-pr-create" id="btn-pr-create">CREATE ROOM</button>
-          </div>`;
-        document.getElementById('btn-pr-create').addEventListener('click', () => {
-          const sport = document.getElementById('pr-sport-select').value;
-          socket.emit('createPrivateRoom', { token: authToken, category: sport });
-          document.getElementById('btn-pr-create').disabled = true;
-          document.getElementById('btn-pr-create').textContent = 'Creating…';
-        });
-      }
-    }
+    let pendingSport = null;
 
     function setLoggedOut() {
       authToken    = null;
       authUsername = null;
-      authIsPro    = false;
-      localStorage.removeItem('imposport_ispro');
       document.getElementById('header-right').innerHTML =
-        '<a href="/pro" class="btn-pro-nav">PRO</a><button class="btn-signin" id="btn-open-auth">SIGN IN</button>';
+        '<button class="btn-signin" id="btn-open-auth">SIGN IN</button>';
       document.getElementById('btn-open-auth').addEventListener('click', () => showAuthModal('login'));
-      renderPrivateRoomCreate();
     }
 
-    function setLoggedIn(username, token, isPro) {
+    function setLoggedIn(username, token) {
       authToken    = token;
       authUsername = username;
-      authIsPro    = !!isPro;
       localStorage.setItem('imposport_token', token);
       localStorage.setItem('imposport_user',  username);
-      if (isPro) localStorage.setItem('imposport_ispro', '1');
-      else       localStorage.removeItem('imposport_ispro');
-      const badge = authIsPro ? '<span class="pro-badge">PRO</span>' : '';
       document.getElementById('header-right').innerHTML = `
-        ${authIsPro ? '' : '<a href="/pro" class="btn-pro-nav">GO PRO</a>'}
         <div class="user-chip">
           <a href="/profile?u=${encodeURIComponent(username)}" class="chip-profile-link">
             <span class="chip-avatar">${username.charAt(0).toUpperCase()}</span>
-            <span class="chip-name">${username}${badge}</span>
+            <span class="chip-name">${username}</span>
           </a>
           <button class="btn-signout-chip" id="btn-signout-header">OUT</button>
         </div>`;
@@ -896,15 +719,14 @@
         localStorage.removeItem('imposport_user');
         setLoggedOut();
       });
-      renderPrivateRoomCreate();
     }
 
     // Restore from localStorage, then validate with server
     if (authToken && authUsername) {
-      setLoggedIn(authUsername, authToken, authIsPro);
+      setLoggedIn(authUsername, authToken);
       fetch('/api/me', { headers: { Authorization: `Bearer ${authToken}` } })
         .then(r => {
-          if (r.ok) return r.json().then(d => setLoggedIn(d.username, authToken, d.is_pro));
+          if (r.ok) return r.json().then(d => setLoggedIn(d.username, authToken));
           localStorage.removeItem('imposport_token');
           localStorage.removeItem('imposport_user');
           setLoggedOut();
@@ -958,7 +780,6 @@
     });
 
     socket.on('gameStart', (data) => {
-      if (currentPrCode) { document.getElementById('pr-overlay').style.display = 'none'; currentPrCode = null; }
       sessionStorage.setItem('gameData', JSON.stringify(data));
       window.location.href = '/game.html';
     });
@@ -1026,11 +847,10 @@
         const rankLbl = RANK_LABELS[i] || (i + 1);
         const isMe    = authUsername && row.username.toLowerCase() === authUsername.toLowerCase();
         const changed = prev[row.username] !== undefined && prev[row.username] !== row.imposter_wins;
-        const proBadge = row.is_pro ? '<span class="pro-badge">PRO</span>' : '';
         return `
           <div class="lb-row${changed ? ' flash' : ''}" data-user="${row.username}" data-wins="${row.imposter_wins}">
             <span class="lb-rank ${rankCls}">${rankLbl}</span>
-            <span class="lb-name${isMe ? ' is-me' : ''}">${row.username}${proBadge}${isMe ? ' ★' : ''}</span>
+            <span class="lb-name${isMe ? ' is-me' : ''}">${row.username}${isMe ? ' ★' : ''}</span>
             <span class="lb-wins">${row.imposter_wins}</span>
             <span class="lb-games">${row.games_played}</span>
             <span class="lb-rate ${rClass}">${rate}%</span>
@@ -1043,68 +863,6 @@
     }
     socket.on('leaderboardUpdate', rows => renderLeaderboard(rows));
     loadLeaderboard();
-
-    // ── Private room ─────────────────────────────────────────────────────────────
-    function showPrOverlay(code, category, playerCount) {
-      currentPrCode = code;
-      document.getElementById('pr-overlay-sport').textContent = (SPORT_CARDS.find(s => s.key === category) || { name: category }).name + ' / PRIVATE';
-      document.getElementById('pr-overlay-code').textContent = code;
-      for (let i = 0; i < 3; i++) document.getElementById(`pr-pip-${i}`).classList.toggle('active', i < playerCount);
-      document.getElementById('pr-count').textContent = playerCount;
-      document.getElementById('pr-overlay').style.display = 'flex';
-    }
-
-    document.getElementById('pr-overlay-code').addEventListener('click', () => {
-      if (!currentPrCode) return;
-      navigator.clipboard.writeText(currentPrCode).then(() => {
-        const h = document.getElementById('pr-copy-hint');
-        h.textContent = 'Copied!'; h.classList.add('copied');
-        setTimeout(() => { h.textContent = 'Tap code to copy & share'; h.classList.remove('copied'); }, 2000);
-      }).catch(() => {});
-    });
-
-    document.getElementById('pr-cancel-btn').addEventListener('click', () => {
-      if (currentPrCode) socket.emit('leavePrivateRoom', { code: currentPrCode });
-      document.getElementById('pr-overlay').style.display = 'none';
-      currentPrCode = null;
-      // re-render create button
-      renderPrivateRoomCreate();
-    });
-
-    socket.on('privateRoomCreated', ({ code, category }) => {
-      renderPrivateRoomCreate();
-      showPrOverlay(code, category, 1);
-    });
-
-    socket.on('privateRoomUpdate', ({ code, category, players }) => {
-      if (code !== currentPrCode) return;
-      showPrOverlay(code, category, players.length);
-    });
-
-    socket.on('privateRoomError', ({ error }) => {
-      document.getElementById('pr-create-error').textContent = error;
-      document.getElementById('pr-join-error').textContent = error;
-      renderPrivateRoomCreate();
-    });
-
-    // Join private room via code input
-    document.getElementById('btn-pr-join').addEventListener('click', joinPrivateRoom);
-    document.getElementById('pr-join-input').addEventListener('keydown', e => { if (e.key === 'Enter') joinPrivateRoom(); });
-
-    function joinPrivateRoom() {
-      const code = document.getElementById('pr-join-input').value.trim().toUpperCase();
-      document.getElementById('pr-join-error').textContent = '';
-      if (code.length < 6) { document.getElementById('pr-join-error').textContent = 'Enter the 6-character room code.'; return; }
-      if (!authToken) {
-        pendingSport = null;
-        showAuthModal('login');
-        return;
-      }
-      socket.emit('joinPrivateRoom', { token: authToken, code });
-      const btn = document.getElementById('btn-pr-join');
-      btn.disabled = true; btn.textContent = 'Joining…';
-      setTimeout(() => { if (btn) { btn.disabled = false; btn.textContent = 'JOIN'; } }, 3000);
-    }
 
     // ── Gatekeeper modal ─────────────────────────────────────────────────────────
     function showGateModal(sport) {
@@ -1175,7 +933,7 @@
           errEl.textContent = data.error;
         } else {
           closeAuthModal();
-          setLoggedIn(data.username, data.token, data.is_pro);
+          setLoggedIn(data.username, data.token);
           if (pendingSport) { const sp = pendingSport; pendingSport = null; tryJoinQueue(sp); }
         }
       } catch {
