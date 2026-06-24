@@ -176,12 +176,26 @@
     pending[remoteIdx] = [];
   }
 
-  const TIMER_DURATION = 30000;
+  const TIMER_DURATION = 60000;
   const TIMER_R = 20;
   const TIMER_CIRCUMFERENCE = 2 * Math.PI * TIMER_R; // ≈ 125.66
 
-  function startDiscussionTimer(voteOpenAt) {
+  function showRulesOverlay(onDone) {
     document.getElementById('waiting-overlay').style.display = 'none';
+    const overlay = document.getElementById('rules-overlay');
+    const badge   = document.getElementById('rules-role-badge');
+    badge.textContent = role === 'imposter' ? 'YOU ARE THE IMPOSTER' : 'YOU ARE A KNOWER';
+    badge.className   = `rules-role-badge ${role}`;
+    overlay.style.display  = 'flex';
+    overlay.style.opacity  = '1';
+    overlay.style.transition = 'opacity .3s ease';
+    setTimeout(() => {
+      overlay.style.opacity = '0';
+      setTimeout(() => { overlay.style.display = 'none'; onDone(); }, 300);
+    }, 3000);
+  }
+
+  function startDiscussionTimer(voteOpenAt) {
     const timerEl = document.getElementById('discussion-timer');
     const arc = document.getElementById('timer-arc');
     const numEl = document.getElementById('timer-number');
@@ -210,9 +224,9 @@
     tick();
   }
 
-  // allPeersReady: start 30s discussion timer, then reveal vote bar. Also kicks off WebRTC.
+  // allPeersReady: show 3s rules overlay, then start 60s discussion timer, then reveal vote bar.
   socket.on('allPeersReady', async ({ voteOpenAt }) => {
-    startDiscussionTimer(voteOpenAt);
+    showRulesOverlay(() => startDiscussionTimer(voteOpenAt));
 
     for (const p of remotePlayers) makePc(p.index);
 

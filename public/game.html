@@ -169,6 +169,55 @@
     }
     .btn-play-again:hover { background: #c8181e; }
 
+    /* ── Rules overlay ──────────────────────────────────────────────── */
+    .rules-overlay {
+      position: fixed; inset: 0;
+      background: rgba(5,5,15,.88);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem;
+      animation: fadeIn .3s ease;
+    }
+    .rules-card {
+      background: #161616;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 2.5rem 2rem 2rem;
+      max-width: 420px; width: 100%;
+      text-align: center;
+      box-shadow: 0 30px 80px rgba(0,0,0,.7);
+    }
+    .rules-role-badge {
+      display: inline-block;
+      padding: .35rem 1rem;
+      border-radius: 20px;
+      font-size: .7rem; font-weight: 800; letter-spacing: .14em;
+      text-transform: uppercase;
+      margin-bottom: 1.4rem;
+    }
+    .rules-role-badge.knower   { background: rgba(96,165,250,.15); color: #60a5fa; border: 1px solid rgba(96,165,250,.3); }
+    .rules-role-badge.imposter { background: rgba(229,25,31,.15);  color: #f87171; border: 1px solid rgba(248,113,113,.3); }
+    .rules-headline {
+      font-family: 'Inter', sans-serif;
+      font-size: 1.2rem; font-weight: 700; line-height: 1.45;
+      color: #ededed; margin-bottom: 1rem;
+    }
+    .rules-imposter-word { color: #e5191f; }
+    .rules-cta {
+      font-size: .95rem; font-weight: 600; color: rgba(255,255,255,.5);
+      margin-bottom: 1.75rem;
+    }
+    .rules-progress-track {
+      height: 3px; background: rgba(255,255,255,.08); border-radius: 2px; overflow: hidden;
+    }
+    .rules-progress-fill {
+      height: 100%; width: 100%; background: #e5191f; border-radius: 2px;
+      transform-origin: left;
+      animation: rulesCountdown 3s linear forwards;
+    }
+    @keyframes rulesCountdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
     /* ── Mobile layout (≤640px) ─────────────────────────────────────── */
     @media (max-width: 640px) {
       /* Timer pinned to bottom, always visible */
@@ -259,7 +308,7 @@
         <circle class="timer-track" cx="24" cy="24" r="20"/>
         <circle class="timer-arc" id="timer-arc" cx="24" cy="24" r="20"/>
       </svg>
-      <span class="timer-number" id="timer-number">30</span>
+      <span class="timer-number" id="timer-number">60</span>
     </div>
     <div class="timer-text">
       <span class="timer-title">Discuss</span>
@@ -290,6 +339,16 @@
       </div>
       <div class="result-votes" id="result-votes"></div>
       <a href="/" class="btn-play-again">Play Again</a>
+    </div>
+  </div>
+
+  <!-- Rules overlay — shown for 3s when all 3 players connect -->
+  <div id="rules-overlay" class="rules-overlay" style="display:none">
+    <div class="rules-card">
+      <div class="rules-role-badge" id="rules-role-badge"></div>
+      <p class="rules-headline">Two players know the secret athlete.<br>One player is the <span class="rules-imposter-word">IMPOSTER</span> and doesn't know.</p>
+      <p class="rules-cta">Discuss, then vote to find the imposter!</p>
+      <div class="rules-progress-track"><div class="rules-progress-fill" id="rules-progress-fill"></div></div>
     </div>
   </div>
 

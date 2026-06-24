@@ -903,7 +903,7 @@ io.on('connection', (socket) => {
     socket.emit('peerReadyAck', { count: room.readyCount });
 
     if (room.readyCount >= 3) {
-      const voteOpenAt = Date.now() + 30000;
+      const voteOpenAt = Date.now() + 60000;
       room.players.forEach((p) => io.to(p.socketId).emit('allPeersReady', { voteOpenAt }));
     }
   });
