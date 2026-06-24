@@ -36,10 +36,12 @@ const db = new DatabaseSync(path.join(DB_DIR, 'imposter.db'));
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    username      TEXT    UNIQUE NOT NULL COLLATE NOCASE,
+    username      TEXT    UNIQUE COLLATE NOCASE,
+    email         TEXT    UNIQUE COLLATE NOCASE,
+    display_name  TEXT    NOT NULL COLLATE NOCASE,
     password_hash TEXT    NOT NULL,
-    imposter_wins INTEGER DEFAULT 0,
-    games_played  INTEGER DEFAULT 0,
+    imposter_wins INTEGER NOT NULL DEFAULT 0,
+    games_played  INTEGER NOT NULL DEFAULT 0,
     created_at    DATETIME DEFAULT CURRENT_TIMESTAMP
   );
   CREATE TABLE IF NOT EXISTS game_history (
@@ -53,10 +55,22 @@ db.exec(`
   )
 `);
 
+// Migrate existing users table if it lacks the email / display_name columns
+{
+  const cols = db.prepare('PRAGMA table_info(users)').all().map(c => c.name);
+  if (!cols.includes('email')) {
+    db.exec("CREATE TABLE users_new (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE COLLATE NOCASE, email TEXT UNIQUE COLLATE NOCASE, display_name TEXT NOT NULL COLLATE NOCASE, password_hash TEXT NOT NULL, imposter_wins INTEGER NOT NULL DEFAULT 0, games_played INTEGER NOT NULL DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
+    db.exec("INSERT INTO users_new (id, username, display_name, password_hash, imposter_wins, games_played, created_at) SELECT id, username, username, password_hash, imposter_wins, games_played, created_at FROM users");
+    db.exec("DROP TABLE users");
+    db.exec("ALTER TABLE users_new RENAME TO users");
+    console.log('[migration] users table upgraded: added email + display_name columns');
+  }
+}
+
 const stmts = {
-  register:       db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)'),
-  findByName:     db.prepare('SELECT * FROM users WHERE username = ?'),
-  leaderboard:    db.prepare('SELECT username, imposter_wins, games_played FROM users WHERE games_played > 0 ORDER BY imposter_wins DESC, CAST(imposter_wins AS REAL)/games_played DESC LIMIT 10'),
+  registerUser:    db.prepare('INSERT INTO users (username, email, display_name, password_hash) VALUES (?, ?, ?, ?)'),
+  findByIdentifier:db.prepare('SELECT * FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)'),
+  leaderboard:    db.prepare('SELECT display_name AS username, imposter_wins, games_played FROM users WHERE games_played > 0 ORDER BY imposter_wins DESC, CAST(imposter_wins AS REAL)/games_played DESC LIMIT 10'),
   addGame:        db.prepare('UPDATE users SET games_played = games_played + 1 WHERE id = ?'),
   addWin:         db.prepare('UPDATE users SET imposter_wins = imposter_wins + 1, games_played = games_played + 1 WHERE id = ?'),
   insertHistory:  db.prepare('INSERT INTO game_history (category, word, imposter_name, imposter_caught, players_json) VALUES (?, ?, ?, ?, ?)'),
@@ -65,16 +79,16 @@ const stmts = {
   recentGames:    db.prepare('SELECT id, category, word, imposter_name, imposter_caught, players_json, played_at FROM game_history ORDER BY id DESC LIMIT 8'),
   totalPlayers:   db.prepare('SELECT COUNT(*) as count FROM users'),
   categoryStats:  db.prepare('SELECT category, COUNT(*) as games FROM game_history GROUP BY category ORDER BY games DESC'),
-  allLeaderboard: db.prepare('SELECT username, imposter_wins, games_played, created_at FROM users ORDER BY imposter_wins DESC, CASE WHEN games_played > 0 THEN CAST(imposter_wins AS REAL)/games_played ELSE 0 END DESC'),
+  allLeaderboard: db.prepare('SELECT display_name AS username, imposter_wins, games_played, created_at FROM users ORDER BY imposter_wins DESC, CASE WHEN games_played > 0 THEN CAST(imposter_wins AS REAL)/games_played ELSE 0 END DESC'),
   recentHistory:  db.prepare('SELECT * FROM game_history ORDER BY played_at DESC LIMIT 100'),
   dailySignups:   db.prepare("SELECT DATE(created_at) as day, COUNT(*) as count FROM users WHERE created_at >= DATE('now', '-29 days') GROUP BY day ORDER BY day"),
   dailyGames:     db.prepare("SELECT DATE(played_at) as day, COUNT(*) as count FROM game_history WHERE played_at >= DATE('now', '-29 days') GROUP BY day ORDER BY day"),
-  profileUser:     db.prepare('SELECT username, imposter_wins, games_played FROM users WHERE LOWER(username) = LOWER(?)'),
-  profileImpGames: db.prepare('SELECT COUNT(*) as count FROM game_history WHERE LOWER(imposter_name) = LOWER(?)'),
-  profileImpWins:  db.prepare('SELECT COUNT(*) as count FROM game_history WHERE LOWER(imposter_name) = LOWER(?) AND imposter_caught = 0'),
+  profileUser:    db.prepare('SELECT display_name AS username, imposter_wins, games_played FROM users WHERE LOWER(display_name) = LOWER(?)'),
+  profileImpGames:db.prepare('SELECT COUNT(*) as count FROM game_history WHERE LOWER(imposter_name) = LOWER(?)'),
+  profileImpWins: db.prepare('SELECT COUNT(*) as count FROM game_history WHERE LOWER(imposter_name) = LOWER(?) AND imposter_caught = 0'),
   profileBestSport:db.prepare('SELECT category, COUNT(*) as c FROM game_history WHERE players_json LIKE ? GROUP BY category ORDER BY c DESC LIMIT 1'),
-  profileRecent:   db.prepare('SELECT id, category, word, imposter_name, imposter_caught, played_at FROM game_history WHERE players_json LIKE ? ORDER BY id DESC LIMIT 10'),
-  findById:        db.prepare('SELECT * FROM users WHERE id = ?'),
+  profileRecent:  db.prepare('SELECT id, category, word, imposter_name, imposter_caught, played_at FROM game_history WHERE players_json LIKE ? ORDER BY id DESC LIMIT 10'),
+  findById:       db.prepare('SELECT * FROM users WHERE id = ?'),
 };
 
 function getLeaderboard() { return stmts.leaderboard.all(); }
@@ -93,28 +107,49 @@ function broadcastRecentGames() { io.emit('recentGames', stmts.recentGames.all()
 
 // ── Auth routes ───────────────────────────────────────────────────────────────
 app.post('/api/register', (req, res) => {
-  const { username, password } = req.body || {};
-  const name = String(username || '').trim();
-  if (name.length < 2 || name.length > 20) return res.json({ error: 'Username must be 2–20 characters' });
-  if (!password || password.length < 4)    return res.json({ error: 'Password must be at least 4 characters' });
+  const { identifier, password } = req.body || {};
+  const id = String(identifier || '').trim();
+  if (!id) return res.json({ error: 'Enter a username or email' });
+  if (!password || password.length < 4) return res.json({ error: 'Password must be at least 4 characters' });
+
+  const isEmail = id.includes('@');
+  let username = null, email = null, displayName;
+
+  if (isEmail) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id)) return res.json({ error: 'Invalid email address' });
+    email       = id.toLowerCase();
+    displayName = id.split('@')[0].slice(0, 20);
+    if (displayName.length < 2) return res.json({ error: 'Email prefix must be at least 2 characters' });
+  } else {
+    if (id.length < 2 || id.length > 20) return res.json({ error: 'Username must be 2–20 characters' });
+    username    = id;
+    displayName = id;
+  }
 
   const hash = bcrypt.hashSync(password, 10);
   try {
-    const { lastInsertRowid } = stmts.register.run(name, hash);
-    const token = jwt.sign({ userId: lastInsertRowid, username: name }, JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, username: name });
+    const { lastInsertRowid } = stmts.registerUser.run(username, email, displayName, hash);
+    const token = jwt.sign({ userId: lastInsertRowid, username: displayName }, JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, username: displayName });
   } catch (e) {
-    res.json({ error: e.message.includes('UNIQUE') ? 'Username already taken' : 'Server error' });
+    if (e.message.includes('UNIQUE')) {
+      if (e.message.includes('email'))        return res.json({ error: 'Email already registered' });
+      if (e.message.includes('display_name')) return res.json({ error: `Name "${displayName}" is taken. Try adding numbers.` });
+      return res.json({ error: 'Username already taken' });
+    }
+    res.json({ error: 'Server error' });
   }
 });
 
 app.post('/api/login', (req, res) => {
-  const { username, password } = req.body || {};
-  const user = stmts.findByName.get(String(username || '').trim());
-  if (!user || !bcrypt.compareSync(password || '', user.password_hash))
-    return res.json({ error: 'Wrong username or password' });
-  const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
-  res.json({ token, username: user.username });
+  const { identifier, password } = req.body || {};
+  const id = String(identifier || '').trim();
+  if (!id || !password) return res.json({ error: 'Fill in all fields' });
+  const user = stmts.findByIdentifier.get(id, id);
+  if (!user || !bcrypt.compareSync(password, user.password_hash))
+    return res.json({ error: 'Invalid username, email, or password' });
+  const token = jwt.sign({ userId: user.id, username: user.display_name }, JWT_SECRET, { expiresIn: '30d' });
+  res.json({ token, username: user.display_name });
 });
 
 app.get('/api/leaderboard',    (_req, res) => res.json(getLeaderboard()));
@@ -148,6 +183,7 @@ app.get('/api/profile/:username', (req, res) => {
 });
 
 app.get('/profile', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'profile.html')));
+app.get('/login',   (_req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 
 app.get('/api/me', (req, res) => {
   const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
@@ -156,7 +192,7 @@ app.get('/api/me', (req, res) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user    = stmts.findById.get(decoded.userId);
     if (!user) return res.status(404).json({ error: 'Account not found' });
-    res.json({ username: user.username, games_played: user.games_played, imposter_wins: user.imposter_wins });
+    res.json({ username: user.display_name, games_played: user.games_played, imposter_wins: user.imposter_wins });
   } catch {
     res.status(401).json({ error: 'Invalid token' });
   }

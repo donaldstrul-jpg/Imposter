@@ -399,7 +399,7 @@
                 <strong>ACCOUNT NOT FOUND</strong>
                 Your account was reset when the server redeployed. Sign out and register again to start tracking stats.
                 <br><br>
-                <button class="btn-reregister" onclick="localStorage.removeItem('imposport_token');localStorage.removeItem('imposport_user');window.location='/'">SIGN OUT &amp; RE-REGISTER</button>
+                <button class="btn-reregister" onclick="localStorage.removeItem('imposport_token');localStorage.removeItem('imposport_user');window.location='/login'">SIGN OUT &amp; RE-REGISTER</button>
                </div>`
             : `<div class="error-msg"><strong>PLAYER NOT FOUND</strong>${username} has no stats yet.</div>`;
           return;

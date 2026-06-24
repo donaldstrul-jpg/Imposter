@@ -1,7 +1,9 @@
 (() => {
   const socket   = io();
-  const gameData = JSON.parse(sessionStorage.getItem('gameData') || 'null');
 
+  if (!localStorage.getItem('imposport_token')) { window.location.replace('/login'); return; }
+
+  const gameData = JSON.parse(sessionStorage.getItem('gameData') || 'null');
   if (!gameData) { window.location.href = '/'; return; }
 
   const { roomId, role, category, word, hint, playerIndex, players } = gameData;

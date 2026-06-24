@@ -144,49 +144,7 @@
       margin-bottom: 36px; max-width: 400px; font-weight: 400;
     }
 
-    /* ── TERMINAL INPUT ─────────────────────────────────────────── */
-    .term-wrap { max-width: 400px; margin-bottom: 36px; }
-    .term-field {
-      display: flex; align-items: stretch;
-      background: var(--surf); border: 1px solid var(--border-b);
-    }
-    .term-prompt {
-      display: flex; align-items: center;
-      padding: 0 10px; font-size: 0.82rem; color: var(--accent);
-      border-right: 1px solid var(--border); user-select: none;
-      flex-shrink: 0;
-    }
-    #name-input {
-      flex: 1; padding: 0.68rem 0.8rem;
-      background: none; border: none; outline: none;
-      font-family: var(--mono); font-size: 0.82rem; color: var(--text);
-    }
-    #name-input::placeholder { color: var(--dim); }
-    .term-field.shake { animation: shake 0.3s ease; }
-    .term-hint {
-      font-size: 0.64rem; color: var(--dim); margin-top: 7px; letter-spacing: 0.03em;
-    }
-    .term-hint button {
-      background: none; border: none; color: var(--sub); font-family: var(--mono);
-      font-size: 0.64rem; cursor: pointer; transition: color 0.12s; text-decoration: underline;
-    }
-    .term-hint button:hover { color: var(--text); }
-
-    /* ── PLAYING AS (logged in) ─────────────────────────────────── */
-    .playing-as {
-      display: flex; align-items: center; gap: 10px; max-width: 400px;
-      background: var(--surf); border: 1px solid var(--border-b);
-      padding: 10px 14px; margin-bottom: 36px;
-    }
-    .pa-prompt { color: var(--accent); font-size: 0.82rem; flex-shrink: 0; }
-    .pa-inner { flex: 1; }
-    .pa-label { font-size: 0.55rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); }
-    .pa-name  { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-top: 1px; }
-    .btn-pa-signout {
-      background: none; border: none; color: var(--dim); font-family: var(--mono);
-      font-size: 0.6rem; cursor: pointer; transition: color 0.12s; letter-spacing: 0.08em;
-    }
-    .btn-pa-signout:hover { color: var(--sub); }
+    /* ── PLAYING AS (header chip shows this; hero just has eyebrow+title+sub) */
 
     /* ── SECTION DIVIDER ────────────────────────────────────────── */
     .divider {
@@ -361,47 +319,7 @@
     }
     .btn-cancel:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
 
-    /* ── AUTH MODAL ─────────────────────────────────────────────── */
-    .auth-backdrop {
-      position: fixed; inset: 0; z-index: 200;
-      background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
-      display: flex; align-items: center; justify-content: center;
-      padding: 1.5rem; animation: fadeIn 0.15s ease;
-    }
-    .auth-modal {
-      background: var(--surf); border: 1px solid var(--border-b);
-      padding: 28px 24px; max-width: 340px; width: 100%;
-      animation: scaleIn 0.18s ease;
-    }
-    .auth-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .auth-modal-title  { font-size: 0.8rem; font-weight: 700; color: var(--text); letter-spacing: 0.06em; }
-    .auth-close { background: none; border: none; color: var(--dim); font-size: 0.9rem; cursor: pointer; transition: color 0.12s; }
-    .auth-close:hover { color: var(--sub); }
-    .auth-tabs {
-      display: flex; background: var(--bg); border: 1px solid var(--border); padding: 3px; margin-bottom: 20px; gap: 2px;
-    }
-    .auth-tab {
-      flex: 1; padding: 0.4rem; border: none; background: transparent;
-      color: var(--dim); font-family: var(--mono); font-size: 0.75rem; font-weight: 600;
-      cursor: pointer; transition: all 0.12s; letter-spacing: 0.06em;
-    }
-    .auth-tab.active { background: var(--surf-2); color: var(--text); }
-    .auth-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-    .auth-field label { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
-    .auth-input {
-      padding: 0.6rem 0.8rem; background: var(--bg); border: 1px solid var(--border-b);
-      color: var(--text); font-family: var(--mono); font-size: 0.82rem;
-      outline: none; transition: border-color 0.12s; width: 100%;
-    }
-    .auth-input:focus { border-color: rgba(255,255,255,0.3); }
-    .auth-error { font-size: 0.7rem; color: var(--accent); min-height: 1rem; text-align: center; margin-top: 2px; }
-    .btn-auth {
-      width: 100%; padding: 0.65rem; background: var(--accent); border: none;
-      color: white; font-family: var(--mono); font-size: 0.8rem; font-weight: 600;
-      cursor: pointer; transition: background 0.12s; margin-top: 4px; letter-spacing: 0.06em;
-    }
-    .btn-auth:hover:not(:disabled) { background: var(--accent-d); }
-    .btn-auth:disabled { opacity: 0.35; cursor: default; }
+    /* Auth is handled by /login page */
 
     /* ── FOOTER ─────────────────────────────────────────────────── */
     .site-footer { border-top: 1px solid var(--border); padding: 16px 1.75rem; flex-shrink: 0; }
@@ -443,9 +361,7 @@
       <img src="/logo.svg" alt="Imposport" class="logo-img" width="28" height="28">
       <span class="logo-text">IMPOSPORT</span>
     </a>
-    <div class="header-right" id="header-right">
-      <button class="btn-signin" id="btn-open-auth">SIGN IN</button>
-    </div>
+    <div class="header-right" id="header-right"></div>
   </header>
 
   <!-- Scoreboard stats bar -->
@@ -470,26 +386,7 @@
     <section class="hero">
       <p class="hero-eyebrow">SOCIAL DEDUCTION / SPORTS EDITION</p>
       <h1 class="hero-title">FIND THE<br><span class="red">IMPOSTER.</span></h1>
-      <p class="hero-sub">Three players. One secret athlete. One faker who doesn't know the name. Click a sport below.</p>
-
-      <!-- Guest: name input -->
-      <div class="term-wrap" id="guest-section">
-        <div class="term-field" id="name-bar">
-          <span class="term-prompt">&gt;</span>
-          <input type="text" id="name-input" placeholder="display_name_" maxlength="20" autocomplete="off">
-        </div>
-        <p class="term-hint">no account needed &middot; <button id="open-auth-hint">sign in to track wins</button></p>
-      </div>
-
-      <!-- Logged in: playing as -->
-      <div class="playing-as" id="logged-in-section" style="display:none">
-        <span class="pa-prompt">&gt;</span>
-        <div class="pa-inner">
-          <div class="pa-label">PLAYING AS</div>
-          <div class="pa-name" id="pa-name"></div>
-        </div>
-        <button class="btn-pa-signout" id="btn-signout">SIGN OUT</button>
-      </div>
+      <p class="hero-sub">Three players. One secret athlete. One faker who doesn't know the name. Click a sport to play.</p>
     </section>
 
     <!-- Sport selector -->
@@ -562,7 +459,7 @@
             <span style="text-align:right">WIN%</span>
           </div>
           <div id="lb-body">
-            <div class="lb-empty"><strong>SIGN IN TO TRACK WINS</strong>guest play does not save stats</div>
+            <div class="lb-empty"><strong>NO STATS YET</strong>play a game to appear here</div>
           </div>
         </div>
       </div>
@@ -583,32 +480,6 @@
       </div>
       <p class="q-count-text"><strong id="queue-live">1</strong> / 3 players ready</p>
       <button class="btn-cancel" id="cancel-btn">CANCEL</button>
-    </div>
-  </div>
-
-  <!-- Auth modal -->
-  <div class="auth-backdrop" id="auth-modal" style="display:none">
-    <div class="auth-modal">
-      <div class="auth-modal-header">
-        <span class="auth-modal-title">ACCOUNT</span>
-        <button class="auth-close" id="auth-close">&#x2715;</button>
-      </div>
-      <div class="auth-tabs">
-        <button class="auth-tab active" data-tab="login">SIGN IN</button>
-        <button class="auth-tab" data-tab="register">REGISTER</button>
-      </div>
-      <div id="auth-login-form">
-        <div class="auth-field"><label>USERNAME</label><input class="auth-input" id="login-username" type="text" autocomplete="username" placeholder="your_name"></div>
-        <div class="auth-field"><label>PASSWORD</label><input class="auth-input" id="login-password" type="password" autocomplete="current-password" placeholder="••••••••"></div>
-        <div class="auth-error" id="login-error"></div>
-        <button class="btn-auth" id="btn-login">SIGN IN</button>
-      </div>
-      <div id="auth-register-form" style="display:none">
-        <div class="auth-field"><label>USERNAME</label><input class="auth-input" id="reg-username" type="text" autocomplete="username" placeholder="2–20 characters"></div>
-        <div class="auth-field"><label>PASSWORD</label><input class="auth-input" id="reg-password" type="password" autocomplete="new-password" placeholder="min. 4 characters"></div>
-        <div class="auth-error" id="reg-error"></div>
-        <button class="btn-auth" id="btn-register">CREATE ACCOUNT</button>
-      </div>
     </div>
   </div>
 
@@ -689,17 +560,15 @@
       });
     }
 
-    // ── Auth state ──────────────────────────────────────────────────────────────
+    // ── Auth — mandatory login ──────────────────────────────────────────────────
+    // Redirect to /login immediately if no token
+    if (!authToken) { window.location.replace('/login'); }
+
     function setLoggedIn(username, token) {
       authToken    = token;
       authUsername = username;
       localStorage.setItem('imposport_token', token);
       localStorage.setItem('imposport_user',  username);
-
-      document.getElementById('guest-section').style.display     = 'none';
-      document.getElementById('logged-in-section').style.display = 'flex';
-      document.getElementById('pa-name').textContent             = username;
-
       document.getElementById('header-right').innerHTML = `
         <div class="user-chip">
           <a href="/profile?u=${encodeURIComponent(username)}" class="chip-profile-link">
@@ -708,47 +577,30 @@
           </a>
           <button class="btn-signout-chip" id="btn-signout-header">OUT</button>
         </div>`;
-      document.getElementById('btn-signout-header').addEventListener('click', setLoggedOut);
+      document.getElementById('btn-signout-header').addEventListener('click', () => {
+        localStorage.removeItem('imposport_token');
+        localStorage.removeItem('imposport_user');
+        window.location.replace('/login');
+      });
     }
 
-    function setLoggedOut() {
-      authToken    = null;
-      authUsername = null;
-      localStorage.removeItem('imposport_token');
-      localStorage.removeItem('imposport_user');
+    // Show header immediately from cached username, then validate with server
+    if (authUsername) setLoggedIn(authUsername, authToken);
 
-      document.getElementById('guest-section').style.display     = 'block';
-      document.getElementById('logged-in-section').style.display = 'none';
-
-      document.getElementById('header-right').innerHTML = `<button class="btn-signin" id="btn-open-auth">SIGN IN</button>`;
-      document.getElementById('btn-open-auth').addEventListener('click', openAuthModal);
-    }
-
-    if (authToken && authUsername) {
-      // Validate token against DB — if the DB was wiped the user row won't exist
-      fetch('/api/me', { headers: { Authorization: `Bearer ${authToken}` } })
-        .then(r => {
-          if (r.ok) return r.json().then(d => setLoggedIn(d.username, authToken));
-          // 401 = bad/expired token, 404 = DB wiped; clear stale auth either way
-          localStorage.removeItem('imposport_token');
-          localStorage.removeItem('imposport_user');
-          authToken    = null;
-          authUsername = null;
-        })
-        .catch(() => setLoggedIn(authUsername, authToken)); // network error → trust localStorage
-    }
-    document.getElementById('btn-signout').addEventListener('click', setLoggedOut);
+    fetch('/api/me', { headers: { Authorization: `Bearer ${authToken}` } })
+      .then(r => {
+        if (r.ok) return r.json().then(d => setLoggedIn(d.username, authToken));
+        // Token invalid or DB wiped — send to login
+        localStorage.removeItem('imposport_token');
+        localStorage.removeItem('imposport_user');
+        window.location.replace('/login');
+      })
+      .catch(() => {}); // network error → stay logged in
 
     // ── Queue logic ─────────────────────────────────────────────────────────────
     function tryJoinQueue(sport) {
-      const name = authUsername || document.getElementById('name-input').value.trim();
-      if (!name) {
-        const field = document.getElementById('name-bar');
-        field.classList.add('shake');
-        document.getElementById('name-input').focus();
-        field.addEventListener('animationend', () => field.classList.remove('shake'), { once: true });
-        return;
-      }
+      if (!authToken) { window.location.replace('/login'); return; }
+      const name = authUsername;
 
       selectedCategory = sport.key;
       setSportSelected(sport.key);
@@ -834,76 +686,11 @@
     socket.on('recentGames', games => renderFeed(games, true));
     fetch('/api/recent-games').then(r => r.json()).then(g => renderFeed(g, false)).catch(() => {});
 
-    // ── Auth modal ──────────────────────────────────────────────────────────────
-    function openAuthModal()  { document.getElementById('auth-modal').style.display = 'flex'; }
-    function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
-
-    document.getElementById('btn-open-auth').addEventListener('click', openAuthModal);
-    document.getElementById('open-auth-hint').addEventListener('click', openAuthModal);
-    document.getElementById('auth-close').addEventListener('click', closeAuthModal);
-    document.getElementById('auth-modal').addEventListener('click', e => { if (e.target.id === 'auth-modal') closeAuthModal(); });
-
-    document.querySelectorAll('.auth-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        const isLogin = tab.dataset.tab === 'login';
-        document.getElementById('auth-login-form').style.display    = isLogin ? 'block' : 'none';
-        document.getElementById('auth-register-form').style.display = isLogin ? 'none'  : 'block';
-        document.getElementById('login-error').textContent = '';
-        document.getElementById('reg-error').textContent   = '';
-      });
-    });
-
-    document.getElementById('btn-login').addEventListener('click', async () => {
-      const btn = document.getElementById('btn-login');
-      const err = document.getElementById('login-error');
-      const username = document.getElementById('login-username').value.trim();
-      const password = document.getElementById('login-password').value;
-      err.textContent = '';
-      if (!username || !password) { err.textContent = 'Fill in both fields.'; return; }
-      btn.disabled = true; btn.textContent = 'SIGNING IN…';
-      try {
-        const res  = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
-        const data = await res.json();
-        if (data.error) err.textContent = data.error;
-        else { setLoggedIn(data.username, data.token); closeAuthModal(); loadLeaderboard(); }
-      } catch { err.textContent = 'Network error.'; }
-      finally { btn.disabled = false; btn.textContent = 'SIGN IN'; }
-    });
-
-    document.getElementById('btn-register').addEventListener('click', async () => {
-      const btn = document.getElementById('btn-register');
-      const err = document.getElementById('reg-error');
-      const username = document.getElementById('reg-username').value.trim();
-      const password = document.getElementById('reg-password').value;
-      err.textContent = '';
-      if (!username || !password) { err.textContent = 'Fill in both fields.'; return; }
-      btn.disabled = true; btn.textContent = 'CREATING…';
-      try {
-        const res  = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
-        const data = await res.json();
-        if (data.error) err.textContent = data.error;
-        else { setLoggedIn(data.username, data.token); closeAuthModal(); loadLeaderboard(); }
-      } catch { err.textContent = 'Network error.'; }
-      finally { btn.disabled = false; btn.textContent = 'CREATE ACCOUNT'; }
-    });
-
-    ['login-username','login-password'].forEach(id =>
-      document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-login').click(); })
-    );
-    ['reg-username','reg-password'].forEach(id =>
-      document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-register').click(); })
-    );
-
     // ── Leaderboard ─────────────────────────────────────────────────────────────
     function renderLeaderboard(rows) {
       const body = document.getElementById('lb-body');
       if (!rows || !rows.length) {
-        const msg = authUsername
-          ? '<strong>NO STATS YET</strong>play a game to appear here'
-          : '<strong>SIGN IN TO TRACK WINS</strong>guest play does not save stats';
-        body.innerHTML = `<div class="lb-empty">${msg}</div>`;
+        body.innerHTML = '<div class="lb-empty"><strong>NO STATS YET</strong>play a game to appear here</div>';
         return;
       }
       const RANK_LABELS = ['1', '2', '3'];

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMPOSPORT — Sign In</title>
+  <link rel="icon" type="image/svg+xml" href="/logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #111111;
+      --surf:    #171717;
+      --surf-2:  #1e1e1e;
+      --border:  rgba(255,255,255,0.08);
+      --border-b:rgba(255,255,255,0.14);
+      --text:    #f0f0f0;
+      --sub:     #888888;
+      --dim:     #4a4a4a;
+      --accent:  #e5191f;
+      --accent-d:#c8181e;
+      --mono:    'IBM Plex Mono', 'Courier New', monospace;
+    }
+
+    body {
+      font-family: var(--mono);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes shake  { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    .site-header {
+      height: 52px; flex-shrink: 0;
+      background: rgba(17,17,17,0.95);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 1.75rem;
+    }
+    .header-logo {
+      display: flex; align-items: center; gap: 10px; text-decoration: none;
+    }
+    .logo-text {
+      font-size: 0.82rem; font-weight: 700; color: var(--text);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Stats bar ───────────────────────────────────────────── */
+    .stats-bar {
+      border-top: 2px solid var(--accent);
+      border-bottom: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      height: 40px; flex-shrink: 0;
+    }
+    .stats-bar-msg {
+      font-size: 0.6rem; font-weight: 600; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--dim);
+    }
+    .stats-bar-msg span { color: var(--accent); margin-right: 6px; }
+
+    /* ── Auth card ───────────────────────────────────────────── */
+    .auth-wrap {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 2rem 1.25rem;
+    }
+    .auth-card {
+      width: 100%; max-width: 360px;
+      animation: fadeUp 0.25s ease;
+    }
+    .auth-eyebrow {
+      font-size: 0.58rem; font-weight: 500; letter-spacing: 0.2em;
+      color: var(--dim); margin-bottom: 28px; text-transform: uppercase;
+    }
+    .auth-eyebrow::before { content: '> '; color: var(--accent); }
+
+    /* Tabs */
+    .auth-tabs {
+      display: flex; border: 1px solid var(--border-b);
+      margin-bottom: 28px;
+    }
+    .auth-tab {
+      flex: 1; padding: 0.6rem 0; border: none; background: transparent;
+      font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--dim); cursor: pointer; transition: color 0.12s, background 0.12s;
+      border-right: 1px solid var(--border-b);
+    }
+    .auth-tab:last-child { border-right: none; }
+    .auth-tab.active {
+      background: var(--surf-2); color: var(--text);
+      box-shadow: inset 0 -2px 0 var(--accent);
+    }
+
+    /* Fields */
+    .auth-field { margin-bottom: 16px; }
+    .auth-label {
+      display: block; font-size: 0.58rem; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 7px;
+    }
+    .auth-input {
+      width: 100%; padding: 0.72rem 0.9rem;
+      background: var(--surf); border: 1px solid var(--border-b);
+      color: var(--text); font-family: var(--mono); font-size: 0.88rem;
+      outline: none; transition: border-color 0.12s;
+    }
+    .auth-input:focus { border-color: rgba(255,255,255,0.32); }
+    .auth-input.error { border-color: var(--accent); animation: shake 0.3s ease; }
+    .auth-input::placeholder { color: var(--dim); }
+
+    /* Submit */
+    .auth-error {
+      font-size: 0.7rem; color: var(--accent);
+      min-height: 1.1rem; margin-bottom: 12px; letter-spacing: 0.02em;
+    }
+    .btn-submit {
+      width: 100%; padding: 0.78rem;
+      background: var(--accent); border: none;
+      color: #fff; font-family: var(--mono);
+      font-size: 0.8rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer; transition: background 0.12s;
+    }
+    .btn-submit:hover:not(:disabled) { background: var(--accent-d); }
+    .btn-submit:disabled { opacity: 0.4; cursor: default; }
+
+    .auth-note {
+      margin-top: 20px; font-size: 0.63rem; color: var(--dim);
+      text-align: center; line-height: 1.6;
+    }
+
+    @media (max-width: 480px) {
+      .site-header { padding: 0 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="/login" class="header-logo">
+      <img src="/logo.svg" alt="Imposport" width="26" height="26" style="border-radius:3px;display:block;">
+      <span class="logo-text">IMPOSPORT</span>
+    </a>
+  </header>
+
+  <div class="stats-bar">
+    <p class="stats-bar-msg"><span>▶</span> CREATE AN ACCOUNT TO PLAY</p>
+  </div>
+
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <p class="auth-eyebrow">Player Authentication</p>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login">SIGN IN</button>
+        <button class="auth-tab"        id="tab-register">SIGN UP</button>
+      </div>
+
+      <div class="auth-field">
+        <label class="auth-label" for="identifier">Username or Email</label>
+        <input class="auth-input" id="identifier" type="text"
+               autocomplete="username" placeholder="your_name or email@example.com"
+               spellcheck="false" autocapitalize="none">
+      </div>
+      <div class="auth-field">
+        <label class="auth-label" for="password">Password</label>
+        <input class="auth-input" id="password" type="password"
+               autocomplete="current-password" placeholder="min. 4 characters">
+      </div>
+
+      <div class="auth-error" id="auth-error"></div>
+      <button class="btn-submit" id="btn-submit">SIGN IN</button>
+
+      <p class="auth-note" id="auth-note">
+        Don't have an account? Switch to <strong>SIGN UP</strong> above.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Already logged in → go straight to game
+    (function() {
+      const token = localStorage.getItem('imposport_token');
+      if (!token) return;
+      fetch('/api/me', { headers: { Authorization: 'Bearer ' + token } })
+        .then(r => { if (r.ok) window.location.replace('/'); })
+        .catch(() => {});
+    })();
+
+    let mode = 'login'; // 'login' | 'register'
+
+    const tabLogin    = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+    const btnSubmit   = document.getElementById('btn-submit');
+    const errEl       = document.getElementById('auth-error');
+    const noteEl      = document.getElementById('auth-note');
+    const inputId     = document.getElementById('identifier');
+    const inputPw     = document.getElementById('password');
+
+    function setMode(m) {
+      mode = m;
+      tabLogin.classList.toggle('active', m === 'login');
+      tabRegister.classList.toggle('active', m === 'register');
+      btnSubmit.textContent = m === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT';
+      inputPw.autocomplete  = m === 'login' ? 'current-password' : 'new-password';
+      noteEl.innerHTML = m === 'login'
+        ? "Don't have an account? Switch to <strong>SIGN UP</strong> above."
+        : 'Already have an account? Switch to <strong>SIGN IN</strong> above.';
+      errEl.textContent = '';
+    }
+
+    tabLogin.addEventListener('click',    () => setMode('login'));
+    tabRegister.addEventListener('click', () => setMode('register'));
+
+    async function submit() {
+      errEl.textContent = '';
+      const identifier = inputId.value.trim();
+      const password   = inputPw.value;
+
+      if (!identifier) { inputId.classList.add('error'); inputId.focus(); setTimeout(() => inputId.classList.remove('error'), 400); return; }
+      if (!password)   { inputPw.classList.add('error'); inputPw.focus(); setTimeout(() => inputPw.classList.remove('error'), 400); return; }
+
+      btnSubmit.disabled    = true;
+      btnSubmit.textContent = mode === 'login' ? 'SIGNING IN…' : 'CREATING…';
+
+      try {
+        const endpoint = mode === 'login' ? '/api/login' : '/api/register';
+        const res  = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier, password }),
+        });
+        const data = await res.json();
+        if (data.error) {
+          errEl.textContent = data.error;
+        } else {
+          localStorage.setItem('imposport_token', data.token);
+          localStorage.setItem('imposport_user',  data.username);
+          window.location.replace('/');
+        }
+      } catch {
+        errEl.textContent = 'Network error. Please try again.';
+      } finally {
+        btnSubmit.disabled    = false;
+        btnSubmit.textContent = mode === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT';
+      }
+    }
+
+    btnSubmit.addEventListener('click', submit);
+    [inputId, inputPw].forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); }));
+
+    inputId.focus();
+  </script>
+</body>
+</html>
