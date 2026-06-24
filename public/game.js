@@ -212,8 +212,8 @@
       numEl.textContent = secs;
       arc.style.strokeDashoffset = TIMER_CIRCUMFERENCE * (1 - remaining / TIMER_DURATION);
       const urgent = secs <= 5;
-      arc.style.stroke = urgent ? '#e5191f' : '#ededed';
-      numEl.style.color = urgent ? '#e5191f' : '#ededed';
+      arc.style.stroke = urgent ? '#e5191f' : '#111111';
+      numEl.style.color = urgent ? '#e5191f' : '#111111';
 
       if (remaining <= 0) {
         timerEl.style.opacity = '0';

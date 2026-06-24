@@ -14,8 +14,8 @@
     .game-logo-link:hover { opacity: 1; }
     .vote-bar {
       flex-shrink: 0;
-      background: rgba(17,17,17,.97);
-      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(245,245,245,.97);
+      border-top: 1px solid rgba(0,0,0,0.08);
       padding: .75rem 1.25rem;
       display: flex;
       align-items: center;
@@ -28,16 +28,16 @@
       font-weight: 700;
       letter-spacing: .1em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.4);
+      color: rgba(0,0,0,0.5);
       white-space: nowrap;
     }
     .vote-options { display: flex; gap: .6rem; flex-wrap: wrap; }
     .btn-vote-player {
       padding: .45rem 1.1rem;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.04);
+      border: 1px solid rgba(0,0,0,0.14);
       border-radius: 8px;
-      color: #ededed;
+      color: #111111;
       font-family: 'Inter', sans-serif;
       font-size: .85rem;
       font-weight: 600;
@@ -45,14 +45,14 @@
       transition: all .15s;
     }
     .btn-vote-player:hover:not(:disabled) {
-      background: rgba(255,255,255,0.1);
-      border-color: rgba(255,255,255,0.28);
+      background: rgba(0,0,0,0.07);
+      border-color: rgba(0,0,0,0.28);
     }
     .btn-vote-player:disabled { opacity: .35; cursor: default; }
     .btn-vote-player.voted { background: rgba(229,25,31,0.18); border-color: rgba(229,25,31,0.5); color: #fff; }
     .vote-status {
       font-size: .75rem;
-      color: rgba(255,255,255,0.3);
+      color: rgba(0,0,0,0.5);
       margin-left: auto;
       white-space: nowrap;
     }
@@ -60,8 +60,8 @@
     /* ── Discussion timer ────────────────────────────────────────────── */
     .discussion-timer {
       flex-shrink: 0;
-      background: rgba(17,17,17,.97);
-      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(245,245,245,.97);
+      border-top: 1px solid rgba(0,0,0,0.08);
       height: 72px;
       display: flex;
       align-items: center;
@@ -81,12 +81,12 @@
     }
     .timer-track {
       fill: none;
-      stroke: rgba(255,255,255,0.08);
+      stroke: rgba(0,0,0,0.12);
       stroke-width: 3;
     }
     .timer-arc {
       fill: none;
-      stroke: #ededed;
+      stroke: #111111;
       stroke-width: 3;
       stroke-linecap: round;
       transition: stroke-dashoffset 0.12s linear, stroke 0.4s ease;
@@ -97,20 +97,20 @@
       transform: translate(-50%, -50%);
       font-size: 1rem;
       font-weight: 700;
-      color: #ededed;
+      color: #111111;
       font-family: 'Inter', sans-serif;
       line-height: 1;
       letter-spacing: -0.03em;
       transition: color 0.4s ease;
     }
     .timer-text { display: flex; flex-direction: column; gap: 3px; }
-    .timer-title { font-size: .82rem; font-weight: 600; color: #ededed; }
-    .timer-sub { font-size: .7rem; color: rgba(255,255,255,0.3); }
+    .timer-title { font-size: .82rem; font-weight: 600; color: #111111; }
+    .timer-sub { font-size: .7rem; color: rgba(0,0,0,0.5); }
 
     /* ── Result overlay ──────────────────────────────────────────────── */
     .result-overlay {
       position: fixed; inset: 0;
-      background: rgba(5,5,15,.92);
+      background: rgba(245,245,250,.92);
       backdrop-filter: blur(12px);
       z-index: 200;
       display: flex; align-items: center; justify-content: center;
@@ -119,13 +119,13 @@
     }
     @keyframes fadeIn { from{opacity:0}to{opacity:1} }
     .result-card {
-      background: #161616;
-      border: 1px solid rgba(255,255,255,0.1);
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.1);
       border-radius: 20px;
       padding: 2.5rem 2rem;
       max-width: 400px; width: 100%;
       text-align: center;
-      box-shadow: 0 30px 60px rgba(0,0,0,.6);
+      box-shadow: 0 30px 60px rgba(0,0,0,.12);
       animation: slideUp .4s ease;
     }
     @keyframes slideUp { from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1} }
@@ -135,22 +135,22 @@
       margin-bottom: .75rem;
     }
     .result-verdict.caught  { color: #e5191f; }
-    .result-verdict.escaped { color: #ededed; }
+    .result-verdict.escaped { color: #111111; }
     .result-emoji { font-size: 2.8rem; margin-bottom: .75rem; }
     .result-section {
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(0,0,0,.04);
+      border: 1px solid rgba(0,0,0,0.1);
       border-radius: 10px;
       padding: .85rem 1rem; margin: .6rem 0; font-size: .9rem;
     }
     .result-section-label {
       font-size: .65rem; text-transform: uppercase; letter-spacing: .12em;
-      color: rgba(255,255,255,.35); margin-bottom: .25rem;
+      color: rgba(0,0,0,.5); margin-bottom: .25rem;
     }
-    .result-section-value { font-weight: 700; font-size: 1.05rem; color: #ededed; }
+    .result-section-value { font-weight: 700; font-size: 1.05rem; color: #111111; }
     .result-section-value.highlight { color: #e5191f; }
     .result-votes {
-      font-size: .78rem; color: rgba(255,255,255,.3); margin: .5rem 0 1.25rem;
+      font-size: .78rem; color: rgba(0,0,0,.5); margin: .5rem 0 1.25rem;
     }
     .result-win-badge {
       display: inline-block; padding: .3rem .9rem;
@@ -172,7 +172,7 @@
     /* ── Rules overlay ──────────────────────────────────────────────── */
     .rules-overlay {
       position: fixed; inset: 0;
-      background: rgba(5,5,15,.88);
+      background: rgba(245,245,250,.88);
       backdrop-filter: blur(10px);
       z-index: 100;
       display: flex; align-items: center; justify-content: center;
@@ -180,13 +180,13 @@
       animation: fadeIn .3s ease;
     }
     .rules-card {
-      background: #161616;
-      border: 1px solid rgba(255,255,255,0.1);
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.1);
       border-radius: 20px;
       padding: 2.5rem 2rem 2rem;
       max-width: 420px; width: 100%;
       text-align: center;
-      box-shadow: 0 30px 80px rgba(0,0,0,.7);
+      box-shadow: 0 30px 80px rgba(0,0,0,.12);
     }
     .rules-role-badge {
       display: inline-block;
@@ -201,15 +201,15 @@
     .rules-headline {
       font-family: 'Inter', sans-serif;
       font-size: 1.2rem; font-weight: 700; line-height: 1.45;
-      color: #ededed; margin-bottom: 1rem;
+      color: #111111; margin-bottom: 1rem;
     }
     .rules-imposter-word { color: #e5191f; }
     .rules-cta {
-      font-size: .95rem; font-weight: 600; color: rgba(255,255,255,.5);
+      font-size: .95rem; font-weight: 600; color: rgba(0,0,0,.55);
       margin-bottom: 1.75rem;
     }
     .rules-progress-track {
-      height: 3px; background: rgba(255,255,255,.08); border-radius: 2px; overflow: hidden;
+      height: 3px; background: rgba(0,0,0,.1); border-radius: 2px; overflow: hidden;
     }
     .rules-progress-fill {
       height: 100%; width: 100%; background: #e5191f; border-radius: 2px;
@@ -229,7 +229,7 @@
         padding: 0.75rem 1.25rem;
         padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
         justify-content: center;
-        border-top: 1px solid rgba(255,255,255,0.08);
+        border-top: 1px solid rgba(0,0,0,0.08);
       }
 
       /* Vote bar pinned to bottom, always reachable by thumb */
@@ -242,6 +242,7 @@
         gap: 0.4rem;
         padding: 0.75rem 1rem;
         padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+        border-top: 1px solid rgba(0,0,0,0.08);
       }
       .vote-options {
         display: grid;

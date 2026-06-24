@@ -2,17 +2,17 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:          #111111;
-  --surface:     #191919;
-  --surface2:    #202020;
-  --border:      rgba(255,255,255,0.08);
-  --text:        #ededed;
-  --muted:       #666666;
+  --bg:          #ffffff;
+  --surface:     #f5f5f5;
+  --surface2:    #ebebeb;
+  --border:      rgba(0,0,0,0.08);
+  --text:        #111111;
+  --muted:       #888888;
   --accent:      #e5191f;
-  --knower:      #60a5fa;
-  --imposter:    #f87171;
-  --knower-bg:   #0d1e30;
-  --imposter-bg: #1e0d0d;
+  --knower:      #2563eb;
+  --imposter:    #e5191f;
+  --knower-bg:   #dbeafe;
+  --imposter-bg: #fee2e2;
 }
 
 body {
@@ -92,7 +92,7 @@ input[type="text"] {
   transition: border-color 0.18s;
 }
 input[type="text"]::placeholder { color: var(--muted); }
-input[type="text"]:focus  { border-color: rgba(255,255,255,0.28); }
+input[type="text"]:focus  { border-color: rgba(0,0,0,0.28); }
 input[type="text"].error  { border-color: var(--imposter); animation: shake 0.35s ease; }
 
 @keyframes shake {
@@ -172,7 +172,7 @@ input[type="text"].error  { border-color: var(--imposter); animation: shake 0.35
   width: 44px;
   height: 44px;
   border: 4px solid var(--surface2);
-  border-top-color: rgba(255,255,255,0.5);
+  border-top-color: rgba(0,0,0,0.4);
   border-radius: 50%;
   animation: spin 0.75s linear infinite;
 }
@@ -180,8 +180,8 @@ input[type="text"].error  { border-color: var(--imposter); animation: shake 0.35
 .mini-spinner {
   width: 28px;
   height: 28px;
-  border: 3px solid rgba(255,255,255,0.07);
-  border-top-color: rgba(255,255,255,0.4);
+  border: 3px solid rgba(0,0,0,0.08);
+  border-top-color: rgba(0,0,0,0.4);
   border-radius: 50%;
   animation: spin 0.75s linear infinite;
 }
@@ -287,7 +287,7 @@ input[type="text"].error  { border-color: var(--imposter); animation: shake 0.35
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   padding: 8px;
-  background: #090910;
+  background: #e0e0e0;
   min-height: 0;
 }
 
@@ -361,13 +361,14 @@ video {
   font-weight: 600;
   text-align: center;
   pointer-events: none;
+  color: #ffffff;
 }
 
 /* Waiting overlay */
 .waiting-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(9, 9, 16, 0.92);
+  background: rgba(240, 242, 245, 0.95);
   display: flex;
   flex-direction: column;
   align-items: center;
