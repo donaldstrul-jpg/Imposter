@@ -1,7 +1,7 @@
 (() => {
   const socket   = io();
 
-  if (!localStorage.getItem('imposport_token')) { window.location.replace('/login'); return; }
+  if (!localStorage.getItem('imposport_token')) { window.location.replace('/'); return; }
 
   const gameData = JSON.parse(sessionStorage.getItem('gameData') || 'null');
   if (!gameData) { window.location.href = '/'; return; }

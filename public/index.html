@@ -319,7 +319,94 @@
     }
     .btn-cancel:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
 
-    /* Auth is handled by /login page */
+    /* ── AUTH MODAL ────────────────────────────────────────────── */
+    .auth-backdrop {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.82); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem; animation: fadeIn 0.15s ease;
+    }
+    .auth-card {
+      background: var(--surf); border: 1px solid var(--border-b);
+      padding: 28px 24px; max-width: 340px; width: 100%;
+      animation: scaleIn 0.18s ease;
+    }
+    .auth-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .auth-card-title  { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; color: var(--text); }
+    .auth-close {
+      background: none; border: none; color: var(--dim);
+      font-size: 1rem; cursor: pointer; transition: color 0.12s; line-height: 1;
+    }
+    .auth-close:hover { color: var(--sub); }
+    .auth-tabs { display: flex; border: 1px solid var(--border-b); margin-bottom: 20px; }
+    .auth-tab {
+      flex: 1; padding: 0.5rem; border: none; background: transparent;
+      color: var(--dim); font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
+      cursor: pointer; transition: all 0.12s; letter-spacing: 0.08em;
+      border-right: 1px solid var(--border-b);
+    }
+    .auth-tab:last-child { border-right: none; }
+    .auth-tab.active { background: var(--surf-2); color: var(--text); box-shadow: inset 0 -2px 0 var(--accent); }
+    .auth-field { margin-bottom: 14px; }
+    .auth-field-label {
+      display: block; font-size: 0.58rem; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px;
+    }
+    .auth-input {
+      width: 100%; padding: 0.65rem 0.8rem;
+      background: var(--bg); border: 1px solid var(--border-b);
+      color: var(--text); font-family: var(--mono); font-size: 0.85rem;
+      outline: none; transition: border-color 0.12s;
+    }
+    .auth-input:focus { border-color: rgba(255,255,255,0.32); }
+    .auth-input::placeholder { color: var(--dim); }
+    .auth-error { font-size: 0.7rem; color: var(--accent); min-height: 1rem; margin-bottom: 10px; }
+    .btn-auth-submit {
+      width: 100%; padding: 0.68rem; background: var(--accent); border: none;
+      color: #fff; font-family: var(--mono); font-size: 0.8rem; font-weight: 700;
+      letter-spacing: 0.08em; cursor: pointer; transition: background 0.12s;
+    }
+    .btn-auth-submit:hover:not(:disabled) { background: var(--accent-d); }
+    .btn-auth-submit:disabled { opacity: 0.4; cursor: default; }
+
+    /* ── GATEKEEPER MODAL ───────────────────────────────────────── */
+    .gate-backdrop {
+      position: fixed; inset: 0; z-index: 180;
+      background: rgba(0,0,0,0.82); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem; animation: fadeIn 0.15s ease;
+    }
+    .gate-card {
+      background: var(--surf); border: 1px solid var(--border-b);
+      padding: 28px 24px; max-width: 300px; width: 100%;
+      animation: scaleIn 0.18s ease;
+    }
+    .gate-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+    .gate-sport-tag {
+      font-size: 0.56rem; font-weight: 700; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--accent);
+    }
+    .gate-close {
+      background: none; border: none; color: var(--dim);
+      font-size: 1rem; cursor: pointer; transition: color 0.12s; line-height: 1;
+    }
+    .gate-close:hover { color: var(--sub); }
+    .gate-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .gate-sub   { font-size: 0.72rem; color: var(--sub); line-height: 1.6; }
+    .gate-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 22px; }
+    .btn-gate-login {
+      width: 100%; padding: 0.65rem; background: var(--accent); border: none;
+      color: #fff; font-family: var(--mono); font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.08em; cursor: pointer; transition: background 0.12s;
+    }
+    .btn-gate-login:hover { background: var(--accent-d); }
+    .btn-gate-signup {
+      width: 100%; padding: 0.63rem; background: transparent;
+      border: 1px solid var(--border-b); color: var(--sub);
+      font-family: var(--mono); font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.08em; cursor: pointer; transition: border-color 0.12s, color 0.12s;
+    }
+    .btn-gate-signup:hover { border-color: rgba(255,255,255,0.28); color: var(--text); }
 
     /* ── FOOTER ─────────────────────────────────────────────────── */
     .site-footer { border-top: 1px solid var(--border); padding: 16px 1.75rem; flex-shrink: 0; }
@@ -483,6 +570,49 @@
     </div>
   </div>
 
+  <!-- Gatekeeper modal -->
+  <div id="gate-backdrop" class="gate-backdrop" style="display:none">
+    <div class="gate-card">
+      <div class="gate-card-header">
+        <span class="gate-sport-tag" id="gate-sport-tag">NBA / BASKETBALL</span>
+        <button class="gate-close" id="gate-close">&#x2715;</button>
+      </div>
+      <div class="gate-title">You need an account to play.</div>
+      <div class="gate-sub">Create a free account or sign in to join the queue and play live games.</div>
+      <div class="gate-actions">
+        <button class="btn-gate-login" id="btn-gate-login">LOG IN</button>
+        <button class="btn-gate-signup" id="btn-gate-signup">SIGN UP</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth modal -->
+  <div id="auth-backdrop" class="auth-backdrop" style="display:none">
+    <div class="auth-card">
+      <div class="auth-card-header">
+        <span class="auth-card-title" id="auth-modal-title">SIGN IN</span>
+        <button class="auth-close" id="auth-modal-close">&#x2715;</button>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="auth-tab-login">SIGN IN</button>
+        <button class="auth-tab" id="auth-tab-signup">SIGN UP</button>
+      </div>
+      <div class="auth-field">
+        <label class="auth-field-label" for="auth-modal-identifier">Username or Email</label>
+        <input class="auth-input" id="auth-modal-identifier" type="text"
+               autocomplete="username" placeholder="your_name or email@example.com"
+               spellcheck="false" autocapitalize="none">
+      </div>
+      <div class="auth-field">
+        <label class="auth-field-label" for="auth-modal-password">Password</label>
+        <input class="auth-input" id="auth-modal-password" type="password"
+               autocomplete="current-password" placeholder="min. 4 characters">
+      </div>
+      <div class="auth-error" id="auth-modal-error"></div>
+      <button class="btn-auth-submit" id="auth-modal-submit">SIGN IN</button>
+    </div>
+  </div>
+
   <footer class="site-footer">
     <div class="footer-inner">
       <a href="/" class="footer-logo">
@@ -560,9 +690,16 @@
       });
     }
 
-    // ── Auth — mandatory login ──────────────────────────────────────────────────
-    // Redirect to /login immediately if no token
-    if (!authToken) { window.location.replace('/login'); }
+    // ── Auth ────────────────────────────────────────────────────────────────────
+    let pendingSport = null;
+
+    function setLoggedOut() {
+      authToken    = null;
+      authUsername = null;
+      document.getElementById('header-right').innerHTML =
+        '<button class="btn-signin" id="btn-open-auth">SIGN IN</button>';
+      document.getElementById('btn-open-auth').addEventListener('click', () => showAuthModal('login'));
+    }
 
     function setLoggedIn(username, token) {
       authToken    = token;
@@ -580,26 +717,32 @@
       document.getElementById('btn-signout-header').addEventListener('click', () => {
         localStorage.removeItem('imposport_token');
         localStorage.removeItem('imposport_user');
-        window.location.replace('/login');
+        setLoggedOut();
       });
     }
 
-    // Show header immediately from cached username, then validate with server
-    if (authUsername) setLoggedIn(authUsername, authToken);
-
-    fetch('/api/me', { headers: { Authorization: `Bearer ${authToken}` } })
-      .then(r => {
-        if (r.ok) return r.json().then(d => setLoggedIn(d.username, authToken));
-        // Token invalid or DB wiped — send to login
-        localStorage.removeItem('imposport_token');
-        localStorage.removeItem('imposport_user');
-        window.location.replace('/login');
-      })
-      .catch(() => {}); // network error → stay logged in
+    // Restore from localStorage, then validate with server
+    if (authToken && authUsername) {
+      setLoggedIn(authUsername, authToken);
+      fetch('/api/me', { headers: { Authorization: `Bearer ${authToken}` } })
+        .then(r => {
+          if (r.ok) return r.json().then(d => setLoggedIn(d.username, authToken));
+          localStorage.removeItem('imposport_token');
+          localStorage.removeItem('imposport_user');
+          setLoggedOut();
+        })
+        .catch(() => {});
+    } else {
+      setLoggedOut();
+    }
 
     // ── Queue logic ─────────────────────────────────────────────────────────────
     function tryJoinQueue(sport) {
-      if (!authToken) { window.location.replace('/login'); return; }
+      if (!authToken) {
+        pendingSport = sport;
+        showGateModal(sport);
+        return;
+      }
       const name = authUsername;
 
       selectedCategory = sport.key;
@@ -720,6 +863,97 @@
     }
     socket.on('leaderboardUpdate', rows => renderLeaderboard(rows));
     loadLeaderboard();
+
+    // ── Gatekeeper modal ─────────────────────────────────────────────────────────
+    function showGateModal(sport) {
+      document.getElementById('gate-sport-tag').textContent = sport.name + ' / ' + sport.sub;
+      document.getElementById('gate-backdrop').style.display = 'flex';
+    }
+
+    function closeGateModal() {
+      document.getElementById('gate-backdrop').style.display = 'none';
+    }
+
+    document.getElementById('gate-close').addEventListener('click', () => { pendingSport = null; closeGateModal(); });
+    document.getElementById('gate-backdrop').addEventListener('click', e => {
+      if (e.target === e.currentTarget) { pendingSport = null; closeGateModal(); }
+    });
+    document.getElementById('btn-gate-login').addEventListener('click', () => showAuthModal('login'));
+    document.getElementById('btn-gate-signup').addEventListener('click', () => showAuthModal('signup'));
+
+    // ── Auth modal ───────────────────────────────────────────────────────────────
+    let authModalMode = 'login';
+
+    function showAuthModal(mode) {
+      closeGateModal();
+      authModalMode = mode || 'login';
+      setAuthModalMode(authModalMode);
+      document.getElementById('auth-modal-error').textContent = '';
+      document.getElementById('auth-modal-identifier').value = '';
+      document.getElementById('auth-modal-password').value = '';
+      document.getElementById('auth-backdrop').style.display = 'flex';
+      setTimeout(() => document.getElementById('auth-modal-identifier').focus(), 50);
+    }
+
+    function closeAuthModal() {
+      document.getElementById('auth-backdrop').style.display = 'none';
+    }
+
+    function setAuthModalMode(m) {
+      authModalMode = m;
+      const isLogin = m === 'login';
+      document.getElementById('auth-tab-login').classList.toggle('active', isLogin);
+      document.getElementById('auth-tab-signup').classList.toggle('active', !isLogin);
+      document.getElementById('auth-modal-title').textContent  = isLogin ? 'SIGN IN' : 'CREATE ACCOUNT';
+      document.getElementById('auth-modal-submit').textContent = isLogin ? 'SIGN IN' : 'CREATE ACCOUNT';
+      document.getElementById('auth-modal-error').textContent  = '';
+    }
+
+    async function submitAuth() {
+      const identifier = document.getElementById('auth-modal-identifier').value.trim();
+      const password   = document.getElementById('auth-modal-password').value;
+      const errEl      = document.getElementById('auth-modal-error');
+      const submitBtn  = document.getElementById('auth-modal-submit');
+      errEl.textContent = '';
+
+      if (!identifier || !password) { errEl.textContent = 'Both fields are required.'; return; }
+
+      submitBtn.disabled = true;
+      const prevText = submitBtn.textContent;
+      submitBtn.textContent = authModalMode === 'login' ? 'SIGNING IN…' : 'CREATING…';
+
+      try {
+        const endpoint = authModalMode === 'login' ? '/api/login' : '/api/register';
+        const res  = await fetch(endpoint, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier, password }),
+        });
+        const data = await res.json();
+        if (data.error) {
+          errEl.textContent = data.error;
+        } else {
+          closeAuthModal();
+          setLoggedIn(data.username, data.token);
+          if (pendingSport) { const sp = pendingSport; pendingSport = null; tryJoinQueue(sp); }
+        }
+      } catch {
+        errEl.textContent = 'Network error. Please try again.';
+      } finally {
+        submitBtn.disabled    = false;
+        submitBtn.textContent = prevText;
+      }
+    }
+
+    document.getElementById('auth-tab-login').addEventListener('click',  () => setAuthModalMode('login'));
+    document.getElementById('auth-tab-signup').addEventListener('click',  () => setAuthModalMode('signup'));
+    document.getElementById('auth-modal-close').addEventListener('click', () => { pendingSport = null; closeAuthModal(); });
+    document.getElementById('auth-backdrop').addEventListener('click', e => {
+      if (e.target === e.currentTarget) { pendingSport = null; closeAuthModal(); }
+    });
+    document.getElementById('auth-modal-submit').addEventListener('click', submitAuth);
+    ['auth-modal-identifier', 'auth-modal-password'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') submitAuth(); });
+    });
   </script>
 </body>
 </html>
