@@ -376,44 +376,14 @@
     .btn-auth-submit:hover:not(:disabled) { background: var(--accent-d); }
     .btn-auth-submit:disabled { opacity: 0.4; cursor: default; }
 
-    /* ── GATEKEEPER MODAL ───────────────────────────────────────── */
-    .gate-backdrop {
-      position: fixed; inset: 0; z-index: 180;
-      background: rgba(0,0,0,0.82); backdrop-filter: blur(8px);
-      display: flex; align-items: center; justify-content: center;
-      padding: 1.5rem; animation: fadeIn 0.15s ease;
+    /* ── GUEST MODAL ────────────────────────────────────────────── */
+    .guest-track-hint {
+      font-size: 0.62rem; color: var(--dim); margin-top: 8px; letter-spacing: 0.02em;
     }
-    .gate-card {
-      background: var(--surf); border: 1px solid var(--border-b);
-      padding: 28px 24px; max-width: 300px; width: 100%;
-      animation: scaleIn 0.18s ease;
+    .guest-track-hint a {
+      color: var(--accent); text-decoration: none; transition: opacity 0.12s;
     }
-    .gate-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
-    .gate-sport-tag {
-      font-size: 0.56rem; font-weight: 700; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--accent);
-    }
-    .gate-close {
-      background: none; border: none; color: var(--dim);
-      font-size: 1rem; cursor: pointer; transition: color 0.12s; line-height: 1;
-    }
-    .gate-close:hover { color: var(--sub); }
-    .gate-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-    .gate-sub   { font-size: 0.72rem; color: var(--sub); line-height: 1.6; }
-    .gate-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 22px; }
-    .btn-gate-login {
-      width: 100%; padding: 0.65rem; background: var(--accent); border: none;
-      color: #fff; font-family: var(--mono); font-size: 0.78rem; font-weight: 700;
-      letter-spacing: 0.08em; cursor: pointer; transition: background 0.12s;
-    }
-    .btn-gate-login:hover { background: var(--accent-d); }
-    .btn-gate-signup {
-      width: 100%; padding: 0.63rem; background: transparent;
-      border: 1px solid var(--border-b); color: var(--sub);
-      font-family: var(--mono); font-size: 0.78rem; font-weight: 600;
-      letter-spacing: 0.08em; cursor: pointer; transition: border-color 0.12s, color 0.12s;
-    }
-    .btn-gate-signup:hover { border-color: rgba(0,0,0,0.28); color: var(--text); }
+    .guest-track-hint a:hover { opacity: 0.75; }
 
     /* ── FOOTER ─────────────────────────────────────────────────── */
     .site-footer { border-top: 1px solid var(--border); padding: 16px 1.75rem; flex-shrink: 0; }
@@ -577,19 +547,22 @@
     </div>
   </div>
 
-  <!-- Gatekeeper modal -->
-  <div id="gate-backdrop" class="gate-backdrop" style="display:none">
-    <div class="gate-card">
-      <div class="gate-card-header">
-        <span class="gate-sport-tag" id="gate-sport-tag">NBA / BASKETBALL</span>
-        <button class="gate-close" id="gate-close">&#x2715;</button>
+  <!-- Guest name modal -->
+  <div id="guest-backdrop" class="auth-backdrop" style="display:none">
+    <div class="auth-card">
+      <div class="auth-card-header">
+        <span class="auth-card-title" id="guest-sport-tag">NBA / BASKETBALL</span>
+        <button class="auth-close" id="guest-modal-close">&#x2715;</button>
       </div>
-      <div class="gate-title">You need an account to play.</div>
-      <div class="gate-sub">Create a free account or sign in to join the queue and play live games.</div>
-      <div class="gate-actions">
-        <button class="btn-gate-login" id="btn-gate-login">LOG IN</button>
-        <button class="btn-gate-signup" id="btn-gate-signup">SIGN UP</button>
+      <div class="auth-field">
+        <label class="auth-field-label" for="guest-name-input">Your display name</label>
+        <input class="auth-input" id="guest-name-input" type="text"
+               placeholder="e.g. Hooper23" maxlength="20"
+               spellcheck="false" autocapitalize="none" autocomplete="off">
+        <p class="guest-track-hint"><a href="#" id="guest-signin-link">Sign in to track your wins →</a></p>
       </div>
+      <div class="auth-error" id="guest-modal-error"></div>
+      <button class="btn-auth-submit" id="guest-modal-submit">PLAY</button>
     </div>
   </div>
 
@@ -744,19 +717,18 @@
     }
 
     // ── Queue logic ─────────────────────────────────────────────────────────────
-    function tryJoinQueue(sport) {
-      if (!authToken) {
+    function tryJoinQueue(sport, guestName) {
+      const name = authToken ? authUsername : (guestName || null);
+      if (!name) {
         pendingSport = sport;
-        showGateModal(sport);
+        showGuestModal(sport);
         return;
       }
-      const name = authUsername;
 
       selectedCategory = sport.key;
       setSportSelected(sport.key);
-      sessionStorage.setItem('playerName', name);
 
-      socket.emit('joinQueue', { name, peerId, token: authToken, category: sport.key });
+      socket.emit('joinQueue', { name, peerId, token: authToken || undefined, category: sport.key });
 
       document.getElementById('q-sport').textContent = sport.name;
       updateQueuePips(1);
@@ -871,28 +843,46 @@
     socket.on('leaderboardUpdate', rows => renderLeaderboard(rows));
     loadLeaderboard();
 
-    // ── Gatekeeper modal ─────────────────────────────────────────────────────────
-    function showGateModal(sport) {
-      document.getElementById('gate-sport-tag').textContent = sport.name + ' / ' + sport.sub;
-      document.getElementById('gate-backdrop').style.display = 'flex';
+    // ── Guest modal ──────────────────────────────────────────────────────────────
+    function showGuestModal(sport) {
+      document.getElementById('guest-sport-tag').textContent = sport.name + ' / ' + sport.sub;
+      document.getElementById('guest-name-input').value = '';
+      document.getElementById('guest-modal-error').textContent = '';
+      document.getElementById('guest-backdrop').style.display = 'flex';
+      setTimeout(() => document.getElementById('guest-name-input').focus(), 50);
     }
 
-    function closeGateModal() {
-      document.getElementById('gate-backdrop').style.display = 'none';
+    function closeGuestModal() {
+      document.getElementById('guest-backdrop').style.display = 'none';
     }
 
-    document.getElementById('gate-close').addEventListener('click', () => { pendingSport = null; closeGateModal(); });
-    document.getElementById('gate-backdrop').addEventListener('click', e => {
-      if (e.target === e.currentTarget) { pendingSport = null; closeGateModal(); }
+    function submitGuest() {
+      const name  = document.getElementById('guest-name-input').value.trim();
+      const errEl = document.getElementById('guest-modal-error');
+      errEl.textContent = '';
+      if (!name || name.length < 2) { errEl.textContent = 'Enter at least 2 characters.'; return; }
+      closeGuestModal();
+      const sp = pendingSport;
+      pendingSport = null;
+      tryJoinQueue(sp, name);
+    }
+
+    document.getElementById('guest-modal-close').addEventListener('click', () => { pendingSport = null; closeGuestModal(); });
+    document.getElementById('guest-backdrop').addEventListener('click', e => {
+      if (e.target === e.currentTarget) { pendingSport = null; closeGuestModal(); }
     });
-    document.getElementById('btn-gate-login').addEventListener('click', () => showAuthModal('login'));
-    document.getElementById('btn-gate-signup').addEventListener('click', () => showAuthModal('signup'));
+    document.getElementById('guest-modal-submit').addEventListener('click', submitGuest);
+    document.getElementById('guest-name-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitGuest(); });
+    document.getElementById('guest-signin-link').addEventListener('click', e => {
+      e.preventDefault();
+      closeGuestModal();
+      showAuthModal('login');
+    });
 
     // ── Auth modal ───────────────────────────────────────────────────────────────
     let authModalMode = 'login';
 
     function showAuthModal(mode) {
-      closeGateModal();
       authModalMode = mode || 'login';
       setAuthModalMode(authModalMode);
       document.getElementById('auth-modal-error').textContent = '';
