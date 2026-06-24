@@ -172,6 +172,29 @@
     .td-time { font-size: 0.62rem; color: var(--dim); }
     .no-games { padding: 40px 20px; text-align: center; font-size: 0.75rem; color: var(--dim); border: 1px solid var(--border-b); }
 
+    /* ── PRO BADGE ──────────────────────────────────────────────── */
+    .pro-badge {
+      display: inline-flex; align-items: center; background: var(--accent); color: #fff;
+      font-size: 0.52rem; font-weight: 700; letter-spacing: 0.12em; padding: 2px 6px; margin-left: 8px; vertical-align: middle;
+    }
+    /* ── AVATAR ──────────────────────────────────────────────────── */
+    .profile-head-inner { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 20px; }
+    .avatar-img { width: 72px; height: 72px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border-b); }
+    .avatar-placeholder {
+      width: 72px; height: 72px; background: var(--surf-2); border: 1px solid var(--border-b);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      font-size: 1.8rem; font-weight: 700; color: var(--dim);
+    }
+    .avatar-col { display: flex; flex-direction: column; gap: 6px; }
+    .btn-upload {
+      padding: 0.4rem 0.85rem; background: transparent; border: 1px solid var(--border-b);
+      color: var(--sub); font-family: var(--mono); font-size: 0.65rem; font-weight: 600;
+      letter-spacing: 0.06em; cursor: pointer; transition: color 0.12s, border-color 0.12s; display: inline-block;
+    }
+    .btn-upload:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
+    .avatar-status { font-size: 0.63rem; color: var(--dim); min-height: 1rem; }
+    .avatar-status.ok { color: #4ade80; } .avatar-status.err { color: var(--accent); }
+
     /* ── ERROR / LOADING ────────────────────────────────────────── */
     .loading, .error-msg {
       padding: 80px 0; text-align: center; font-size: 0.78rem; color: var(--dim); letter-spacing: 0.08em;
@@ -288,12 +311,35 @@
 
       const bestSportDisplay = d.best_sport ? SPORT_FULL[d.best_sport] || d.best_sport.toUpperCase() : null;
 
+      const authUser  = localStorage.getItem('imposport_user');
+      const authToken = localStorage.getItem('imposport_token');
+      const isOwnProfile = authUser && authUser.toLowerCase() === d.username.toLowerCase();
+      const proBadge = d.is_pro ? '<span class="pro-badge">PRO</span>' : '';
+      const avatarHtml = d.avatar_url
+        ? `<img class="avatar-img" src="${d.avatar_url}" alt="${d.username}">`
+        : `<div class="avatar-placeholder">${d.username.charAt(0).toUpperCase()}</div>`;
+      const uploadHtml = (isOwnProfile && d.is_pro) ? `
+        <div class="avatar-col">
+          <label class="btn-upload" for="avatar-file-input">CHANGE PHOTO</label>
+          <input type="file" id="avatar-file-input" accept="image/jpeg,image/png,image/webp" style="display:none">
+          <div class="avatar-status" id="avatar-status"></div>
+        </div>` : (isOwnProfile && !d.is_pro) ? `
+        <div class="avatar-col">
+          <a href="/pro" class="btn-upload" style="text-decoration:none;font-size:0.62rem;">UPGRADE FOR PHOTO ↗</a>
+        </div>` : '';
+
       document.getElementById('page-content').innerHTML = `
         <!-- Player header -->
         <div class="profile-head">
           <p class="profile-eyebrow">PLAYER PROFILE</p>
-          <h1 class="profile-name">${d.username}</h1>
-          <p class="profile-sub">${d.games_played} games played &middot; <span>${d.wins}W / ${d.losses}L</span></p>
+          <div class="profile-head-inner">
+            ${avatarHtml}
+            <div>
+              <h1 class="profile-name">${d.username}${proBadge}</h1>
+              <p class="profile-sub">${d.games_played} games played &middot; <span>${d.wins}W / ${d.losses}L</span></p>
+              ${uploadHtml}
+            </div>
+          </div>
         </div>
 
         <!-- Scoreboard stats bar -->
@@ -411,6 +457,27 @@
     }
 
     loadProfile();
+
+    // Avatar upload (wired up after renderProfile injects the input)
+    document.getElementById('page-content').addEventListener('change', async (e) => {
+      if (e.target.id !== 'avatar-file-input') return;
+      const file   = e.target.files[0];
+      const status = document.getElementById('avatar-status');
+      const token  = localStorage.getItem('imposport_token');
+      if (!file || !token) return;
+      status.textContent = 'Uploading…'; status.className = 'avatar-status';
+      const fd = new FormData();
+      fd.append('avatar', file);
+      try {
+        const res  = await fetch('/api/upload-avatar', { method: 'POST', headers: { Authorization: `Bearer ${token}` }, body: fd });
+        const data = await res.json();
+        if (data.error) { status.textContent = data.error; status.className = 'avatar-status err'; return; }
+        status.textContent = 'Photo updated!'; status.className = 'avatar-status ok';
+        // Update avatar image immediately
+        const existing = document.querySelector('.avatar-img, .avatar-placeholder');
+        if (existing) { const img = document.createElement('img'); img.className = 'avatar-img'; img.src = data.avatar_url + '?t=' + Date.now(); existing.replaceWith(img); }
+      } catch { status.textContent = 'Upload failed. Try again.'; status.className = 'avatar-status err'; }
+    });
   </script>
 </body>
 </html>

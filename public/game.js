@@ -42,8 +42,16 @@
   });
 
   // ── Player labels ─────────────────────────────────────────────────────────────
-  document.getElementById('local-label').textContent = `${players[playerIndex].name} (You)`;
-  document.getElementById('no-cam-local-initial').textContent = players[playerIndex].name.charAt(0).toUpperCase();
+  function proBadgeHtml(isPro) { return isPro ? ' <span class="game-pro-badge">PRO</span>' : ''; }
+
+  const localP = players[playerIndex];
+  document.getElementById('local-label').innerHTML = `${localP.name} (You)${proBadgeHtml(localP.isPro)}`;
+  document.getElementById('no-cam-local-initial').textContent = localP.name.charAt(0).toUpperCase();
+  if (localP.avatarUrl) {
+    const img = document.createElement('img');
+    img.src = localP.avatarUrl; img.className = 'no-cam-avatar';
+    document.getElementById('no-cam-local').appendChild(img);
+  }
 
   const remotePlayers = players
     .map((p, i) => ({ ...p, index: i }))
@@ -63,7 +71,12 @@
   ];
 
   remotePlayers.forEach((p, slotIdx) => {
-    remoteSlots[slotIdx].label.textContent = p.name;
+    remoteSlots[slotIdx].label.innerHTML = p.name + proBadgeHtml(p.isPro);
+    if (p.avatarUrl) {
+      const img = document.createElement('img');
+      img.src = p.avatarUrl; img.className = 'no-cam-avatar';
+      remoteSlots[slotIdx].noCam.appendChild(img);
+    }
   });
 
   // ── Voting ────────────────────────────────────────────────────────────────────
