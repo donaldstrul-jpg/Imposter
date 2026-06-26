@@ -897,6 +897,12 @@ io.on('connection', (socket) => {
       const picked        = wordList[Math.floor(Math.random() * wordList.length)];
       const imposterIndex = Math.floor(Math.random() * 3);
 
+      const speakingOrder = [0, 1, 2];
+      for (let i = 2; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [speakingOrder[i], speakingOrder[j]] = [speakingOrder[j], speakingOrder[i]];
+      }
+
       rooms[roomId] = { players, readyCount: 0, imposterIndex, word: picked.name, category: validCat, startedAt: Date.now(), votes: {} };
 
       const playerSummary = players.map((p) => ({ name: p.name, peerId: p.peerId }));
@@ -911,6 +917,7 @@ io.on('connection', (socket) => {
           hint:         isImposter ? picked.hint : null,
           playerIndex:  index,
           players:      playerSummary,
+          speakingOrder,
         });
       });
     }

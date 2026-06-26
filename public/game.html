@@ -225,8 +225,53 @@
     }
     @keyframes rulesCountdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
+    /* ── Speaking order — in-game timer bar ─────────────────────────── */
+    .timer-sep {
+      width: 1px; height: 30px; background: rgba(0,0,0,0.1);
+      flex-shrink: 0; align-self: center; margin: 0 0.2rem;
+    }
+    .speak-order { display: flex; flex-direction: column; gap: 3px; }
+    .speak-order-label {
+      font-size: 0.52rem; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; color: rgba(0,0,0,0.38);
+    }
+    .speak-slots { display: flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; }
+    .speak-slot  { display: flex; align-items: center; gap: 0.18rem; }
+    .speak-num   { font-size: 0.52rem; font-weight: 700; color: rgba(0,0,0,0.32); }
+    .speak-name  { font-size: 0.72rem; font-weight: 600; color: #111111; }
+    .speak-name.is-me { color: #e5191f; font-weight: 700; }
+    .speak-arrow { font-size: 0.52rem; color: rgba(0,0,0,0.2); }
+
+    /* ── Speaking order — rules overlay ─────────────────────────────── */
+    .rules-speak-order {
+      margin-bottom: 1.4rem; padding: 11px 16px;
+      background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 10px;
+    }
+    .rules-speak-title {
+      font-size: 0.55rem; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: rgba(0,0,0,0.38);
+      margin-bottom: 10px; text-align: center;
+    }
+    .rules-speak-slots {
+      display: flex; align-items: flex-start; justify-content: center; gap: 0.4rem;
+    }
+    .rules-speak-slot { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .rules-speak-n {
+      font-size: 0.52rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(0,0,0,0.35);
+    }
+    .rules-speak-name {
+      font-size: 0.88rem; font-weight: 700; color: #111111;
+      max-width: 88px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .rules-speak-name.is-me { color: #e5191f; }
+    .rules-speak-arrow { font-size: 0.7rem; color: rgba(0,0,0,0.25); margin-top: 12px; }
+
     /* ── Mobile layout (≤640px) ─────────────────────────────────────── */
     @media (max-width: 640px) {
+      .timer-sep, #speak-order-display { display: none; }
+
       /* Timer pinned to bottom, always visible */
       .discussion-timer {
         position: fixed;
@@ -322,6 +367,8 @@
       <span class="timer-title">Discuss</span>
       <span class="timer-sub">Voting opens when timer ends</span>
     </div>
+    <div class="timer-sep"></div>
+    <div id="speak-order-display" class="speak-order"></div>
   </div>
 
   <!-- Vote bar — revealed after discussion timer ends -->
@@ -356,6 +403,7 @@
       <div class="rules-role-badge" id="rules-role-badge"></div>
       <p class="rules-headline">Two players know the secret athlete.<br>One player is the <span class="rules-imposter-word">IMPOSTER</span> and doesn't know.</p>
       <p class="rules-cta">Discuss, then vote to find the imposter!</p>
+      <div class="rules-speak-order" id="rules-speak-order"></div>
       <div class="rules-progress-track"><div class="rules-progress-fill" id="rules-progress-fill"></div></div>
     </div>
   </div>

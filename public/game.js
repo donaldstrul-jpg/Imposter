@@ -4,7 +4,7 @@
   const gameData = JSON.parse(sessionStorage.getItem('gameData') || 'null');
   if (!gameData) { window.location.href = '/'; return; }
 
-  const { roomId, role, category, word, hint, playerIndex, players } = gameData;
+  const { roomId, role, category, word, hint, playerIndex, players, speakingOrder } = gameData;
   const authUser = localStorage.getItem('imposport_user');
 
   // ── Role banner ───────────────────────────────────────────────────────────────
@@ -186,6 +186,23 @@
     const badge   = document.getElementById('rules-role-badge');
     badge.textContent = role === 'imposter' ? 'YOU ARE THE IMPOSTER' : 'YOU ARE A KNOWER';
     badge.className   = `rules-role-badge ${role}`;
+
+    if (speakingOrder) {
+      const ordinals = ['1ST', '2ND', '3RD'];
+      const slots = speakingOrder.map((pIdx, pos) => {
+        const pName = players[pIdx].name;
+        const isMe  = pIdx === playerIndex;
+        const arrow = pos < 2 ? `<span class="rules-speak-arrow">→</span>` : '';
+        return `<div class="rules-speak-slot">
+          <span class="rules-speak-n">${ordinals[pos]}</span>
+          <span class="rules-speak-name${isMe ? ' is-me' : ''}">${pName}</span>
+        </div>${arrow}`;
+      }).join('');
+      document.getElementById('rules-speak-order').innerHTML =
+        `<div class="rules-speak-title">SPEAKING ORDER</div>
+         <div class="rules-speak-slots">${slots}</div>`;
+    }
+
     overlay.style.display  = 'flex';
     overlay.style.opacity  = '1';
     overlay.style.transition = 'opacity .3s ease';
@@ -199,10 +216,25 @@
     const timerEl = document.getElementById('discussion-timer');
     const arc = document.getElementById('timer-arc');
     const numEl = document.getElementById('timer-number');
+    const speakEl = document.getElementById('speak-order-display');
 
     arc.style.strokeDasharray = `${TIMER_CIRCUMFERENCE}`;
     arc.style.strokeDashoffset = '0';
     timerEl.style.display = 'flex';
+
+    if (speakEl && speakingOrder) {
+      const ordinals = ['1st', '2nd', '3rd'];
+      const slots = speakingOrder.map((pIdx, pos) => {
+        const pName = players[pIdx].name;
+        const isMe  = pIdx === playerIndex;
+        const arrow = pos < 2 ? `<span class="speak-arrow">→</span>` : '';
+        return `<span class="speak-slot">
+          <span class="speak-num">${ordinals[pos]}</span>
+          <span class="speak-name${isMe ? ' is-me' : ''}">${pName}</span>
+        </span>${arrow}`;
+      }).join('');
+      speakEl.innerHTML = `<span class="speak-order-label">SPEAK</span><div class="speak-slots">${slots}</div>`;
+    }
 
     const tick = () => {
       const remaining = Math.max(0, voteOpenAt - Date.now());
