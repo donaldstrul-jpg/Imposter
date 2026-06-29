@@ -385,6 +385,59 @@
     }
     .guest-track-hint a:hover { opacity: 0.75; }
 
+    /* ── PRIVATE ROOM ───────────────────────────────────────────── */
+    .private-actions {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;
+    }
+    .btn-private {
+      background: var(--surf); border: 1px solid var(--border-b);
+      padding: 14px 16px; display: flex; align-items: center; gap: 10px;
+      cursor: pointer; font-family: var(--mono); text-align: left;
+      transition: border-color 0.1s, background 0.1s;
+    }
+    .btn-private:hover { border-color: var(--accent); background: rgba(229,25,31,0.04); }
+    .btn-private-icon { font-size: 1.1rem; font-weight: 700; color: var(--accent); flex-shrink: 0; }
+    .btn-private-text { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+    .btn-private-sub  { font-size: 0.55rem; color: var(--dim); letter-spacing: 0.04em; margin-top: 2px; }
+    .priv-sport-grid  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
+    .priv-sport-btn {
+      background: var(--bg); border: 1px solid var(--border-b);
+      padding: 10px 6px; display: flex; flex-direction: column; align-items: center;
+      cursor: pointer; font-family: var(--mono); transition: border-color 0.1s, background 0.1s; gap: 2px;
+    }
+    .priv-sport-btn:hover, .priv-sport-btn.selected {
+      border-color: var(--accent); background: rgba(229,25,31,0.04);
+    }
+    .priv-sport-btn:hover .priv-sport-name, .priv-sport-btn.selected .priv-sport-name { color: var(--accent); }
+    .priv-sport-name { font-size: 0.88rem; font-weight: 700; color: var(--text); transition: color 0.1s; }
+    .priv-sport-sub  { font-size: 0.46rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
+    .priv-code-box {
+      border: 1px solid var(--border-b); padding: 18px 16px; text-align: center;
+      margin-bottom: 16px; background: var(--bg);
+    }
+    .priv-code-label {
+      font-size: 0.55rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--dim); margin-bottom: 10px;
+    }
+    .priv-code-value {
+      font-size: 1.9rem; font-weight: 700; letter-spacing: 0.28em; color: var(--text);
+      display: inline-block; margin-right: 8px;
+    }
+    .priv-code-hint { font-size: 0.62rem; color: var(--dim); margin-top: 8px; }
+    .btn-copy-code {
+      background: transparent; border: 1px solid var(--border-b);
+      font-family: var(--mono); font-size: 0.62rem; font-weight: 600;
+      letter-spacing: 0.08em; color: var(--sub); cursor: pointer;
+      padding: 0.28rem 0.65rem; transition: color 0.12s, border-color 0.12s;
+      vertical-align: middle;
+    }
+    .btn-copy-code:hover { color: var(--text); border-color: rgba(0,0,0,0.3); }
+    .priv-wait-pips  { display: flex; gap: 8px; justify-content: center; margin: 16px 0 8px; }
+    .priv-wait-count { font-size: 0.7rem; color: var(--dim); text-align: center; margin-bottom: 18px; }
+    .priv-wait-count strong { color: var(--text); }
+    .priv-code-waiting { font-size: 0.65rem; color: var(--dim); text-align: center; margin-bottom: 18px; }
+    .priv-code-waiting strong { color: var(--text); letter-spacing: 0.12em; }
+
     /* ── FOOTER ─────────────────────────────────────────────────── */
     .site-footer { border-top: 1px solid var(--border); padding: 16px 1.75rem; flex-shrink: 0; }
     .footer-inner {
@@ -405,6 +458,7 @@
       .how-step    { border-right: none; border-bottom: 1px solid var(--border); }
       .how-step:last-child { border-bottom: none; }
       .sports-grid { grid-template-columns: repeat(2, 1fr); }
+      .private-actions { grid-template-columns: 1fr; }
       .stats-bar   { grid-template-columns: repeat(3, 1fr); }
       .stat-val    { font-size: 0.85rem; }
       .hero { padding: 40px 0 36px; }
@@ -460,6 +514,22 @@
         <div class="divider-line"></div>
       </div>
       <div class="sports-grid" id="sports-grid"></div>
+      <div class="private-actions">
+        <button class="btn-private" id="btn-create-priv">
+          <span class="btn-private-icon">+</span>
+          <div>
+            <div class="btn-private-text">Create Private Room</div>
+            <div class="btn-private-sub">Play with friends</div>
+          </div>
+        </button>
+        <button class="btn-private" id="btn-join-priv">
+          <span class="btn-private-icon">→</span>
+          <div>
+            <div class="btn-private-text">Join with Code</div>
+            <div class="btn-private-sub">Enter 6-digit code</div>
+          </div>
+        </button>
+      </div>
     </section>
 
     <!-- How it works -->
@@ -563,6 +633,92 @@
       </div>
       <div class="auth-error" id="guest-modal-error"></div>
       <button class="btn-auth-submit" id="guest-modal-submit">PLAY</button>
+    </div>
+  </div>
+
+  <!-- Create Private Room modal -->
+  <div id="create-priv-backdrop" class="auth-backdrop" style="display:none">
+    <div class="auth-card">
+      <!-- Setup: pick sport + optional name -->
+      <div id="create-priv-setup">
+        <div class="auth-card-header">
+          <span class="auth-card-title">CREATE PRIVATE ROOM</span>
+          <button class="auth-close" id="create-priv-close">&#x2715;</button>
+        </div>
+        <p class="auth-field-label" style="margin-bottom:8px">Select sport</p>
+        <div class="priv-sport-grid" id="create-priv-sports"></div>
+        <div id="create-priv-name-field" class="auth-field" style="display:none">
+          <label class="auth-field-label" for="create-priv-name">Your display name</label>
+          <input class="auth-input" id="create-priv-name" type="text" placeholder="e.g. Hooper23"
+                 maxlength="20" spellcheck="false" autocapitalize="none" autocomplete="off">
+          <p class="guest-track-hint"><a href="#" id="create-priv-signin-link">Sign in to track your wins →</a></p>
+        </div>
+        <div class="auth-error" id="create-priv-error"></div>
+        <button class="btn-auth-submit" id="create-priv-submit" disabled>CREATE ROOM</button>
+      </div>
+      <!-- Waiting: show code + player count -->
+      <div id="create-priv-waiting" style="display:none">
+        <div class="auth-card-header">
+          <span class="auth-card-title" id="create-priv-sport-label">NBA / BASKETBALL</span>
+          <button class="auth-close" id="create-priv-cancel">&#x2715;</button>
+        </div>
+        <div class="priv-code-box">
+          <div class="priv-code-label">ROOM CODE</div>
+          <div>
+            <span class="priv-code-value" id="create-priv-code">——————</span>
+            <button class="btn-copy-code" id="btn-copy-code">COPY</button>
+          </div>
+          <div class="priv-code-hint">Share this code with 2 friends</div>
+        </div>
+        <div class="priv-wait-pips">
+          <span class="q-pip" id="priv-pip-0"></span>
+          <span class="q-pip" id="priv-pip-1"></span>
+          <span class="q-pip" id="priv-pip-2"></span>
+        </div>
+        <p class="priv-wait-count"><strong id="priv-count">1</strong> / 3 players joined</p>
+        <button class="btn-cancel" id="create-priv-leave">CANCEL</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Join Private Room modal -->
+  <div id="join-priv-backdrop" class="auth-backdrop" style="display:none">
+    <div class="auth-card">
+      <!-- Setup: enter code + optional name -->
+      <div id="join-priv-setup">
+        <div class="auth-card-header">
+          <span class="auth-card-title">JOIN PRIVATE ROOM</span>
+          <button class="auth-close" id="join-priv-close">&#x2715;</button>
+        </div>
+        <div class="auth-field">
+          <label class="auth-field-label" for="join-priv-code-input">Room code</label>
+          <input class="auth-input" id="join-priv-code-input" type="text" placeholder="000000"
+                 maxlength="6" spellcheck="false" autocomplete="off" inputmode="numeric">
+        </div>
+        <div id="join-priv-name-field" class="auth-field" style="display:none">
+          <label class="auth-field-label" for="join-priv-name">Your display name</label>
+          <input class="auth-input" id="join-priv-name" type="text" placeholder="e.g. Hooper23"
+                 maxlength="20" spellcheck="false" autocapitalize="none" autocomplete="off">
+          <p class="guest-track-hint"><a href="#" id="join-priv-signin-link">Sign in to track your wins →</a></p>
+        </div>
+        <div class="auth-error" id="join-priv-error"></div>
+        <button class="btn-auth-submit" id="join-priv-submit">JOIN ROOM</button>
+      </div>
+      <!-- Waiting: show count + code reminder -->
+      <div id="join-priv-waiting" style="display:none">
+        <div class="auth-card-header">
+          <span class="auth-card-title" id="join-priv-sport-label">NBA / BASKETBALL</span>
+          <button class="auth-close" id="join-priv-cancel">&#x2715;</button>
+        </div>
+        <div class="priv-wait-pips">
+          <span class="q-pip" id="join-priv-pip-0"></span>
+          <span class="q-pip" id="join-priv-pip-1"></span>
+          <span class="q-pip" id="join-priv-pip-2"></span>
+        </div>
+        <p class="priv-wait-count"><strong id="join-priv-count">1</strong> / 3 players joined</p>
+        <p class="priv-code-waiting">Code: <strong id="join-priv-code-display">——————</strong></p>
+        <button class="btn-cancel" id="join-priv-leave">CANCEL</button>
+      </div>
     </div>
   </div>
 
@@ -950,6 +1106,214 @@
     document.getElementById('auth-modal-submit').addEventListener('click', submitAuth);
     ['auth-modal-identifier', 'auth-modal-password'].forEach(id => {
       document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') submitAuth(); });
+    });
+
+    // ── Private room ───────────────────────────────────────────────────────────
+    let currentPrivCode   = null;
+    let selectedPrivSport = null;
+
+    // Build sport picker grid for the create modal
+    (function() {
+      const grid = document.getElementById('create-priv-sports');
+      SPORT_CARDS.forEach(s => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'priv-sport-btn';
+        btn.dataset.key = s.key;
+        btn.innerHTML = `<span class="priv-sport-name">${s.name}</span><span class="priv-sport-sub">${s.sub}</span>`;
+        btn.addEventListener('click', () => {
+          selectedPrivSport = s;
+          grid.querySelectorAll('.priv-sport-btn').forEach(b => b.classList.toggle('selected', b === btn));
+          document.getElementById('create-priv-submit').disabled = false;
+        });
+        grid.appendChild(btn);
+      });
+    })();
+
+    function openCreatePrivModal() {
+      selectedPrivSport = null;
+      document.getElementById('create-priv-setup').style.display   = 'block';
+      document.getElementById('create-priv-waiting').style.display = 'none';
+      document.getElementById('create-priv-error').textContent = '';
+      document.getElementById('create-priv-submit').disabled = true;
+      document.getElementById('create-priv-submit').textContent = 'CREATE ROOM';
+      document.querySelectorAll('#create-priv-sports .priv-sport-btn').forEach(b => b.classList.remove('selected'));
+      const showName = !authToken;
+      document.getElementById('create-priv-name-field').style.display = showName ? 'block' : 'none';
+      if (showName) document.getElementById('create-priv-name').value = '';
+      document.getElementById('create-priv-backdrop').style.display = 'flex';
+    }
+
+    function openJoinPrivModal() {
+      document.getElementById('join-priv-setup').style.display   = 'block';
+      document.getElementById('join-priv-waiting').style.display = 'none';
+      document.getElementById('join-priv-code-input').value = '';
+      document.getElementById('join-priv-error').textContent = '';
+      document.getElementById('join-priv-submit').textContent = 'JOIN ROOM';
+      const showName = !authToken;
+      document.getElementById('join-priv-name-field').style.display = showName ? 'block' : 'none';
+      if (showName) document.getElementById('join-priv-name').value = '';
+      document.getElementById('join-priv-backdrop').style.display = 'flex';
+      setTimeout(() => document.getElementById('join-priv-code-input').focus(), 50);
+    }
+
+    function leaveCurrentPrivRoom() {
+      if (currentPrivCode) {
+        socket.emit('leavePrivateRoom', { code: currentPrivCode });
+        currentPrivCode = null;
+      }
+    }
+
+    function submitCreatePriv() {
+      const errEl = document.getElementById('create-priv-error');
+      errEl.textContent = '';
+      if (!selectedPrivSport) { errEl.textContent = 'Pick a sport first.'; return; }
+      const name = authToken ? authUsername : document.getElementById('create-priv-name').value.trim();
+      if (!authToken && (!name || name.length < 2)) { errEl.textContent = 'Enter at least 2 characters.'; return; }
+      const btn = document.getElementById('create-priv-submit');
+      btn.disabled = true; btn.textContent = 'CREATING…';
+      socket.emit('createPrivateRoom', { name, peerId, token: authToken || undefined, category: selectedPrivSport.key });
+      setTimeout(() => { btn.disabled = false; btn.textContent = 'CREATE ROOM'; }, 5000);
+    }
+
+    function submitJoinPriv() {
+      const code  = document.getElementById('join-priv-code-input').value.trim();
+      const errEl = document.getElementById('join-priv-error');
+      errEl.textContent = '';
+      if (!/^\d{6}$/.test(code)) { errEl.textContent = 'Enter a valid 6-digit code.'; return; }
+      const name = authToken ? authUsername : document.getElementById('join-priv-name').value.trim();
+      if (!authToken && (!name || name.length < 2)) { errEl.textContent = 'Enter at least 2 characters.'; return; }
+      const btn = document.getElementById('join-priv-submit');
+      btn.disabled = true; btn.textContent = 'JOINING…';
+      socket.emit('joinPrivateRoom', { name, peerId, token: authToken || undefined, code });
+      setTimeout(() => { btn.disabled = false; btn.textContent = 'JOIN ROOM'; }, 4000);
+    }
+
+    function updatePrivPips(prefix, count) {
+      for (let i = 0; i < 3; i++)
+        document.getElementById(`${prefix}-${i}`).classList.toggle('active', i < count);
+    }
+
+    socket.on('privateRoomCreated', ({ code, category }) => {
+      currentPrivCode = code;
+      const sport = SPORT_CARDS.find(s => s.key === category);
+      document.getElementById('create-priv-code').textContent = code;
+      document.getElementById('create-priv-sport-label').textContent = sport ? `${sport.name} / ${sport.sub}` : category;
+      document.getElementById('create-priv-setup').style.display   = 'none';
+      document.getElementById('create-priv-waiting').style.display = 'block';
+      const btn = document.getElementById('create-priv-submit');
+      btn.disabled = false; btn.textContent = 'CREATE ROOM';
+      updatePrivPips('priv-pip', 1);
+      document.getElementById('priv-count').textContent = '1';
+    });
+
+    socket.on('privateRoomJoined', ({ code, category }) => {
+      currentPrivCode = code;
+      const sport = SPORT_CARDS.find(s => s.key === category);
+      document.getElementById('join-priv-code-display').textContent = code;
+      document.getElementById('join-priv-sport-label').textContent = sport ? `${sport.name} / ${sport.sub}` : category;
+      document.getElementById('join-priv-setup').style.display   = 'none';
+      document.getElementById('join-priv-waiting').style.display = 'block';
+      const btn = document.getElementById('join-priv-submit');
+      btn.disabled = false; btn.textContent = 'JOIN ROOM';
+    });
+
+    socket.on('privateRoomUpdate', ({ code, count }) => {
+      if (code !== currentPrivCode) return;
+      if (document.getElementById('create-priv-backdrop').style.display !== 'none') {
+        updatePrivPips('priv-pip', count);
+        document.getElementById('priv-count').textContent = count;
+      } else if (document.getElementById('join-priv-backdrop').style.display !== 'none') {
+        updatePrivPips('join-priv-pip', count);
+        document.getElementById('join-priv-count').textContent = count;
+      }
+    });
+
+    socket.on('privateRoomError', ({ error }) => {
+      if (document.getElementById('join-priv-backdrop').style.display !== 'none') {
+        document.getElementById('join-priv-error').textContent = error;
+        const btn = document.getElementById('join-priv-submit');
+        btn.disabled = false; btn.textContent = 'JOIN ROOM';
+      } else if (document.getElementById('create-priv-backdrop').style.display !== 'none') {
+        document.getElementById('create-priv-error').textContent = error;
+        const btn = document.getElementById('create-priv-submit');
+        btn.disabled = false; btn.textContent = 'CREATE ROOM';
+      }
+    });
+
+    socket.on('privateRoomExpired', () => {
+      currentPrivCode = null;
+      if (document.getElementById('create-priv-backdrop').style.display !== 'none') {
+        document.getElementById('create-priv-setup').style.display   = 'block';
+        document.getElementById('create-priv-waiting').style.display = 'none';
+        document.getElementById('create-priv-error').textContent = 'Room expired after 30 minutes.';
+      } else if (document.getElementById('join-priv-backdrop').style.display !== 'none') {
+        document.getElementById('join-priv-setup').style.display   = 'block';
+        document.getElementById('join-priv-waiting').style.display = 'none';
+        document.getElementById('join-priv-error').textContent = 'Room expired.';
+      }
+    });
+
+    document.getElementById('btn-create-priv').addEventListener('click', openCreatePrivModal);
+    document.getElementById('btn-join-priv').addEventListener('click', openJoinPrivModal);
+
+    document.getElementById('create-priv-close').addEventListener('click', () => {
+      leaveCurrentPrivRoom();
+      document.getElementById('create-priv-backdrop').style.display = 'none';
+    });
+    document.getElementById('create-priv-backdrop').addEventListener('click', e => {
+      if (e.target !== e.currentTarget) return;
+      leaveCurrentPrivRoom();
+      document.getElementById('create-priv-backdrop').style.display = 'none';
+    });
+    document.getElementById('create-priv-cancel').addEventListener('click', () => {
+      leaveCurrentPrivRoom();
+      document.getElementById('create-priv-backdrop').style.display = 'none';
+    });
+    document.getElementById('create-priv-leave').addEventListener('click', () => {
+      leaveCurrentPrivRoom();
+      document.getElementById('create-priv-backdrop').style.display = 'none';
+    });
+    document.getElementById('create-priv-submit').addEventListener('click', submitCreatePriv);
+    document.getElementById('create-priv-signin-link').addEventListener('click', e => {
+      e.preventDefault();
+      document.getElementById('create-priv-backdrop').style.display = 'none';
+      showAuthModal('login');
+    });
+    document.getElementById('btn-copy-code').addEventListener('click', () => {
+      const code = document.getElementById('create-priv-code').textContent;
+      navigator.clipboard.writeText(code)
+        .then(() => {
+          const btn = document.getElementById('btn-copy-code');
+          btn.textContent = 'COPIED!';
+          setTimeout(() => { btn.textContent = 'COPY'; }, 1500);
+        }).catch(() => {});
+    });
+
+    document.getElementById('join-priv-close').addEventListener('click', () => {
+      leaveCurrentPrivRoom();
+      document.getElementById('join-priv-backdrop').style.display = 'none';
+    });
+    document.getElementById('join-priv-backdrop').addEventListener('click', e => {
+      if (e.target !== e.currentTarget) return;
+      leaveCurrentPrivRoom();
+      document.getElementById('join-priv-backdrop').style.display = 'none';
+    });
+    document.getElementById('join-priv-cancel').addEventListener('click', () => {
+      leaveCurrentPrivRoom();
+      document.getElementById('join-priv-backdrop').style.display = 'none';
+    });
+    document.getElementById('join-priv-leave').addEventListener('click', () => {
+      leaveCurrentPrivRoom();
+      document.getElementById('join-priv-backdrop').style.display = 'none';
+    });
+    document.getElementById('join-priv-submit').addEventListener('click', submitJoinPriv);
+    document.getElementById('join-priv-code-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitJoinPriv(); });
+    document.getElementById('join-priv-name').addEventListener('keydown', e => { if (e.key === 'Enter') submitJoinPriv(); });
+    document.getElementById('join-priv-signin-link').addEventListener('click', e => {
+      e.preventDefault();
+      document.getElementById('join-priv-backdrop').style.display = 'none';
+      showAuthModal('login');
     });
   </script>
 </body>

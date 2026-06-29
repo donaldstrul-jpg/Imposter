@@ -861,6 +861,83 @@ function broadcastQueueCount() {
   io.emit('queueUpdate', { counts });
 }
 
+// ── Private rooms ─────────────────────────────────────────────────────────────
+const privateRooms = {};
+
+function generateRoomCode() {
+  let code;
+  do { code = String(Math.floor(Math.random() * 1000000)).padStart(6, '0'); }
+  while (privateRooms[code]);
+  return code;
+}
+
+function removeFromPrivateRoom(socketId) {
+  for (const [code, room] of Object.entries(privateRooms)) {
+    const idx = room.players.findIndex(p => p.socketId === socketId);
+    if (idx !== -1) {
+      room.players.splice(idx, 1);
+      if (room.players.length === 0) delete privateRooms[code];
+      else broadcastPrivateRoomUpdate(code);
+      break;
+    }
+  }
+}
+
+function broadcastPrivateRoomUpdate(code) {
+  const room = privateRooms[code];
+  if (!room) return;
+  room.players.forEach(p =>
+    io.to(p.socketId).emit('privateRoomUpdate', { code, category: room.category, count: room.players.length })
+  );
+}
+
+function startPrivateGame(code) {
+  const room = privateRooms[code];
+  if (!room || room.players.length !== 3) return;
+  const players = room.players.slice();
+  delete privateRooms[code];
+
+  const validCat = room.category;
+  const roomId   = randomUUID();
+  const wordList = CATEGORIES[validCat];
+  const picked   = wordList[Math.floor(Math.random() * wordList.length)];
+  const imposterIndex = Math.floor(Math.random() * 3);
+
+  const speakingOrder = [0, 1, 2];
+  for (let i = 2; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [speakingOrder[i], speakingOrder[j]] = [speakingOrder[j], speakingOrder[i]];
+  }
+
+  rooms[roomId] = { players, readyCount: 0, imposterIndex, word: picked.name, category: validCat, startedAt: Date.now(), votes: {} };
+  const playerSummary = players.map(p => ({ name: p.name, peerId: p.peerId }));
+
+  players.forEach((player, index) => {
+    const isImposter = index === imposterIndex;
+    io.to(player.socketId).emit('gameStart', {
+      roomId,
+      role:         isImposter ? 'imposter' : 'knower',
+      category:     validCat,
+      word:         isImposter ? null        : picked.name,
+      hint:         isImposter ? picked.hint : null,
+      playerIndex:  index,
+      players:      playerSummary,
+      speakingOrder,
+    });
+  });
+}
+
+// Expire private rooms older than 30 minutes
+setInterval(() => {
+  const cutoff = Date.now() - 30 * 60 * 1000;
+  for (const [code, room] of Object.entries(privateRooms)) {
+    if (room.createdAt < cutoff) {
+      room.players.forEach(p => io.to(p.socketId).emit('privateRoomExpired'));
+      delete privateRooms[code];
+    }
+  }
+}, 60 * 1000);
+
 io.on('connection', (socket) => {
   socket.emit('statsUpdate', getStats());
   socket.emit('recentGames', stmts.recentGames.all());
@@ -929,6 +1006,66 @@ io.on('connection', (socket) => {
       if (i !== -1) q.splice(i, 1);
     });
     broadcastQueueCount();
+  });
+
+  socket.on('createPrivateRoom', ({ name, peerId, token, category }) => {
+    const validCat = CATEGORIES[category] ? category : null;
+    if (!validCat) return socket.emit('privateRoomError', { error: 'Invalid sport category.' });
+
+    let userId = null;
+    let displayName = String(name || '').trim().slice(0, 20) || 'Player';
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        userId      = decoded.userId;
+        displayName = decoded.username;
+      } catch {}
+    }
+
+    removeFromPrivateRoom(socket.id);
+    const code = generateRoomCode();
+    privateRooms[code] = {
+      category: validCat,
+      players:  [{ socketId: socket.id, name: displayName, peerId, userId }],
+      createdAt: Date.now(),
+    };
+
+    socket.emit('privateRoomCreated', { code, category: validCat });
+    broadcastPrivateRoomUpdate(code);
+  });
+
+  socket.on('joinPrivateRoom', ({ name, peerId, token, code }) => {
+    const codeStr = String(code || '');
+    const room = privateRooms[codeStr];
+    if (!room) return socket.emit('privateRoomError', { error: 'Room not found. Check the code and try again.' });
+    if (room.players.length >= 3) return socket.emit('privateRoomError', { error: 'This room is already full.' });
+
+    let userId = null;
+    let displayName = String(name || '').trim().slice(0, 20) || 'Player';
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        userId      = decoded.userId;
+        displayName = decoded.username;
+      } catch {}
+    }
+
+    removeFromPrivateRoom(socket.id);
+    room.players.push({ socketId: socket.id, name: displayName, peerId, userId });
+
+    socket.emit('privateRoomJoined', { code: codeStr, category: room.category });
+    broadcastPrivateRoomUpdate(codeStr);
+
+    if (room.players.length === 3) startPrivateGame(codeStr);
+  });
+
+  socket.on('leavePrivateRoom', ({ code }) => {
+    const codeStr = String(code || '');
+    const room = privateRooms[codeStr];
+    if (!room) return;
+    room.players = room.players.filter(p => p.socketId !== socket.id);
+    if (room.players.length === 0) delete privateRooms[codeStr];
+    else broadcastPrivateRoomUpdate(codeStr);
   });
 
   socket.on('peerReady', ({ roomId, playerIndex }) => {
@@ -1036,6 +1173,7 @@ io.on('connection', (socket) => {
       const i = q.findIndex(p => p.socketId === socket.id);
       if (i !== -1) q.splice(i, 1);
     });
+    removeFromPrivateRoom(socket.id);
     broadcastQueueCount();
     broadcastStats();
   });
